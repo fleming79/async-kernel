@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1935,7 +1935,7 @@ viewing the latest version.
                 <summary>Source code in <code>src/async_kernel/common.py</code></summary>
                 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
 <span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">KernelInterrupt</span><span class="p">(</span><span class="ne">InterruptedError</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Raised to interrupt the kernel.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Raised to interrupt the kernel."""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -1979,7 +1979,7 @@ viewing the latest version.
                 <summary>Source code in <code>src/async_kernel/common.py</code></summary>
                 <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">48</span>
 <span class="normal">49</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MethodNotSupported</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;This exception is used inside overridden methods to indicate that it should not be used.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""This exception is used inside overridden methods to indicate that it should not be used."""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -2063,9 +2063,9 @@ and returned. Subsequent access to the property returns the cached result.</p>
   <summary>Example</summary>
   <div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyClass</span><span class="p">:</span>
     <span class="n">a</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-    <span class="n">b</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="nb">id</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;owner&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">a</span><span class="p">))</span>
+    <span class="n">b</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="nb">id</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">a</span><span class="p">))</span>
     <span class="n">c</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span>
-        <span class="nb">list</span><span class="p">,</span> <span class="n">created</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">&quot;obj&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
+        <span class="nb">list</span><span class="p">,</span> <span class="n">created</span><span class="o">=</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">"obj"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">"name"</span><span class="p">])</span>
     <span class="p">)</span>
 </code></pre></div>
 </details>
@@ -2933,7 +2933,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Fixed</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A property-like descriptor factory that always returns the same object.</span>
+<span class="w">    </span><span class="sd">"""A property-like descriptor factory that always returns the same object.</span>
 
 <span class="sd">    The descriptor is defined with a callable or importable string to a callable.</span>
 
@@ -2951,9 +2951,9 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
 <span class="sd">        created: A per-instance optional callback that gets called on first-access to the property.</span>
 <span class="sd">        mode: How to handle invalid data.</span>
-<span class="sd">            - `&#39;raise&#39;`: Raise an error.</span>
-<span class="sd">            - `&#39;log&#39;`: Log a warning or exception.</span>
-<span class="sd">            - &#39;ignore&#39;: Ignore (value is not set).</span>
+<span class="sd">            - `'raise'`: Raise an error.</span>
+<span class="sd">            - `'log'`: Log a warning or exception.</span>
+<span class="sd">            - 'ignore': Ignore (value is not set).</span>
 
 <span class="sd">    Type Hints:</span>
 <span class="sd">        - ``S``: Type of the owner class.</span>
@@ -2963,17 +2963,17 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="sd">        ```python</span>
 <span class="sd">        class MyClass:</span>
 <span class="sd">            a: Fixed[Self, dict] = Fixed(dict)</span>
-<span class="sd">            b: Fixed[Self, dict] = Fixed(lambda c: id(c[&quot;owner&quot;].a))</span>
+<span class="sd">            b: Fixed[Self, dict] = Fixed(lambda c: id(c["owner"].a))</span>
 <span class="sd">            c: Fixed[Self, list[str]] = Fixed(</span>
-<span class="sd">                list, created=lambda c: c[&quot;obj&quot;].append(c[&quot;name&quot;])</span>
+<span class="sd">                list, created=lambda c: c["obj"].append(c["name"])</span>
 <span class="sd">            )</span>
 <span class="sd">        ```</span>
 
 <span class="sd">    Tip:</span>
 <span class="sd">        You can use [import_item][] inside a callable to lazy import.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;create&quot;</span><span class="p">,</span> <span class="s2">&quot;created&quot;</span><span class="p">,</span> <span class="s2">&quot;instances&quot;</span><span class="p">,</span> <span class="s2">&quot;instances_locks&quot;</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"create"</span><span class="p">,</span> <span class="s2">"created"</span><span class="p">,</span> <span class="s2">"instances"</span><span class="p">,</span> <span class="s2">"instances_locks"</span><span class="p">,</span> <span class="s2">"mode"</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -2981,16 +2981,16 @@ and returned. Subsequent access to the property returns the cached result.</p>
         <span class="o">/</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">created</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">FixedCreated</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;raise&quot;</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"raise"</span><span class="p">,</span> <span class="s2">"ignore"</span><span class="p">,</span> <span class="s2">"log"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>  <span class="c1"># pyright: ignore[reportUnnecessaryIsInstance]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">create</span> <span class="o">=</span> <span class="n">obj</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="n">created</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">instances</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">instances_locks</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;raise&quot;</span><span class="p">,</span> <span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mode</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"raise"</span><span class="p">,</span> <span class="s2">"ignore"</span><span class="p">,</span> <span class="s2">"log"</span><span class="p">]</span> <span class="o">=</span> <span class="n">mode</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">obj</span><span class="si">=}</span><span class="s2"> is invalid! Use a lambda instead eg: lambda _: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># pyright: ignore[reportUnreachable]</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">obj</span><span class="si">=}</span><span class="s2"> is invalid! Use a lambda instead eg: lambda _: </span><span class="si">{</span><span class="n">obj</span><span class="si">}</span><span class="s2">"</span>  <span class="c1"># pyright: ignore[reportUnreachable]</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__set_name__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">S</span><span class="p">],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -3012,7 +3012,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
             <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">lock</span><span class="o">.</span><span class="n">_count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Self-referencing creation detected for </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">!&quot;</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Self-referencing creation detected for </span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">!"</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
                 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_instance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
             <span class="k">finally</span><span class="p">:</span>
@@ -3020,37 +3020,37 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__delete__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_handle_invalid</span><span class="p">(</span>
-            <span class="n">obj</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Deletion of `Fixed` parameter `</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_with_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s2">` is not allowed. (</span><span class="si">{</span><span class="n">obj</span><span class="si">=!r}</span><span class="s2">)&quot;</span>
+            <span class="n">obj</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Deletion of `Fixed` parameter `</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_with_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s2">` is not allowed. (</span><span class="si">{</span><span class="n">obj</span><span class="si">=!r}</span><span class="s2">)"</span>
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Never</span><span class="p">:</span>  <span class="c1"># pyright: ignore[reportReturnType]</span>
         <span class="c1"># Note: We use `Self` as the type hint for the `value` above  to give a useful typing error.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_invalid</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Setting `Fixed` parameter `</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_with_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s2">` is forbidden! (</span><span class="si">{</span><span class="n">obj</span><span class="si">=!r}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_invalid</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Setting `Fixed` parameter `</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_with_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s2">` is forbidden! (</span><span class="si">{</span><span class="n">obj</span><span class="si">=!r}</span><span class="s2">)"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_rep_with_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">S</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_handle_invalid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">error</span><span class="p">:</span> <span class="ne">Exception</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">match</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span><span class="p">:</span>
-            <span class="k">case</span> <span class="s2">&quot;raise&quot;</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s2">"raise"</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-            <span class="k">case</span> <span class="s2">&quot;log&quot;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">log</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">case</span> <span class="s2">"log"</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">log</span> <span class="o">:=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">"log"</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
                     <span class="k">if</span> <span class="n">error</span><span class="p">:</span>
                         <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">error</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
-            <span class="k">case</span> <span class="s2">&quot;ignore&quot;</span><span class="p">:</span>
+            <span class="k">case</span> <span class="s2">"ignore"</span><span class="p">:</span>
                 <span class="k">pass</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_create_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">S</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-        <span class="s2">&quot;&quot;</span>
+        <span class="s2">""</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">create</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">create</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">create</span> <span class="o">=</span> <span class="n">create</span> <span class="o">=</span> <span class="n">import_item</span><span class="p">(</span><span class="n">create</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">instance</span> <span class="o">=</span> <span class="n">create</span><span class="p">()</span>  <span class="c1"># pyright: ignore[reportCallIssue, reportAssignmentType]</span>
         <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">create</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;&lt;lambda&gt;&quot;</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">create</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">create</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"&lt;lambda&gt;"</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">create</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">instance</span><span class="p">:</span> <span class="n">T</span> <span class="o">=</span> <span class="n">create</span><span class="p">(</span><span class="n">FixedCreate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">owner</span><span class="o">=</span><span class="n">obj</span><span class="p">))</span>  <span class="c1"># pyright: ignore[reportAssignmentType, reportCallIssue]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span>
@@ -3061,10 +3061,10 @@ and returned. Subsequent access to the property returns the cached result.</p>
         <span class="n">weakref</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instances_locks</span><span class="o">.</span><span class="n">pop</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">({</span><span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;obj&quot;</span><span class="p">:</span> <span class="n">instance</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">({</span><span class="s2">"owner"</span><span class="p">:</span> <span class="n">obj</span><span class="p">,</span> <span class="s2">"obj"</span><span class="p">:</span> <span class="n">instance</span><span class="p">,</span> <span class="s2">"name"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">})</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_handle_invalid</span><span class="p">(</span>
-                    <span class="n">obj</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Callback `created` failed for `</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_with_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s2">` (</span><span class="si">{</span><span class="n">obj</span><span class="si">=!r}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">e</span>
+                    <span class="n">obj</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Callback `created` failed for `</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_with_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s2">` (</span><span class="si">{</span><span class="n">obj</span><span class="si">=!r}</span><span class="s2">)"</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="n">e</span>
                 <span class="p">)</span>
         <span class="k">return</span> <span class="n">instance</span>
 </code></pre></div></td></tr></table></div>
@@ -3129,7 +3129,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
 <details class="usage" open>
   <summary>Usage</summary>
-  <div class="highlight"><pre><span></span><code><span class="n">q</span> <span class="o">=</span> <span class="n">SingleAsyncQueue</span><span class="p">(</span><span class="n">reject</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;rejected&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">))</span>
+  <div class="highlight"><pre><span></span><code><span class="n">q</span> <span class="o">=</span> <span class="n">SingleAsyncQueue</span><span class="p">(</span><span class="n">reject</span><span class="o">=</span><span class="k">lambda</span> <span class="n">item</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">"rejected"</span><span class="p">,</span> <span class="n">item</span><span class="p">))</span>
 
 <span class="c1"># In a task</span>
 <span class="k">async</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">q</span><span class="p">:</span>
@@ -3369,7 +3369,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="normal">319</span>
 <span class="normal">320</span>
 <span class="normal">321</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">SingleAsyncQueue</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A single-use asynchronous iterator with a queue.</span>
+<span class="w">    </span><span class="sd">"""A single-use asynchronous iterator with a queue.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        - Append to the queue from anywhere (internally synchronised).</span>
@@ -3383,7 +3383,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
 <span class="sd">    Usage:</span>
 <span class="sd">        ```python</span>
-<span class="sd">        q = SingleAsyncQueue(reject=lambda item: print(&quot;rejected&quot;, item))</span>
+<span class="sd">        q = SingleAsyncQueue(reject=lambda item: print("rejected", item))</span>
 
 <span class="sd">        # In a task</span>
 <span class="sd">        async for item in q:</span>
@@ -3396,9 +3396,9 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="sd">        # Stop the iterator</span>
 <span class="sd">        q.stop()</span>
 <span class="sd">        ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;__weakref__&quot;</span><span class="p">,</span> <span class="s2">&quot;_queue&quot;</span><span class="p">,</span> <span class="s2">&quot;_reject&quot;</span><span class="p">,</span> <span class="s2">&quot;_token&quot;</span><span class="p">,</span> <span class="s2">&quot;_waiter&quot;</span><span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"__weakref__"</span><span class="p">,</span> <span class="s2">"_queue"</span><span class="p">,</span> <span class="s2">"_reject"</span><span class="p">,</span> <span class="s2">"_token"</span><span class="p">,</span> <span class="s2">"_waiter"</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">reject</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">T</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reject</span> <span class="o">=</span> <span class="n">reject</span>
@@ -3448,7 +3448,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
             <span class="k">pass</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the queue rejecting any items currently in the queue.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Stop the queue rejecting any items currently in the queue."""</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">queue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span>
             <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span>
@@ -3461,10 +3461,10 @@ and returned. Subsequent access to the property returns the cached result.</p>
             <span class="k">pass</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Append `item` to the queue.</span>
+<span class="w">        </span><span class="sd">"""Append `item` to the queue.</span>
 
 <span class="sd">        If the queue has been stopped `item` will be rejected immediately.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_resume</span><span class="p">()</span>
@@ -3473,10 +3473,10 @@ and returned. Subsequent access to the property returns the cached result.</p>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_reject</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">appendleft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Append `item` to the left side of the queue.</span>
+<span class="w">        </span><span class="sd">"""Append `item` to the left side of the queue.</span>
 
 <span class="sd">        If the queue has been stopped `item` will be rejected immediately.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">appendleft</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_resume</span><span class="p">()</span>
@@ -3485,10 +3485,10 @@ and returned. Subsequent access to the property returns the cached result.</p>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_reject</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Append all items in `iterable` to the queue.</span>
+<span class="w">        </span><span class="sd">"""Append all items in `iterable` to the queue.</span>
 
 <span class="sd">        If the queue has been stopped all items in `iterable` will be rejected immediately.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_resume</span><span class="p">()</span>
@@ -3499,8 +3499,8 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">stopped</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Will return `True` once stop has been called meaning there are no items left in the queue.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_queue&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""Will return `True` once stop has been called meaning there are no items left in the queue."""</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"_queue"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -3596,7 +3596,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="normal">277</span>
 <span class="normal">278</span>
 <span class="normal">279</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stop the queue rejecting any items currently in the queue.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Stop the queue rejecting any items currently in the queue."""</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">queue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span>
         <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span>
@@ -3644,10 +3644,10 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="normal">289</span>
 <span class="normal">290</span>
 <span class="normal">291</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Append `item` to the queue.</span>
+<span class="w">    </span><span class="sd">"""Append `item` to the queue.</span>
 
 <span class="sd">    If the queue has been stopped `item` will be rejected immediately.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_resume</span><span class="p">()</span>
@@ -3691,10 +3691,10 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="normal">301</span>
 <span class="normal">302</span>
 <span class="normal">303</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">appendleft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Append `item` to the left side of the queue.</span>
+<span class="w">    </span><span class="sd">"""Append `item` to the left side of the queue.</span>
 
 <span class="sd">    If the queue has been stopped `item` will be rejected immediately.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">appendleft</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_resume</span><span class="p">()</span>
@@ -3739,10 +3739,10 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="normal">314</span>
 <span class="normal">315</span>
 <span class="normal">316</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">extend</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iterable</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Append all items in `iterable` to the queue.</span>
+<span class="w">    </span><span class="sd">"""Append all items in `iterable` to the queue.</span>
 
 <span class="sd">    If the queue has been stopped all items in `iterable` will be rejected immediately.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_resume</span><span class="p">()</span>
@@ -3783,7 +3783,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
 
 <details class="example" open>
   <summary>Example</summary>
-  <div class="highlight"><pre><span></span><code><span class="n">import_item</span><span class="p">(</span><span class="s2">&quot;os.path.join&quot;</span><span class="p">)</span>
+  <div class="highlight"><pre><span></span><code><span class="n">import_item</span><span class="p">(</span><span class="s2">"os.path.join"</span><span class="p">)</span>
 </code></pre></div>
 </details>
           
@@ -3823,14 +3823,14 @@ and returned. Subsequent access to the property returns the cached result.</p>
 <span class="normal">34</span>
 <span class="normal">35</span>
 <span class="normal">36</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">import_item</span><span class="p">(</span><span class="n">dottedname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Import an item from a module, given its dotted name.</span>
+<span class="w">    </span><span class="sd">"""Import an item from a module, given its dotted name.</span>
 
 <span class="sd">    Example:</span>
 <span class="sd">        ```python</span>
-<span class="sd">        import_item(&quot;os.path.join&quot;)</span>
+<span class="sd">        import_item("os.path.join")</span>
 <span class="sd">        ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">module</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">dottedname</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">module</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">dottedname</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">"."</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">aiologic</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">import_from</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4039,7 +4039,7 @@ and returned. Subsequent access to the property returns the cached result.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "content.code.copy", "toc.follow", "navigation.top", "header.autohide", "navigation.footer", "search.suggest", "search.highlight", "navigation.instant", "navigation.indexes", "navigation.path"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../js/timeago.min.js"></script>
       

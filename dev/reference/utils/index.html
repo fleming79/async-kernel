@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2270,7 +2270,7 @@ viewing the latest version.
 <span class="normal">61</span>
 <span class="normal">62</span>
 <span class="normal">63</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mark_thread_pydev_do_not_trace</span><span class="p">(</span><span class="n">thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">remove</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Modifies the given thread&#39;s attributes to hide or unhide it from the debugger (e.g., debugpy).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Modifies the given thread's attributes to hide or unhide it from the debugger (e.g., debugpy)."""</span>
     <span class="n">thread</span> <span class="o">=</span> <span class="n">thread</span> <span class="ow">or</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span>
     <span class="n">thread</span><span class="o">.</span><span class="n">pydev_do_not_trace</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">remove</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
     <span class="n">thread</span><span class="o">.</span><span class="n">is_pydev_daemon_thread</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">remove</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
@@ -2307,11 +2307,11 @@ viewing the latest version.
 <span class="normal">71</span>
 <span class="normal">72</span>
 <span class="normal">73</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_kernel</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Kernel</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the current kernel.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Get the current kernel."""</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">async_kernel.interface</span>  <span class="c1"># noqa: PLC0415</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Interface</span><span class="o">.</span><span class="n">initialized</span><span class="p">():</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;A kernel interface is not started!&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">"A kernel interface is not started!"</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">interface</span><span class="o">.</span><span class="n">Interface</span><span class="o">.</span><span class="n">instance</span><span class="p">()</span><span class="o">.</span><span class="n">kernel</span>
 </code></pre></div></td></tr></table></div>
@@ -2358,11 +2358,11 @@ viewing the latest version.
 <span class="normal">85</span>
 <span class="normal">86</span>
 <span class="normal">87</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_job</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Job</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the job for the current context.</span>
+<span class="w">    </span><span class="sd">"""Get the job for the current context.</span>
 
 <span class="sd">    Raises:</span>
 <span class="sd">        LookupError: If there is no job in the current context.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">_job_var</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2395,9 +2395,9 @@ viewing the latest version.
 <span class="normal">93</span>
 <span class="normal">94</span>
 <span class="normal">95</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_parent_message</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the parent message for the current context.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Get the parent message for the current context."""</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">job</span> <span class="ow">or</span> <span class="n">get_job</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;msg&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">job</span> <span class="ow">or</span> <span class="n">get_job</span><span class="p">())</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"msg"</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">LookupError</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
@@ -2428,7 +2428,7 @@ viewing the latest version.
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 98</span>
 <span class="normal"> 99</span>
 <span class="normal">100</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_subshell_id</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the `subshell_id` for the current context.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Get the `subshell_id` for the current context."""</span>
     <span class="k">return</span> <span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">subshell_id</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2478,11 +2478,11 @@ viewing the latest version.
 <span class="normal">110</span>
 <span class="normal">111</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">subshell_context</span><span class="p">(</span><span class="n">subshell_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A context manager to work in the context of a shell or subshell.</span>
+<span class="w">    </span><span class="sd">"""A context manager to work in the context of a shell or subshell.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        subshell_id: An existing subshell or the main shell if subshell_id is None.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">with</span> <span class="n">get_kernel</span><span class="p">()</span><span class="o">.</span><span class="n">get_shell</span><span class="p">(</span><span class="n">subshell_id</span><span class="p">)</span><span class="o">.</span><span class="n">context</span><span class="p">():</span>
         <span class="k">yield</span>
 </code></pre></div></td></tr></table></div>
@@ -2516,9 +2516,9 @@ viewing the latest version.
 <span class="normal">117</span>
 <span class="normal">118</span>
 <span class="normal">119</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_metadata</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the metadata for the current context.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Gets the metadata for the current context."""</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">job</span> <span class="ow">or</span> <span class="n">_job_var</span><span class="o">.</span><span class="n">get</span><span class="p">())[</span><span class="s2">&quot;msg&quot;</span><span class="p">][</span><span class="s2">&quot;metadata&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">job</span> <span class="ow">or</span> <span class="n">_job_var</span><span class="o">.</span><span class="n">get</span><span class="p">())[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"metadata"</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
@@ -2575,9 +2575,9 @@ viewing the latest version.
 <span class="normal">125</span>
 <span class="normal">126</span>
 <span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_tags</span><span class="p">(</span><span class="n">job</span><span class="p">:</span> <span class="n">Job</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gets the tags for the current context.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Gets the tags for the current context."""</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">get_metadata</span><span class="p">(</span><span class="n">job</span><span class="p">)[</span><span class="s2">&quot;tags&quot;</span><span class="p">]</span>  <span class="c1"># pyright: ignore[reportOptionalSubscript]</span>
+        <span class="k">return</span> <span class="n">get_metadata</span><span class="p">(</span><span class="n">job</span><span class="p">)[</span><span class="s2">"tags"</span><span class="p">]</span>  <span class="c1"># pyright: ignore[reportOptionalSubscript]</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">[]</span>
 </code></pre></div></td></tr></table></div>
@@ -2655,7 +2655,7 @@ the type of the default.</p>
 <span class="normal">150</span>
 <span class="normal">151</span>
 <span class="normal">152</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_tag_value</span><span class="p">(</span><span class="n">tag</span><span class="p">:</span> <span class="n">Tags</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">_TagType</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_TagType</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the value for the tag from a collection of tags.</span>
+<span class="w">    </span><span class="sd">"""Get the value for the tag from a collection of tags.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        tag: The tag to get the value from.</span>
@@ -2664,7 +2664,7 @@ the type of the default.</p>
 
 <span class="sd">    The tag value is the value trailing behind &lt;tag&gt;=&lt;value&gt;. The value is transformed according to</span>
 <span class="sd">    the type of the default.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tags</span> <span class="k">if</span> <span class="n">tags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">get_tags</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="n">tag</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">tag</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
@@ -2779,10 +2779,10 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="normal">185</span>
 <span class="normal">186</span>
 <span class="normal">187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">_return_value</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Replace an existing nested attribute/trait of an object.</span>
+<span class="w">    </span><span class="sd">"""Replace an existing nested attribute/trait of an object.</span>
 
 <span class="sd">    If the attribute name contains dots, it is interpreted as a nested attribute.</span>
-<span class="sd">    For example, if name is &quot;a.b.c&quot;, then the code will attempt to set obj.a.b.c to value.</span>
+<span class="sd">    For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to value.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        obj: The object to set the attribute on.</span>
@@ -2792,14 +2792,14 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="sd">    Returns:</span>
 <span class="sd">        The mapping of the name to the set value if the value has been set.</span>
 <span class="sd">        An empty dict indicates the value was not set.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bits</span> <span class="o">:=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">bits</span> <span class="o">:=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">obj</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">bits</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="k">return</span> <span class="p">{}</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="n">value</span><span class="p">,</span> <span class="n">_return_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">"."</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bits</span><span class="p">[</span><span class="mi">1</span><span class="p">:]),</span> <span class="n">value</span><span class="p">,</span> <span class="n">_return_value</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">value</span> <span class="k">if</span> <span class="n">_return_value</span> <span class="k">else</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">value</span><span class="p">}</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">HasTraits</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="n">has_trait</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
@@ -2876,21 +2876,21 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="normal">206</span>
 <span class="normal">207</span>
 <span class="normal">208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">apply_settings</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply the settings onto the object.</span>
+<span class="w">    </span><span class="sd">"""Apply the settings onto the object.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        dict: A copy of the settings that were applied.</span>
 
 <span class="sd">    Notes:</span>
-<span class="sd">        - If flags are included using the pattern `&#39;flags&#39;: iterable(str)`, the flags</span>
+<span class="sd">        - If flags are included using the pattern `'flags': iterable(str)`, the flags</span>
 <span class="sd">            are interpreted as boolean values. Generally, it is preferred to specify</span>
 <span class="sd">            the value in the settings explicitly.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">settings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;flags&quot;</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">v</span><span class="p">):</span>
-                <span class="n">values</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">flag</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;no-&quot;</span><span class="p">),</span> <span class="ow">not</span> <span class="n">flag</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;no-&quot;</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">"flags"</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">flag</span> <span class="ow">in</span> <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"-"</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">v</span><span class="p">):</span>
+                <span class="n">values</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">flag</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"no-"</span><span class="p">),</span> <span class="ow">not</span> <span class="n">flag</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"no-"</span><span class="p">)))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">values</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">setattr_nested</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">values</span>
@@ -2936,15 +2936,15 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="normal">219</span>
 <span class="normal">220</span>
 <span class="normal">221</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">error_to_content</span><span class="p">(</span><span class="n">error</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert the error to a dict.</span>
+<span class="w">    </span><span class="sd">"""Convert the error to a dict.</span>
 
 <span class="sd">    ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#request-reply</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_error</span><span class="p">,</span>
-        <span class="s2">&quot;ename&quot;</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
-        <span class="s2">&quot;evalue&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">error</span><span class="p">),</span>
-        <span class="s2">&quot;traceback&quot;</span><span class="p">:</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">error</span><span class="p">),</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_error</span><span class="p">,</span>
+        <span class="s2">"ename"</span><span class="p">:</span> <span class="nb">type</span><span class="p">(</span><span class="n">error</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+        <span class="s2">"evalue"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">error</span><span class="p">),</span>
+        <span class="s2">"traceback"</span><span class="p">:</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">error</span><span class="p">),</span>
     <span class="p">}</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3018,11 +3018,11 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="normal">234</span>
 <span class="normal">235</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">redirect_stdout</span><span class="p">(</span><span class="n">stream</span><span class="p">:</span> <span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Re-direct [sys.stdout][] generated in the current context.</span>
+<span class="w">    </span><span class="sd">"""Re-direct [sys.stdout][] generated in the current context.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        - [contextlib.redirect_stdout][]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">_stdout_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">stream</span>
@@ -3100,11 +3100,11 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="normal">248</span>
 <span class="normal">249</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">redirect_stderr</span><span class="p">(</span><span class="n">stream</span><span class="p">:</span> <span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Re-direct [sys.stderr][] generated in the current context.</span>
+<span class="w">    </span><span class="sd">"""Re-direct [sys.stderr][] generated in the current context.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        - [contextlib.redirect_stderr][]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">_stderr_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">yield</span> <span class="n">stream</span>
@@ -3145,7 +3145,7 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="normal">259</span>
 <span class="normal">260</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">show_result</span><span class="p">(</span><span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A context where `show_result` is enabled/disabled.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A context where `show_result` is enabled/disabled."""</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">_show_result_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">show</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">yield</span>
@@ -3359,7 +3359,7 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "content.code.copy", "toc.follow", "navigation.top", "header.autohide", "navigation.footer", "search.suggest", "search.highlight", "navigation.instant", "navigation.indexes", "navigation.path"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../js/timeago.min.js"></script>
       

@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2969,9 +2969,9 @@ await demo()</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-MainThread                             ✓       🔐                 MainThread             140122087555200
-Control                                ✓       🔐                  Control               140122033850048
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140121730963136 ← current
+MainThread                             ✓       🔐                 MainThread             139926351757440
+Control                                ✓       🔐                  Control               139926297949888
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139926058297024 ← current
 </pre>
 </div>
 </div>
@@ -3026,10 +3026,10 @@ Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-MainThread                             ✓       🔐                 MainThread             140122087555200
-Control                                ✓       🔐                  Control               140122033850048
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140121730963136
-My thread                              ✓                          My thread              140121630308032 ← current
+MainThread                             ✓       🔐                 MainThread             139926351757440
+Control                                ✓       🔐                  Control               139926297949888
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139926058297024
+My thread                              ✓                          My thread              139926041515712 ← current
 </pre>
 </div>
 </div>
@@ -3094,10 +3094,10 @@ My thread                              ✓                          My thread   
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-MainThread                             ✓       🔐                 MainThread             140122087555200
-Control                                ✓       🔐                  Control               140122033850048
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140121730963136 ← current
-My thread                              ✓                          My thread              140121630308032
+MainThread                             ✓       🔐                 MainThread             139926351757440
+Control                                ✓       🔐                  Control               139926297949888
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139926058297024 ← current
+My thread                              ✓                          My thread              139926041515712
 </pre>
 </div>
 </div>
@@ -3152,11 +3152,11 @@ My thread                              ✓                          My thread   
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-MainThread                             ✓       🔐                 MainThread             140122087555200
-Control                                ✓       🔐                  Control               140122033850048
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140121730963136
-My thread                              ✓                          My thread              140121630308032
-My executor                            ✓                         My executor             140121613526720 ← current
+MainThread                             ✓       🔐                 MainThread             139926351757440
+Control                                ✓       🔐                  Control               139926297949888
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139926058297024
+My thread                              ✓                          My thread              139926041515712
+My executor                            ✓                         My executor             139925739534016 ← current
 </pre>
 </div>
 </div>
@@ -3219,12 +3219,12 @@ await trio.sleep(0)</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-MainThread                             ✓       🔐                 MainThread             140122087555200
-Control                                ✓       🔐                  Control               140122033850048
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140121730963136
-My thread                              ✓                          My thread              140121630308032
-My executor                            ✓                         My executor             140121613526720
-My trio executor                       ✓                       My trio executor          140121596745408 ← current
+MainThread                             ✓       🔐                 MainThread             139926351757440
+Control                                ✓       🔐                  Control               139926297949888
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139926058297024
+My thread                              ✓                          My thread              139926041515712
+My executor                            ✓                         My executor             139925739534016
+My trio executor                       ✓                       My trio executor          139925722752704 ← current
 </pre>
 </div>
 </div>
@@ -3371,12 +3371,12 @@ await trio.sleep(0)</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-MainThread                             ✓       🔐                 MainThread             140122087555200 ← current
-Control                                ✓       🔐                  Control               140122033850048
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140121730963136
-My thread                              ✓                          My thread              140121630308032
-My executor                            ✓                         My executor             140121613526720
-My trio executor                       ✓                       My trio executor          140121596745408
+MainThread                             ✓       🔐                 MainThread             139926351757440 ← current
+Control                                ✓       🔐                  Control               139926297949888
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139926058297024
+My thread                              ✓                          My thread              139926041515712
+My executor                            ✓                         My executor             139925739534016
+My trio executor                       ✓                       My trio executor          139925722752704
 </pre>
 </div>
 </div>
@@ -3395,12 +3395,12 @@ My trio executor                       ✓                       My trio executo
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-MainThread                             ✓       🔐                 MainThread             140122087555200 ← current
-Control                                ✓       🔐                  Control               140122033850048
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140121730963136
-My thread                              ✓                          My thread              140121630308032
-My executor                            ✓                         My executor             140121613526720
-My trio executor                       ✓                       My trio executor          140121596745408
+MainThread                             ✓       🔐                 MainThread             139926351757440 ← current
+Control                                ✓       🔐                  Control               139926297949888
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139926058297024
+My thread                              ✓                          My thread              139926041515712
+My executor                            ✓                         My executor             139925739534016
+My trio executor                       ✓                       My trio executor          139925722752704
 </pre>
 </div>
 </div>
@@ -3609,7 +3609,7 @@ My trio executor                       ✓                       My trio executo
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "content.code.copy", "toc.follow", "navigation.top", "header.autohide", "navigation.footer", "search.suggest", "search.highlight", "navigation.instant", "navigation.indexes", "navigation.path"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../js/timeago.min.js"></script>
       

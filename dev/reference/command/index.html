@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1827,7 +1827,7 @@ program is interrupted.</p>
 <span class="normal">228</span>
 <span class="normal">229</span>
 <span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">command_line</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses command-line arguments to manage kernel specs and start kernels.</span>
+<span class="w">    </span><span class="sd">"""Parses command-line arguments to manage kernel specs and start kernels.</span>
 
 <span class="sd">    This function uses `argparse` to handle command-line arguments for</span>
 <span class="sd">    various kernel operations, including:</span>
@@ -1850,20 +1850,20 @@ program is interrupted.</p>
 <span class="sd">    Raises:</span>
 <span class="sd">        SystemExit: If an error occurs during kernel execution or if the</span>
 <span class="sd">            program is interrupted.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">Mode</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">):</span>
-        <span class="n">install</span> <span class="o">=</span> <span class="s2">&quot;install&quot;</span>
-        <span class="n">uninstall</span> <span class="o">=</span> <span class="s2">&quot;uninstall&quot;</span>
-        <span class="n">version</span> <span class="o">=</span> <span class="s2">&quot;version&quot;</span>
-        <span class="n">help_all</span> <span class="o">=</span> <span class="s2">&quot;help_all&quot;</span>
-        <span class="n">help</span> <span class="o">=</span> <span class="s2">&quot;help&quot;</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="s2">&quot;start&quot;</span>
-        <span class="nb">list</span> <span class="o">=</span> <span class="s2">&quot;list&quot;</span>
-        <span class="n">show_config</span> <span class="o">=</span> <span class="s2">&quot;show_config&quot;</span>
-        <span class="n">show_config_json</span> <span class="o">=</span> <span class="s2">&quot;show_config_json&quot;</span>
+        <span class="n">install</span> <span class="o">=</span> <span class="s2">"install"</span>
+        <span class="n">uninstall</span> <span class="o">=</span> <span class="s2">"uninstall"</span>
+        <span class="n">version</span> <span class="o">=</span> <span class="s2">"version"</span>
+        <span class="n">help_all</span> <span class="o">=</span> <span class="s2">"help_all"</span>
+        <span class="n">help</span> <span class="o">=</span> <span class="s2">"help"</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="s2">"start"</span>
+        <span class="nb">list</span> <span class="o">=</span> <span class="s2">"list"</span>
+        <span class="n">show_config</span> <span class="o">=</span> <span class="s2">"show_config"</span>
+        <span class="n">show_config_json</span> <span class="o">=</span> <span class="s2">"show_config_json"</span>
 
-    <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="s2">"""</span>
 
 <span class="s2">Online Help: https://fleming79.github.io/async-kernel/latest/usage/commands/</span>
 
@@ -1873,70 +1873,70 @@ program is interrupted.</p>
 <span class="s2">    - uninstall: Uninstall a kernelspec.</span>
 
 <span class="s2">Tips:</span>
-<span class="s2">    - Pass the flag &#39;--user&#39; to install/uninstall using the user profile. </span>
+<span class="s2">    - Pass the flag '--user' to install/uninstall using the user profile. </span>
 <span class="s2">    - See `--help-all` for all configuration options available.</span>
 <span class="s2">    - When starting from command line, add `--log-level=INFO` to show logged output. </span>
-<span class="s2">&quot;&quot;&quot;</span>
-    <span class="n">epilog</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="s2">"""</span>
+    <span class="n">epilog</span> <span class="o">=</span> <span class="s2">""</span>
 
     <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
-        <span class="n">prog</span><span class="o">=</span><span class="s2">&quot;async-kernel&quot;</span><span class="p">,</span>
-        <span class="c1"># usage=&quot;async-kernel &lt;optional command&gt; options ...&quot;,</span>
+        <span class="n">prog</span><span class="o">=</span><span class="s2">"async-kernel"</span><span class="p">,</span>
+        <span class="c1"># usage="async-kernel &lt;optional command&gt; options ...",</span>
         <span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
         <span class="n">epilog</span><span class="o">=</span><span class="n">epilog</span><span class="p">,</span>
         <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-l&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--list&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;list&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;list the kernels installed. Accepts one of the config options `--user` `--path` `--prefix`&quot;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="s2">"-l"</span><span class="p">,</span>
+        <span class="s2">"--list"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"list"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"list the kernels installed. Accepts one of the config options `--user` `--path` `--prefix`"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-n&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--name&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;The kernel name.&quot;</span><span class="p">,</span>
-        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;async&quot;</span><span class="p">,</span>
+        <span class="s2">"-n"</span><span class="p">,</span>
+        <span class="s2">"--name"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"name"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"The kernel name."</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">"async"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-u&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--user&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;user&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Select the user directory.&quot;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="s2">"-u"</span><span class="p">,</span>
+        <span class="s2">"--user"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"user"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Select the user directory."</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;-V&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;--version&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;version&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Print version.&quot;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="s2">"-V"</span><span class="p">,</span>
+        <span class="s2">"--version"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"version"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Print version."</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--help-all&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;help_all&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Print help all.&quot;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="s2">"--help-all"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"help_all"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Print help all."</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--show-config&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;show_config&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Prints configuration.&quot;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="s2">"--show-config"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"show_config"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Prints configuration."</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--show-config-json&quot;</span><span class="p">,</span>
-        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;show_config_json&quot;</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Print configuration in json format.&quot;</span><span class="p">,</span>
-        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="s2">"--show-config-json"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"show_config_json"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Print configuration in json format."</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">args</span><span class="p">,</span> <span class="n">unknownargs</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">()</span>
 
-    <span class="c1"># Check for the &#39;start&#39; command</span>
+    <span class="c1"># Check for the 'start' command</span>
     <span class="k">if</span> <span class="n">unknownargs</span> <span class="ow">and</span> <span class="n">unknownargs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Mode</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">Mode</span><span class="o">.</span><span class="n">install</span><span class="p">,</span> <span class="n">Mode</span><span class="o">.</span><span class="n">uninstall</span><span class="p">]:</span>
         <span class="n">mode</span> <span class="o">=</span> <span class="n">Mode</span><span class="p">(</span><span class="n">unknownargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
@@ -1951,37 +1951,37 @@ program is interrupted.</p>
     <span class="k">match</span> <span class="n">mode</span><span class="p">:</span>
         <span class="k">case</span> <span class="n">Mode</span><span class="o">.</span><span class="n">install</span><span class="p">:</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">write_kernel_spec</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">flags</span><span class="p">,</span> <span class="o">**</span><span class="n">settings</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Installed kernelspec </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Installed kernelspec </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">case</span> <span class="n">Mode</span><span class="o">.</span><span class="n">uninstall</span><span class="p">:</span>
             <span class="n">kernel_dir</span> <span class="o">=</span> <span class="n">get_kernel_dir</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">settings</span><span class="p">)</span>
             <span class="n">remove_kernelspec</span><span class="p">(</span><span class="n">kernel_dir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Uninstalled kernelspec </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="si">!r}</span><span class="s2"> from </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">kernel_dir</span><span class="p">)</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Uninstalled kernelspec </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span><span class="si">!r}</span><span class="s2"> from </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">kernel_dir</span><span class="p">)</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">case</span> <span class="n">Mode</span><span class="o">.</span><span class="n">list</span><span class="p">:</span>
             <span class="n">kernel_dir</span> <span class="o">=</span> <span class="n">get_kernel_dir</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="o">**</span><span class="n">settings</span><span class="p">)</span>
             <span class="n">kernels</span> <span class="o">=</span> <span class="n">get_kernel_info</span><span class="p">(</span><span class="n">kernel_dir</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">kernels</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No kernels found in the folder </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">kernel_dir</span><span class="p">)</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"No kernels found in the folder </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">kernel_dir</span><span class="p">)</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="n">kernels</span><span class="p">))</span>
                 <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">kernels</span><span class="p">)</span>
-                <span class="n">header</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Found </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2"> kernel</span><span class="si">{</span><span class="s1">&#39;s&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;&#39;</span><span class="si">}</span><span class="s2"> found in the directory&quot;</span>
+                <span class="n">header</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Found </span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s2"> kernel</span><span class="si">{</span><span class="s1">'s'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">''</span><span class="si">}</span><span class="s2"> found in the directory"</span>
                 <span class="n">n</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">kernel_dir</span><span class="p">)),</span> <span class="nb">len</span><span class="p">(</span><span class="n">header</span><span class="p">)))</span> <span class="o">+</span> <span class="mi">5</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;─&#39;</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'─'</span><span class="si">}</span><span class="s2">"</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">header</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">kernel_dir</span><span class="p">)))</span>
-                <span class="c1"># print(&quot;─&quot; * n)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;Name&#39;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="n">width</span><span class="p">)</span><span class="si">}</span><span class="s2">   Display name&quot;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;─&#39;</span><span class="si">}</span><span class="s2">&quot;</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
+                <span class="c1"># print("─" * n)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'Name'</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="n">width</span><span class="p">)</span><span class="si">}</span><span class="s2">   Display name"</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'─'</span><span class="si">}</span><span class="s2">"</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">kernels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="n">width</span><span class="p">)</span><span class="si">}</span><span class="s2">   </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;display_name&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="n">width</span><span class="p">)</span><span class="si">}</span><span class="s2">   </span><span class="si">{</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'display_name'</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">case</span> <span class="n">Mode</span><span class="o">.</span><span class="n">version</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;async-kernel&quot;</span><span class="p">,</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"async-kernel"</span><span class="p">,</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
         <span class="k">case</span> <span class="n">Mode</span><span class="o">.</span><span class="n">start</span> <span class="o">|</span> <span class="n">Mode</span><span class="o">.</span><span class="n">help_all</span> <span class="o">|</span> <span class="n">Mode</span><span class="o">.</span><span class="n">show_config</span> <span class="o">|</span> <span class="n">Mode</span><span class="o">.</span><span class="n">show_config_json</span><span class="p">:</span>
-            <span class="n">launcher</span><span class="p">:</span> <span class="n">InterfaceStartType</span> <span class="o">=</span> <span class="n">import_launcher</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;launcher&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
-            <span class="n">settings</span><span class="p">[</span><span class="s2">&quot;flags&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flags</span>
+            <span class="n">launcher</span><span class="p">:</span> <span class="n">InterfaceStartType</span> <span class="o">=</span> <span class="n">import_launcher</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"launcher"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+            <span class="n">settings</span><span class="p">[</span><span class="s2">"flags"</span><span class="p">]</span> <span class="o">=</span> <span class="n">flags</span>
             <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">KeyboardInterrupt</span><span class="p">):</span>
                 <span class="n">launcher</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
         <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
@@ -2195,7 +2195,7 @@ program is interrupted.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "content.code.copy", "toc.follow", "navigation.top", "header.autohide", "navigation.footer", "search.suggest", "search.highlight", "navigation.instant", "navigation.indexes", "navigation.path"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../js/timeago.min.js"></script>
       

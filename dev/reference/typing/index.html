@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -4133,7 +4133,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.NoValue" class="headerlink" title="Permanent link">&para;</a></h2>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">NoValue</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Final" href="https://docs.python.org/3/library/typing.html#typing.Final">Final</a></span> <span class="o">=</span> <span class="n"><span title="typing_extensions.Sentinel">Sentinel</span></span><span class="p">(</span><span class="s1">&#39;NoValue&#39;</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">NoValue</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Final" href="https://docs.python.org/3/library/typing.html#typing.Final">Final</a></span> <span class="o">=</span> <span class="n"><span title="typing_extensions.Sentinel">Sentinel</span></span><span class="p">(</span><span class="s1">'NoValue'</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5299,13 +5299,13 @@ viewing the latest version.
 <span class="normal">63</span>
 <span class="normal">64</span>
 <span class="normal">65</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Backend</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An enum of library names corresponding to anyio.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""An enum of library names corresponding to anyio."""</span>
 
-    <span class="n">asyncio</span> <span class="o">=</span> <span class="s2">&quot;asyncio&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An asyncio style event loop.&quot;&quot;&quot;</span>
+    <span class="n">asyncio</span> <span class="o">=</span> <span class="s2">"asyncio"</span>
+<span class="w">    </span><span class="sd">"""An asyncio style event loop."""</span>
 
-    <span class="n">trio</span> <span class="o">=</span> <span class="s2">&quot;trio&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A trio style event loop.&quot;&quot;&quot;</span>
+    <span class="n">trio</span> <span class="o">=</span> <span class="s2">"trio"</span>
+<span class="w">    </span><span class="sd">"""A trio style event loop."""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -5333,7 +5333,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Backend.asyncio" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">asyncio</span> <span class="o">=</span> <span class="s1">&#39;asyncio&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">asyncio</span> <span class="o">=</span> <span class="s1">'asyncio'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5382,7 +5382,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Backend.trio" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">trio</span> <span class="o">=</span> <span class="s1">&#39;trio&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">trio</span> <span class="o">=</span> <span class="s1">'trio'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5441,8 +5441,12 @@ viewing the latest version.
       <a href="../caller/#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../caller/#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../caller/#async_kernel.caller.Caller.host"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;host</a>
   </span>
 
       </li>
@@ -5683,24 +5687,24 @@ viewing the latest version.
 <span class="normal">88</span>
 <span class="normal">89</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@final</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Hosts</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An enum of host names that are available in [async_kernel.event_loop.run.run][].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""An enum of host names that are available in [async_kernel.event_loop.run.run][]."""</span>
 
-    <span class="n">tk</span> <span class="o">=</span> <span class="s2">&quot;tk&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An eventloop for [tkinter][].&quot;&quot;&quot;</span>
+    <span class="n">tk</span> <span class="o">=</span> <span class="s2">"tk"</span>
+<span class="w">    </span><span class="sd">"""An eventloop for [tkinter][]."""</span>
 
-    <span class="n">qt</span> <span class="o">=</span> <span class="s2">&quot;qt&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An event loop for [Qt](https://wiki.qt.io/Qt_for_Python).&quot;&quot;&quot;</span>
+    <span class="n">qt</span> <span class="o">=</span> <span class="s2">"qt"</span>
+<span class="w">    </span><span class="sd">"""An event loop for [Qt](https://wiki.qt.io/Qt_for_Python)."""</span>
 
-    <span class="n">custom</span> <span class="o">=</span> <span class="s2">&quot;custom&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A custom host.&quot;&quot;&quot;</span>
+    <span class="n">custom</span> <span class="o">=</span> <span class="s2">"custom"</span>
+<span class="w">    </span><span class="sd">"""A custom host."""</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_gui</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">gui</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hosts</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform a matplotlib gui type to a host name if possible.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Transform a matplotlib gui type to a host name if possible."""</span>
         <span class="k">if</span> <span class="n">gui</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">gui</span> <span class="o">==</span> <span class="s2">&quot;tk&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">gui</span> <span class="o">==</span> <span class="s2">"tk"</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">Hosts</span><span class="o">.</span><span class="n">tk</span>
-            <span class="k">if</span> <span class="n">gui</span> <span class="o">==</span> <span class="s2">&quot;qt&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">gui</span> <span class="o">==</span> <span class="s2">"qt"</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">Hosts</span><span class="o">.</span><span class="n">qt</span>
         <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
@@ -5730,7 +5734,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Hosts.tk" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">tk</span> <span class="o">=</span> <span class="s1">&#39;tk&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">tk</span> <span class="o">=</span> <span class="s1">'tk'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5756,7 +5760,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Hosts.qt" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">qt</span> <span class="o">=</span> <span class="s1">&#39;qt&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">qt</span> <span class="o">=</span> <span class="s1">'qt'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5782,7 +5786,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Hosts.custom" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">custom</span> <span class="o">=</span> <span class="s1">&#39;custom&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">custom</span> <span class="o">=</span> <span class="s1">'custom'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5830,11 +5834,11 @@ viewing the latest version.
 <span class="normal">88</span>
 <span class="normal">89</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_gui</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">gui</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Hosts</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transform a matplotlib gui type to a host name if possible.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Transform a matplotlib gui type to a host name if possible."""</span>
     <span class="k">if</span> <span class="n">gui</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">gui</span> <span class="o">==</span> <span class="s2">&quot;tk&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">gui</span> <span class="o">==</span> <span class="s2">"tk"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">Hosts</span><span class="o">.</span><span class="n">tk</span>
-        <span class="k">if</span> <span class="n">gui</span> <span class="o">==</span> <span class="s2">&quot;qt&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">gui</span> <span class="o">==</span> <span class="s2">"qt"</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">Hosts</span><span class="o">.</span><span class="n">qt</span>
     <span class="k">return</span> <span class="kc">None</span>
 </code></pre></div></td></tr></table></div>
@@ -6051,18 +6055,18 @@ viewing the latest version.
 <span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Channel</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An enum of channel names [Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""An enum of channel names [Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction)."""</span>
 
-    <span class="n">heartbeat</span> <span class="o">=</span> <span class="s2">&quot;hb&quot;</span>
-    <span class="s2">&quot;&quot;</span>
-    <span class="n">shell</span> <span class="o">=</span> <span class="s2">&quot;shell&quot;</span>
-    <span class="s2">&quot;&quot;</span>
-    <span class="n">stdin</span> <span class="o">=</span> <span class="s2">&quot;stdin&quot;</span>
-    <span class="s2">&quot;&quot;</span>
-    <span class="n">control</span> <span class="o">=</span> <span class="s2">&quot;control&quot;</span>
-    <span class="s2">&quot;&quot;</span>
-    <span class="n">iopub</span> <span class="o">=</span> <span class="s2">&quot;iopub&quot;</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="n">heartbeat</span> <span class="o">=</span> <span class="s2">"hb"</span>
+    <span class="s2">""</span>
+    <span class="n">shell</span> <span class="o">=</span> <span class="s2">"shell"</span>
+    <span class="s2">""</span>
+    <span class="n">stdin</span> <span class="o">=</span> <span class="s2">"stdin"</span>
+    <span class="s2">""</span>
+    <span class="n">control</span> <span class="o">=</span> <span class="s2">"control"</span>
+    <span class="s2">""</span>
+    <span class="n">iopub</span> <span class="o">=</span> <span class="s2">"iopub"</span>
+    <span class="s2">""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -6090,7 +6094,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Channel.heartbeat" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">heartbeat</span> <span class="o">=</span> <span class="s1">&#39;hb&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">heartbeat</span> <span class="o">=</span> <span class="s1">'hb'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6114,7 +6118,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Channel.shell" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">shell</span> <span class="o">=</span> <span class="s1">&#39;shell&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">shell</span> <span class="o">=</span> <span class="s1">'shell'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6250,7 +6254,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Channel.stdin" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">stdin</span> <span class="o">=</span> <span class="s1">&#39;stdin&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">stdin</span> <span class="o">=</span> <span class="s1">'stdin'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6274,7 +6278,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Channel.control" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">control</span> <span class="o">=</span> <span class="s1">&#39;control&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">control</span> <span class="o">=</span> <span class="s1">'control'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6396,7 +6400,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Channel.iopub" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub</span> <span class="o">=</span> <span class="s1">&#39;iopub&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub</span> <span class="o">=</span> <span class="s1">'iopub'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6613,7 +6617,7 @@ viewing the latest version.
 <span class="normal">180</span>
 <span class="normal">181</span>
 <span class="normal">182</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunMode</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An Enum of the run modes available for handling `execute_request` messages.</span>
+<span class="w">    </span><span class="sd">"""An Enum of the run modes available for handling `execute_request` messages.</span>
 
 <span class="sd">    Cell overrides:</span>
 <span class="sd">        The user can also specify an execution mode in execute requests.</span>
@@ -6627,11 +6631,11 @@ viewing the latest version.
 <span class="sd">            ```python</span>
 <span class="sd">            # thread</span>
 <span class="sd">            ```</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;# </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"# </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -6643,51 +6647,51 @@ viewing the latest version.
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_runmode</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">T</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span> <span class="o">|</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CallerCreateOptions</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Converts value to `Runmode`, `CallerCreateOptions` or  default where it is not possible.</span>
+<span class="w">        </span><span class="sd">"""Converts value to `Runmode`, `CallerCreateOptions` or  default where it is not possible.</span>
 
 <span class="sd">        `CallerCreateOptions` will only return when a string is passed specifying a thread and options.</span>
 
 <span class="sd">        Example:</span>
-<span class="sd">            `value = &quot;# thread name=&#39;My exeecutor&#39; backend=trio`</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            `value = "# thread name='My exeecutor' backend=trio`</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;# &quot;</span><span class="p">,</span> <span class="s2">&quot;##&quot;</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">"# "</span><span class="p">,</span> <span class="s2">"##"</span><span class="p">)):</span>
                     <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_runmode</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">default</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;thread&quot;</span><span class="p">):</span>
-                    <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">line_to_options</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;thread&quot;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"thread"</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">line_to_options</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">"thread"</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">default</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">line_to_options</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CallerCreateOptions</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert the line string to CallerCreateOptions.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Convert the line string to CallerCreateOptions."""</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>  <span class="c1"># noqa: PLC0415</span>
 
         <span class="n">items</span> <span class="o">=</span> <span class="n">CallerCreateOptions</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
-            <span class="n">k</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">k</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"="</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">items</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                 <span class="n">items</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
-        <span class="k">if</span> <span class="n">items</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">items</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">):</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&#39;name&#39; must be specified when providing settings!&quot;</span>
+        <span class="k">if</span> <span class="n">items</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">items</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">"'name' must be specified when providing settings!"</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">invalid</span> <span class="o">:=</span> <span class="nb">set</span><span class="p">(</span><span class="n">items</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">get_annotations</span><span class="p">(</span><span class="n">CallerCreateOptions</span><span class="p">)):</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;One or more invalid options found! valid=</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">get_annotations</span><span class="p">(</span><span class="n">CallerCreateOptions</span><span class="p">))</span><span class="si">}</span><span class="s2"> invalid=</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">invalid</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"One or more invalid options found! valid=</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">get_annotations</span><span class="p">(</span><span class="n">CallerCreateOptions</span><span class="p">))</span><span class="si">}</span><span class="s2"> invalid=</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">invalid</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">items</span>
 
-    <span class="n">queue</span> <span class="o">=</span> <span class="s2">&quot;queue&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the message handler using [async_kernel.caller.Caller.queue_call][].&quot;&quot;&quot;</span>
+    <span class="n">queue</span> <span class="o">=</span> <span class="s2">"queue"</span>
+<span class="w">    </span><span class="sd">"""Run the message handler using [async_kernel.caller.Caller.queue_call][]."""</span>
 
-    <span class="n">task</span> <span class="o">=</span> <span class="s2">&quot;task&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the message handler using [async_kernel.caller.Caller.call_soon][].&quot;&quot;&quot;</span>
+    <span class="n">task</span> <span class="o">=</span> <span class="s2">"task"</span>
+<span class="w">    </span><span class="sd">"""Run the message handler using [async_kernel.caller.Caller.call_soon][]."""</span>
 
-    <span class="n">thread</span> <span class="o">=</span> <span class="s2">&quot;thread&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the message handler using [async_kernel.caller.Caller.to_thread][].&quot;&quot;&quot;</span>
+    <span class="n">thread</span> <span class="o">=</span> <span class="s2">"thread"</span>
+<span class="w">    </span><span class="sd">"""Run the message handler using [async_kernel.caller.Caller.to_thread][]."""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -6715,7 +6719,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.RunMode.queue" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">queue</span> <span class="o">=</span> <span class="s1">&#39;queue&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">queue</span> <span class="o">=</span> <span class="s1">'queue'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6741,7 +6745,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.RunMode.task" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">task</span> <span class="o">=</span> <span class="s1">&#39;task&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">task</span> <span class="o">=</span> <span class="s1">'task'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6767,7 +6771,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.RunMode.thread" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">thread</span> <span class="o">=</span> <span class="s1">&#39;thread&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">thread</span> <span class="o">=</span> <span class="s1">'thread'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6830,21 +6834,21 @@ viewing the latest version.
 <span class="normal">152</span>
 <span class="normal">153</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">to_runmode</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">T</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span> <span class="o">|</span> <span class="n">T</span> <span class="o">|</span> <span class="n">CallerCreateOptions</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts value to `Runmode`, `CallerCreateOptions` or  default where it is not possible.</span>
+<span class="w">    </span><span class="sd">"""Converts value to `Runmode`, `CallerCreateOptions` or  default where it is not possible.</span>
 
 <span class="sd">    `CallerCreateOptions` will only return when a string is passed specifying a thread and options.</span>
 
 <span class="sd">    Example:</span>
-<span class="sd">        `value = &quot;# thread name=&#39;My exeecutor&#39; backend=trio`</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        `value = "# thread name='My exeecutor' backend=trio`</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;# &quot;</span><span class="p">,</span> <span class="s2">&quot;##&quot;</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">"# "</span><span class="p">,</span> <span class="s2">"##"</span><span class="p">)):</span>
                 <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">to_runmode</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">default</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;thread&quot;</span><span class="p">):</span>
-                <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">line_to_options</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">&quot;thread&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"thread"</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">line_to_options</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">removeprefix</span><span class="p">(</span><span class="s2">"thread"</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">default</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -6895,21 +6899,21 @@ viewing the latest version.
 <span class="normal">172</span>
 <span class="normal">173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">line_to_options</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CallerCreateOptions</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert the line string to CallerCreateOptions.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Convert the line string to CallerCreateOptions."""</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>  <span class="c1"># noqa: PLC0415</span>
 
     <span class="n">items</span> <span class="o">=</span> <span class="n">CallerCreateOptions</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
-        <span class="n">k</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">k</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"="</span><span class="p">,</span> <span class="n">maxsplit</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">items</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="n">items</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
-    <span class="k">if</span> <span class="n">items</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">items</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">):</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&#39;name&#39; must be specified when providing settings!&quot;</span>
+    <span class="k">if</span> <span class="n">items</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">items</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"name"</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">"'name' must be specified when providing settings!"</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">invalid</span> <span class="o">:=</span> <span class="nb">set</span><span class="p">(</span><span class="n">items</span><span class="p">)</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">get_annotations</span><span class="p">(</span><span class="n">CallerCreateOptions</span><span class="p">)):</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;One or more invalid options found! valid=</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">get_annotations</span><span class="p">(</span><span class="n">CallerCreateOptions</span><span class="p">))</span><span class="si">}</span><span class="s2"> invalid=</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">invalid</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"One or more invalid options found! valid=</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">get_annotations</span><span class="p">(</span><span class="n">CallerCreateOptions</span><span class="p">))</span><span class="si">}</span><span class="s2"> invalid=</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">invalid</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">items</span>
 </code></pre></div></td></tr></table></div>
@@ -7591,126 +7595,126 @@ viewing the latest version.
 <span class="normal">303</span>
 <span class="normal">304</span>
 <span class="normal">305</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MsgType</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An enumeration of Message `msg_type` for [shell and control messages]( https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-shell-router-dealer-channel).</span>
+<span class="w">    </span><span class="sd">"""An enumeration of Message `msg_type` for [shell and control messages]( https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-shell-router-dealer-channel).</span>
 
 <span class="sd">    Some message types are on the [control channel](https://jupyter-client.readthedocs.io/en/stable/messaging.html#messages-on-the-control-router-dealer-channel) only.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">kernel_info_request</span> <span class="o">=</span> <span class="s2">&quot;kernel_info_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.kernel_info_request][]&quot;&quot;&quot;</span>
+    <span class="n">kernel_info_request</span> <span class="o">=</span> <span class="s2">"kernel_info_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.kernel_info_request][]"""</span>
 
-    <span class="n">comm_info_request</span> <span class="o">=</span> <span class="s2">&quot;comm_info_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.comm_info_request][]&quot;&quot;&quot;</span>
+    <span class="n">comm_info_request</span> <span class="o">=</span> <span class="s2">"comm_info_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.comm_info_request][]"""</span>
 
-    <span class="n">execute_request</span> <span class="o">=</span> <span class="s2">&quot;execute_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.execute_request][]&quot;&quot;&quot;</span>
+    <span class="n">execute_request</span> <span class="o">=</span> <span class="s2">"execute_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.execute_request][]"""</span>
 
-    <span class="n">complete_request</span> <span class="o">=</span> <span class="s2">&quot;complete_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.complete_request][]&quot;&quot;&quot;</span>
+    <span class="n">complete_request</span> <span class="o">=</span> <span class="s2">"complete_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.complete_request][]"""</span>
 
-    <span class="n">is_complete_request</span> <span class="o">=</span> <span class="s2">&quot;is_complete_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.is_complete_request][]&quot;&quot;&quot;</span>
+    <span class="n">is_complete_request</span> <span class="o">=</span> <span class="s2">"is_complete_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.is_complete_request][]"""</span>
 
-    <span class="n">inspect_request</span> <span class="o">=</span> <span class="s2">&quot;inspect_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.inspect_request][]&quot;&quot;&quot;</span>
+    <span class="n">inspect_request</span> <span class="o">=</span> <span class="s2">"inspect_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.inspect_request][]"""</span>
 
-    <span class="n">history_request</span> <span class="o">=</span> <span class="s2">&quot;history_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.history_request][]&quot;&quot;&quot;</span>
+    <span class="n">history_request</span> <span class="o">=</span> <span class="s2">"history_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.history_request][]"""</span>
 
-    <span class="n">comm_open</span> <span class="o">=</span> <span class="s2">&quot;comm_open&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.comm_open][]&quot;&quot;&quot;</span>
+    <span class="n">comm_open</span> <span class="o">=</span> <span class="s2">"comm_open"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.comm_open][]"""</span>
 
-    <span class="n">comm_msg</span> <span class="o">=</span> <span class="s2">&quot;comm_msg&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.comm_msg][]&quot;&quot;&quot;</span>
+    <span class="n">comm_msg</span> <span class="o">=</span> <span class="s2">"comm_msg"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.comm_msg][]"""</span>
 
-    <span class="n">comm_close</span> <span class="o">=</span> <span class="s2">&quot;comm_close&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.comm_close][]&quot;&quot;&quot;</span>
+    <span class="n">comm_close</span> <span class="o">=</span> <span class="s2">"comm_close"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.comm_close][]"""</span>
 
     <span class="c1"># Control</span>
-    <span class="n">interrupt_request</span> <span class="o">=</span> <span class="s2">&quot;interrupt_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.interrupt_request][] (control channel only)&quot;&quot;&quot;</span>
+    <span class="n">interrupt_request</span> <span class="o">=</span> <span class="s2">"interrupt_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.interrupt_request][] (control channel only)"""</span>
 
-    <span class="n">shutdown_request</span> <span class="o">=</span> <span class="s2">&quot;shutdown_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.shutdown_request][] (control channel only)&quot;&quot;&quot;</span>
+    <span class="n">shutdown_request</span> <span class="o">=</span> <span class="s2">"shutdown_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.shutdown_request][] (control channel only)"""</span>
 
-    <span class="n">debug_request</span> <span class="o">=</span> <span class="s2">&quot;debug_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.debug_request][] (control channel only)&quot;&quot;&quot;</span>
+    <span class="n">debug_request</span> <span class="o">=</span> <span class="s2">"debug_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.debug_request][] (control channel only)"""</span>
 
-    <span class="n">create_subshell_request</span> <span class="o">=</span> <span class="s2">&quot;create_subshell_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.create_subshell_request][] (control channel only)&quot;&quot;&quot;</span>
+    <span class="n">create_subshell_request</span> <span class="o">=</span> <span class="s2">"create_subshell_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.create_subshell_request][] (control channel only)"""</span>
 
-    <span class="n">delete_subshell_request</span> <span class="o">=</span> <span class="s2">&quot;delete_subshell_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.delete_subshell_request][] (control channel only)&quot;&quot;&quot;</span>
+    <span class="n">delete_subshell_request</span> <span class="o">=</span> <span class="s2">"delete_subshell_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.delete_subshell_request][] (control channel only)"""</span>
 
-    <span class="n">list_subshell_request</span> <span class="o">=</span> <span class="s2">&quot;list_subshell_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[async_kernel.kernel.Kernel.debug_request][] (control channel only)&quot;&quot;&quot;</span>
+    <span class="n">list_subshell_request</span> <span class="o">=</span> <span class="s2">"list_subshell_request"</span>
+<span class="w">    </span><span class="sd">"""[async_kernel.kernel.Kernel.debug_request][] (control channel only)"""</span>
 
     <span class="c1"># Reverse messaging (kernel -&gt; client)</span>
-    <span class="n">input_request</span> <span class="o">=</span> <span class="s2">&quot;input_request&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A message sent from the kernel interface to a client asking for raw input.&quot;&quot;&quot;</span>
+    <span class="n">input_request</span> <span class="o">=</span> <span class="s2">"input_request"</span>
+<span class="w">    </span><span class="sd">"""A message sent from the kernel interface to a client asking for raw input."""</span>
 
     <span class="c1"># iopub messages (kernel -&gt; client</span>
 
-    <span class="n">iopub_welcome</span> <span class="o">=</span> <span class="s2">&quot;iopub_welcome&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A welcome message on the iopub channel for new iopub channel subscriptions.&quot;&quot;&quot;</span>
+    <span class="n">iopub_welcome</span> <span class="o">=</span> <span class="s2">"iopub_welcome"</span>
+<span class="w">    </span><span class="sd">"""A welcome message on the iopub channel for new iopub channel subscriptions."""</span>
 
-    <span class="n">iopub_status</span> <span class="o">=</span> <span class="s2">&quot;status&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An iopub message about a handlers status which can be &#39;busy&#39; or &#39;idle&#39;.&quot;&quot;&quot;</span>
+    <span class="n">iopub_status</span> <span class="o">=</span> <span class="s2">"status"</span>
+<span class="w">    </span><span class="sd">"""An iopub message about a handlers status which can be 'busy' or 'idle'."""</span>
 
-    <span class="n">iopub_execute_input</span> <span class="o">=</span> <span class="s2">&quot;execute_input&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An iopub message with detail of an execute request.&quot;&quot;&quot;</span>
+    <span class="n">iopub_execute_input</span> <span class="o">=</span> <span class="s2">"execute_input"</span>
+<span class="w">    </span><span class="sd">"""An iopub message with detail of an execute request."""</span>
 
-    <span class="n">iopub_execute_result</span> <span class="o">=</span> <span class="s2">&quot;execute_result&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An iopub message with for the global display hook. Generally the last executed line of an execute request.&quot;&quot;&quot;</span>
+    <span class="n">iopub_execute_result</span> <span class="o">=</span> <span class="s2">"execute_result"</span>
+<span class="w">    </span><span class="sd">"""An iopub message with for the global display hook. Generally the last executed line of an execute request."""</span>
 
-    <span class="n">iopub_error</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An iopub message for an error.&quot;&quot;&quot;</span>
+    <span class="n">iopub_error</span> <span class="o">=</span> <span class="s2">"error"</span>
+<span class="w">    </span><span class="sd">"""An iopub message for an error."""</span>
 
-    <span class="n">iopub_stream</span> <span class="o">=</span> <span class="s2">&quot;stream&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Stream data such as stdout and stderr.&quot;&quot;&quot;</span>
+    <span class="n">iopub_stream</span> <span class="o">=</span> <span class="s2">"stream"</span>
+<span class="w">    </span><span class="sd">"""Stream data such as stdout and stderr."""</span>
 
-    <span class="n">iopub_display_data</span> <span class="o">=</span> <span class="s2">&quot;display_data&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An iopub message with display output data.&quot;&quot;&quot;</span>
+    <span class="n">iopub_display_data</span> <span class="o">=</span> <span class="s2">"display_data"</span>
+<span class="w">    </span><span class="sd">"""An iopub message with display output data."""</span>
 
-    <span class="n">iopub_update_display_data</span> <span class="o">=</span> <span class="s2">&quot;iopub_update_display_data&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An iopub message to update display data.&quot;&quot;&quot;</span>
+    <span class="n">iopub_update_display_data</span> <span class="o">=</span> <span class="s2">"iopub_update_display_data"</span>
+<span class="w">    </span><span class="sd">"""An iopub message to update display data."""</span>
 
-    <span class="n">iopub_clear_output</span> <span class="o">=</span> <span class="s2">&quot;clear_output&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An iopub display message instructing the associated display to clear.&quot;&quot;&quot;</span>
+    <span class="n">iopub_clear_output</span> <span class="o">=</span> <span class="s2">"clear_output"</span>
+<span class="w">    </span><span class="sd">"""An iopub display message instructing the associated display to clear."""</span>
 
-    <span class="n">debug_event</span> <span class="o">=</span> <span class="s2">&quot;debug_event&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;An event published by an attached debug adapter.&quot;&quot;&quot;</span>
+    <span class="n">debug_event</span> <span class="o">=</span> <span class="s2">"debug_event"</span>
+<span class="w">    </span><span class="sd">"""An event published by an attached debug adapter."""</span>
 
     <span class="c1"># Reply messages (kernel -&gt; client)</span>
-    <span class="n">kernel_info_reply</span> <span class="o">=</span> <span class="s2">&quot;kernel_info_reply&quot;</span>
+    <span class="n">kernel_info_reply</span> <span class="o">=</span> <span class="s2">"kernel_info_reply"</span>
 
-    <span class="n">comm_info_reply</span> <span class="o">=</span> <span class="s2">&quot;comm_info_reply&quot;</span>
+    <span class="n">comm_info_reply</span> <span class="o">=</span> <span class="s2">"comm_info_reply"</span>
 
-    <span class="n">execute_reply</span> <span class="o">=</span> <span class="s2">&quot;execute_reply&quot;</span>
+    <span class="n">execute_reply</span> <span class="o">=</span> <span class="s2">"execute_reply"</span>
 
-    <span class="n">complete_reply</span> <span class="o">=</span> <span class="s2">&quot;complete_reply&quot;</span>
+    <span class="n">complete_reply</span> <span class="o">=</span> <span class="s2">"complete_reply"</span>
 
-    <span class="n">is_complete_reply</span> <span class="o">=</span> <span class="s2">&quot;is_complete_reply&quot;</span>
+    <span class="n">is_complete_reply</span> <span class="o">=</span> <span class="s2">"is_complete_reply"</span>
 
-    <span class="n">inspect_reply</span> <span class="o">=</span> <span class="s2">&quot;inspect_reply&quot;</span>
+    <span class="n">inspect_reply</span> <span class="o">=</span> <span class="s2">"inspect_reply"</span>
 
-    <span class="n">history_reply</span> <span class="o">=</span> <span class="s2">&quot;history_reply&quot;</span>
+    <span class="n">history_reply</span> <span class="o">=</span> <span class="s2">"history_reply"</span>
 
-    <span class="n">interrupt_reply</span> <span class="o">=</span> <span class="s2">&quot;interrupt_reply&quot;</span>
+    <span class="n">interrupt_reply</span> <span class="o">=</span> <span class="s2">"interrupt_reply"</span>
 
-    <span class="n">shutdown_reply</span> <span class="o">=</span> <span class="s2">&quot;shutdown_reply&quot;</span>
+    <span class="n">shutdown_reply</span> <span class="o">=</span> <span class="s2">"shutdown_reply"</span>
 
-    <span class="n">debug_reply</span> <span class="o">=</span> <span class="s2">&quot;debug_reply&quot;</span>
+    <span class="n">debug_reply</span> <span class="o">=</span> <span class="s2">"debug_reply"</span>
 
-    <span class="n">create_subshell_reply</span> <span class="o">=</span> <span class="s2">&quot;create_subshell_reply&quot;</span>
+    <span class="n">create_subshell_reply</span> <span class="o">=</span> <span class="s2">"create_subshell_reply"</span>
 
-    <span class="n">delete_subshell_reply</span> <span class="o">=</span> <span class="s2">&quot;delete_subshell_reply&quot;</span>
+    <span class="n">delete_subshell_reply</span> <span class="o">=</span> <span class="s2">"delete_subshell_reply"</span>
 
-    <span class="n">list_subshell_reply</span> <span class="o">=</span> <span class="s2">&quot;list_subshell_reply&quot;</span>
+    <span class="n">list_subshell_reply</span> <span class="o">=</span> <span class="s2">"list_subshell_reply"</span>
 
     <span class="c1"># Reverse reply (client -&gt; kernel)</span>
-    <span class="n">input_reply</span> <span class="o">=</span> <span class="s2">&quot;input_reply&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A reply sent from the client to a kernel interface corresponding to an input request.&quot;&quot;&quot;</span>
+    <span class="n">input_reply</span> <span class="o">=</span> <span class="s2">"input_reply"</span>
+<span class="w">    </span><span class="sd">"""A reply sent from the client to a kernel interface corresponding to an input request."""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -7738,7 +7742,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.kernel_info_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">kernel_info_request</span> <span class="o">=</span> <span class="s1">&#39;kernel_info_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">kernel_info_request</span> <span class="o">=</span> <span class="s1">'kernel_info_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7769,7 +7773,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.comm_info_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">comm_info_request</span> <span class="o">=</span> <span class="s1">&#39;comm_info_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">comm_info_request</span> <span class="o">=</span> <span class="s1">'comm_info_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7800,7 +7804,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.execute_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">execute_request</span> <span class="o">=</span> <span class="s1">&#39;execute_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">execute_request</span> <span class="o">=</span> <span class="s1">'execute_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7831,7 +7835,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.complete_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">complete_request</span> <span class="o">=</span> <span class="s1">&#39;complete_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">complete_request</span> <span class="o">=</span> <span class="s1">'complete_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7862,7 +7866,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.is_complete_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">is_complete_request</span> <span class="o">=</span> <span class="s1">&#39;is_complete_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">is_complete_request</span> <span class="o">=</span> <span class="s1">'is_complete_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7893,7 +7897,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.inspect_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">inspect_request</span> <span class="o">=</span> <span class="s1">&#39;inspect_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">inspect_request</span> <span class="o">=</span> <span class="s1">'inspect_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7924,7 +7928,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.history_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">history_request</span> <span class="o">=</span> <span class="s1">&#39;history_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">history_request</span> <span class="o">=</span> <span class="s1">'history_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7955,7 +7959,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.comm_open" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">comm_open</span> <span class="o">=</span> <span class="s1">&#39;comm_open&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">comm_open</span> <span class="o">=</span> <span class="s1">'comm_open'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8013,7 +8017,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.comm_msg" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">comm_msg</span> <span class="o">=</span> <span class="s1">&#39;comm_msg&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">comm_msg</span> <span class="o">=</span> <span class="s1">'comm_msg'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8071,7 +8075,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.comm_close" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">comm_close</span> <span class="o">=</span> <span class="s1">&#39;comm_close&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">comm_close</span> <span class="o">=</span> <span class="s1">'comm_close'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8129,7 +8133,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.interrupt_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">interrupt_request</span> <span class="o">=</span> <span class="s1">&#39;interrupt_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">interrupt_request</span> <span class="o">=</span> <span class="s1">'interrupt_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8160,7 +8164,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.shutdown_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">shutdown_request</span> <span class="o">=</span> <span class="s1">&#39;shutdown_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">shutdown_request</span> <span class="o">=</span> <span class="s1">'shutdown_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8191,7 +8195,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.debug_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">debug_request</span> <span class="o">=</span> <span class="s1">&#39;debug_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">debug_request</span> <span class="o">=</span> <span class="s1">'debug_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8222,7 +8226,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.create_subshell_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">create_subshell_request</span> <span class="o">=</span> <span class="s1">&#39;create_subshell_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">create_subshell_request</span> <span class="o">=</span> <span class="s1">'create_subshell_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8253,7 +8257,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.delete_subshell_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">delete_subshell_request</span> <span class="o">=</span> <span class="s1">&#39;delete_subshell_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">delete_subshell_request</span> <span class="o">=</span> <span class="s1">'delete_subshell_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8284,7 +8288,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.list_subshell_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">list_subshell_request</span> <span class="o">=</span> <span class="s1">&#39;list_subshell_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">list_subshell_request</span> <span class="o">=</span> <span class="s1">'list_subshell_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8315,7 +8319,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.input_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_request</span> <span class="o">=</span> <span class="s1">&#39;input_request&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_request</span> <span class="o">=</span> <span class="s1">'input_request'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8341,7 +8345,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.iopub_welcome" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_welcome</span> <span class="o">=</span> <span class="s1">&#39;iopub_welcome&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_welcome</span> <span class="o">=</span> <span class="s1">'iopub_welcome'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8367,7 +8371,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.iopub_status" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_status</span> <span class="o">=</span> <span class="s1">&#39;status&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_status</span> <span class="o">=</span> <span class="s1">'status'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8393,7 +8397,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.iopub_execute_input" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_execute_input</span> <span class="o">=</span> <span class="s1">&#39;execute_input&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_execute_input</span> <span class="o">=</span> <span class="s1">'execute_input'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8419,7 +8423,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.iopub_execute_result" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_execute_result</span> <span class="o">=</span> <span class="s1">&#39;execute_result&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_execute_result</span> <span class="o">=</span> <span class="s1">'execute_result'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8445,7 +8449,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.iopub_error" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_error</span> <span class="o">=</span> <span class="s1">&#39;error&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_error</span> <span class="o">=</span> <span class="s1">'error'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8471,7 +8475,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.iopub_stream" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_stream</span> <span class="o">=</span> <span class="s1">&#39;stream&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_stream</span> <span class="o">=</span> <span class="s1">'stream'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8497,7 +8501,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.iopub_display_data" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_display_data</span> <span class="o">=</span> <span class="s1">&#39;display_data&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_display_data</span> <span class="o">=</span> <span class="s1">'display_data'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8523,7 +8527,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.iopub_update_display_data" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_update_display_data</span> <span class="o">=</span> <span class="s1">&#39;iopub_update_display_data&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_update_display_data</span> <span class="o">=</span> <span class="s1">'iopub_update_display_data'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8549,7 +8553,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.iopub_clear_output" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_clear_output</span> <span class="o">=</span> <span class="s1">&#39;clear_output&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">iopub_clear_output</span> <span class="o">=</span> <span class="s1">'clear_output'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8575,7 +8579,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.debug_event" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">debug_event</span> <span class="o">=</span> <span class="s1">&#39;debug_event&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">debug_event</span> <span class="o">=</span> <span class="s1">'debug_event'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8601,7 +8605,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.MsgType.input_reply" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_reply</span> <span class="o">=</span> <span class="s1">&#39;input_reply&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">input_reply</span> <span class="o">=</span> <span class="s1">'input_reply'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8820,18 +8824,18 @@ viewing the latest version.
 <span class="normal">395</span>
 <span class="normal">396</span>
 <span class="normal">397</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Tags</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">StrEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cell tags used in async-kernel.</span>
+<span class="w">    </span><span class="sd">"""Cell tags used in async-kernel.</span>
 
 <span class="sd">    Info:</span>
 <span class="sd">        Tags are can be added per cell.</span>
 
 <span class="sd">        - Jupyter: via the [right side bar](https://jupyterlab.readthedocs.io/en/stable/user/interface.html#left-and-right-sidebar).</span>
 <span class="sd">        - VS Code: via [Jupyter variables explorer](https://code.visualstudio.com/docs/python/jupyter-support-py#_variables-explorer-and-data-viewer)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"-"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"="</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
@@ -8839,14 +8843,14 @@ viewing the latest version.
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">T_fsb</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_fsb</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract the value and convert it to match the type of default using `tag=value`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Extract the value and convert it to match the type of default using `tag=value`."""</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"="</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">default</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span>
+                <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"true"</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
                 <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
@@ -8855,19 +8859,19 @@ viewing the latest version.
                 <span class="k">return</span> <span class="n">value</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">default</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;default must be a one of string, int, float, bool.&quot;</span>  <span class="c1"># pyright: ignore[reportUnreachable]</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">"default must be a one of string, int, float, bool."</span>  <span class="c1"># pyright: ignore[reportUnreachable]</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-    <span class="n">raises_exception</span> <span class="o">=</span> <span class="s2">&quot;raises-exception&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Indicates the cell should expect an exception to be raised. </span>
+    <span class="n">raises_exception</span> <span class="o">=</span> <span class="s2">"raises-exception"</span>
+<span class="w">    </span><span class="sd">"""Indicates the cell should expect an exception to be raised. </span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        - When an exception is raised, stop_on_error is False/</span>
 <span class="sd">        - When an exception is **not** raised an exception will be raise and stop_on_error is True.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">stop_on_error</span> <span class="o">=</span> <span class="s2">&quot;stop-on-error&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="n">stop_on_error</span> <span class="o">=</span> <span class="s2">"stop-on-error"</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Override `stop_on_error`.</span>
 
 <span class="sd">    Examples:</span>
@@ -8877,17 +8881,17 @@ viewing the latest version.
 <span class="sd">            - stop_on_error=True</span>
 <span class="sd">        - False</span>
 <span class="sd">            - stop_on_error=False</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="n">timeout</span> <span class="o">=</span> <span class="s2">&quot;timeout&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="n">timeout</span> <span class="o">=</span> <span class="s2">"timeout"</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Specify a timeout in seconds for code execution to complete.</span>
 
 <span class="sd">    Examples:</span>
 
 <span class="sd">        - timeout=0.0 (no timeout)</span>
 <span class="sd">        - timeout=0.1 (100 ms)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -8915,7 +8919,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Tags.raises_exception" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">raises_exception</span> <span class="o">=</span> <span class="s1">&#39;raises-exception&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">raises_exception</span> <span class="o">=</span> <span class="s1">'raises-exception'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8949,7 +8953,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Tags.stop_on_error" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">stop_on_error</span> <span class="o">=</span> <span class="s1">&#39;stop-on-error&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">stop_on_error</span> <span class="o">=</span> <span class="s1">'stop-on-error'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -8982,7 +8986,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Tags.timeout" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">timeout</span> <span class="o">=</span> <span class="s1">&#39;timeout&#39;</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">timeout</span> <span class="o">=</span> <span class="s1">'timeout'</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -9045,14 +9049,14 @@ viewing the latest version.
 <span class="normal">365</span>
 <span class="normal">366</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_value</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">T_fsb</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_fsb</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract the value and convert it to match the type of default using `tag=value`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Extract the value and convert it to match the type of default using `tag=value`."""</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"="</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">default</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span>
+            <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"true"</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">default</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
@@ -9061,7 +9065,7 @@ viewing the latest version.
             <span class="k">return</span> <span class="n">value</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">default</span>
-    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;default must be a one of string, int, float, bool.&quot;</span>  <span class="c1"># pyright: ignore[reportUnreachable]</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">"default must be a one of string, int, float, bool."</span>  <span class="c1"># pyright: ignore[reportUnreachable]</span>
     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -9120,7 +9124,7 @@ viewing the latest version.
 <span class="normal">406</span>
 <span class="normal">407</span>
 <span class="normal">408</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CallerState</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The State of a [async_kernel.caller.Caller][].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The State of a [async_kernel.caller.Caller][]."""</span>
 
     <span class="n">initial</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
     <span class="n">start_sync</span> <span class="o">=</span> <span class="n">enum</span><span class="o">.</span><span class="n">auto</span><span class="p">()</span>
@@ -9393,22 +9397,22 @@ viewing the latest version.
 <span class="normal">487</span>
 <span class="normal">488</span>
 <span class="normal">489</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MsgHeader</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A [message header](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A [message header](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)."""</span>
 
     <span class="n">msg_id</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">session</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">username</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">date</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="n">MsgType</span> <span class="o">|</span> <span class="nb">str</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">subshell_id</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -9860,28 +9864,28 @@ viewing the latest version.
 <span class="normal">512</span>
 <span class="normal">513</span>
 <span class="normal">514</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Message</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A [message](https://jupyter-client.readthedocs.io/en/stable/messaging.html#general-message-format).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A [message](https://jupyter-client.readthedocs.io/en/stable/messaging.html#general-message-format)."""</span>
 
     <span class="n">channel</span><span class="p">:</span> <span class="n">Channel</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The channel of the message.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The channel of the message."""</span>
 
     <span class="n">header</span><span class="p">:</span> <span class="n">MsgHeader</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)"""</span>
 
     <span class="n">parent_header</span><span class="p">:</span> <span class="n">MsgHeader</span> <span class="o">|</span> <span class="kc">None</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#parent-header)&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#parent-header)"""</span>
 
     <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)"""</span>
 
     <span class="n">content</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="n">Content</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)</span>
+<span class="w">    </span><span class="sd">"""[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)</span>
 
 <span class="sd">    See also:</span>
 <span class="sd">        - [ExecuteContent][]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -10373,19 +10377,19 @@ viewing the latest version.
 <span class="normal">528</span>
 <span class="normal">529</span>
 <span class="normal">530</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Job</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A `Message` request bundle.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A `Message` request bundle."""</span>
 
     <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">T</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The message received over the socket.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The message received over the socket."""</span>
 
     <span class="n">ident</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The ident associated with the message and its origin.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The ident associated with the message and its origin."""</span>
 
     <span class="n">owner</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">MessageProtocol</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A callable that returns the object from which a message originated.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A callable that returns the object from which a message originated."""</span>
 
     <span class="n">received_time</span><span class="p">:</span> <span class="nb">float</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The time the message was received.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The time the message was received."""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -10706,22 +10710,22 @@ viewing the latest version.
 <span class="normal">547</span>
 <span class="normal">548</span>
 <span class="normal">549</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ExecuteContent</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""</span>
 
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The code to execute.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The code to execute."""</span>
     <span class="n">silent</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">store_history</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">user_expressions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">allow_stdin</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">stop_on_error</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">subshell_id</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -11022,12 +11026,12 @@ viewing the latest version.
 <span class="normal">556</span>
 <span class="normal">557</span>
 <span class="normal">558</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FixedCreate</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A TypedDict relevant to Fixed.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A TypedDict relevant to Fixed."""</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">owner</span><span class="p">:</span> <span class="n">S</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -11208,14 +11212,14 @@ viewing the latest version.
 <span class="normal">567</span>
 <span class="normal">568</span>
 <span class="normal">569</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FixedCreated</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">S</span><span class="p">,</span> <span class="n">T</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A TypedDict relevant to Fixed.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A TypedDict relevant to Fixed."""</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">owner</span><span class="p">:</span> <span class="n">S</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
     <span class="n">obj</span><span class="p">:</span> <span class="n">T</span>
-    <span class="s2">&quot;&quot;</span>
+    <span class="s2">""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -11475,24 +11479,24 @@ viewing the latest version.
 <span class="normal">588</span>
 <span class="normal">589</span>
 <span class="normal">590</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">RunSettings</span><span class="p">(</span><span class="n">TypedDict</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A dict of settings to use with [async_kernel.event_loop.run][].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A dict of settings to use with [async_kernel.event_loop.run][]."""</span>
 
-    <span class="n">backend</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">Backend</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;asyncio&quot;</span><span class="p">,</span> <span class="s2">&quot;trio&quot;</span><span class="p">]]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The backend to use for the caller.&quot;&quot;&quot;</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">Backend</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"asyncio"</span><span class="p">,</span> <span class="s2">"trio"</span><span class="p">]]</span>
+<span class="w">    </span><span class="sd">"""The backend to use for the caller."""</span>
 
     <span class="n">backend_options</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The backend options to specify for [anyio.run][] (or `start_guest_run` when a host is specified).</span>
+<span class="w">    </span><span class="sd">"""The backend options to specify for [anyio.run][] (or `start_guest_run` when a host is specified).</span>
 
 <span class="sd">    Tip:</span>
-<span class="sd">        When there is no host and the backend is asyncio. &#39;loop_factory&#39; can be specified as a function</span>
-<span class="sd">        or importable path like `&#39;asyncio.new_event_loop&#39;`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        When there is no host and the backend is asyncio. 'loop_factory' can be specified as a function</span>
+<span class="sd">        or importable path like `'asyncio.new_event_loop'`.</span>
+<span class="sd">    """</span>
 
-    <span class="n">host</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">Hosts</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;tk&quot;</span><span class="p">,</span> <span class="s2">&quot;qt&quot;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The type of host where the backend will run.&quot;&quot;&quot;</span>
+    <span class="n">host</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="n">Hosts</span> <span class="o">|</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"tk"</span><span class="p">,</span> <span class="s2">"qt"</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">"""The type of host where the backend will run."""</span>
 
     <span class="n">host_options</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Options to use when starting the host.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Options to use when starting the host."""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -11519,7 +11523,7 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.RunSettings.backend" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="#async_kernel.typing.Backend">Backend</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s1">&#39;asyncio&#39;</span><span class="p">,</span> <span class="s1">&#39;trio&#39;</span><span class="p">]]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">backend</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Backend (async_kernel.typing.Backend)" href="#async_kernel.typing.Backend">Backend</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s1">'asyncio'</span><span class="p">,</span> <span class="s1">'trio'</span><span class="p">]]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -11575,7 +11579,7 @@ or importable path like <code>'asyncio.new_event_loop'</code>.</p>
   </span>
 
 <a href="#async_kernel.typing.RunSettings.host" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">host</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="#async_kernel.typing.Hosts">Hosts</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s1">&#39;tk&#39;</span><span class="p">,</span> <span class="s1">&#39;qt&#39;</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">host</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.NotRequired" href="https://docs.python.org/3/library/typing.html#typing.NotRequired">NotRequired</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Hosts (async_kernel.typing.Hosts)" href="#async_kernel.typing.Hosts">Hosts</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s1">'tk'</span><span class="p">,</span> <span class="s1">'qt'</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -11767,13 +11771,13 @@ or importable path like <code>'asyncio.new_event_loop'</code>.</p>
 <span class="normal">598</span>
 <span class="normal">599</span>
 <span class="normal">600</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">CallerCreateOptions</span><span class="p">(</span><span class="n">RunSettings</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Options to use when creating an instance of a [Caller][async_kernel.caller.Caller].&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Options to use when creating an instance of a [Caller][async_kernel.caller.Caller]."""</span>
 
     <span class="n">name</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The name for the new caller instance.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The name for the new caller instance."""</span>
 
     <span class="n">no_debug</span><span class="p">:</span> <span class="n">NotRequired</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Disable debugpy in the thread if a new thread is created.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Disable debugpy in the thread if a new thread is created."""</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -12050,7 +12054,7 @@ or importable path like <code>'asyncio.new_event_loop'</code>.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "content.code.copy", "toc.follow", "navigation.top", "header.autohide", "navigation.footer", "search.suggest", "search.highlight", "navigation.instant", "navigation.indexes", "navigation.path"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../js/timeago.min.js"></script>
       

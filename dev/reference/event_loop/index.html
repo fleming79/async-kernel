@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -31,7 +31,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -2472,7 +2472,7 @@ viewing the latest version.
 <span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Host</span><span class="p">(</span><span class="n">Generic</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A class that provides the necessary callbacks to run a gui event loop with a `backend` started using `start_guest_run`.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""A class that provides the necessary callbacks to run a gui event loop with a `backend` started using `start_guest_run`."""</span>
 
     <span class="n">HOST</span><span class="p">:</span> <span class="n">Hosts</span>
     <span class="n">MATPLOTLIB_GUIS</span> <span class="o">=</span> <span class="p">()</span>
@@ -2481,7 +2481,7 @@ viewing the latest version.
 
     <span class="n">_outcome</span><span class="p">:</span> <span class="n">Outcome</span><span class="p">[</span><span class="n">T</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">start_guest</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="s2">&quot;A callback to start the guest. This must be called by a subclass.&quot;</span>
+    <span class="s2">"A callback to start the guest. This must be called by a subclass."</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__init_subclass__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">HOST</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">Hosts</span><span class="o">.</span><span class="n">custom</span><span class="p">:</span>
@@ -2489,41 +2489,41 @@ viewing the latest version.
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">current</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Host</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The host running in the corresponding thread or current thread.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""The host running in the corresponding thread or current thread."""</span>
         <span class="n">thread</span> <span class="o">=</span> <span class="n">thread</span> <span class="ow">or</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instances</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">thread</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">RunSettings</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run the loop in the current thread with a backend guest.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Run the loop in the current thread with a backend guest."""</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">thread</span> <span class="o">:=</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">())</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instances</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;A host is already running in this thread&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">"A host is already running in this thread"</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-        <span class="n">host</span> <span class="o">=</span> <span class="n">Hosts</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">))</span>
-        <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">,</span> <span class="s2">&quot;asyncio&quot;</span><span class="p">))</span>
-        <span class="n">backend_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend_options&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-        <span class="n">host_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host_options&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">host</span> <span class="o">=</span> <span class="n">Hosts</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"host"</span><span class="p">))</span>
+        <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"backend"</span><span class="p">,</span> <span class="s2">"asyncio"</span><span class="p">))</span>
+        <span class="n">backend_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"backend_options"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">host_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"host_options"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
 
-        <span class="k">if</span> <span class="s2">&quot;host_class&quot;</span> <span class="ow">in</span> <span class="n">host_options</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">"host_class"</span> <span class="ow">in</span> <span class="n">host_options</span><span class="p">:</span>
             <span class="n">host_options</span> <span class="o">=</span> <span class="n">host_options</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-            <span class="n">cls_</span> <span class="o">=</span> <span class="n">host_options</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;host_class&quot;</span><span class="p">)</span>
+            <span class="n">cls_</span> <span class="o">=</span> <span class="n">host_options</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"host_class"</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cls_</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="n">cls_</span> <span class="o">=</span> <span class="n">import_item</span><span class="p">(</span><span class="n">cls_</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">cls_</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cls_</span><span class="si">}</span><span class="s2"> is not a subclass of </span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s2">!&quot;</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">cls_</span><span class="si">}</span><span class="s2"> is not a subclass of </span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s2">!"</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">host</span> <span class="o">!=</span> <span class="n">backend</span>
             <span class="k">if</span> <span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">:</span>
-                <span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;async_kernel.event_loop.</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">_host&quot;</span><span class="p">)</span>
-                <span class="k">assert</span> <span class="n">host</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Host for </span><span class="si">{</span><span class="n">host</span><span class="si">=}</span><span class="s2"> is not implemented correctly!&quot;</span>
+                <span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s2">"async_kernel.event_loop.</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">_host"</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="n">host</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Host for </span><span class="si">{</span><span class="n">host</span><span class="si">=}</span><span class="s2"> is not implemented correctly!"</span>
             <span class="n">cls_</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">[</span><span class="n">host</span><span class="p">]</span>
         <span class="k">assert</span> <span class="n">cls_</span><span class="o">.</span><span class="n">HOST</span> <span class="ow">is</span> <span class="n">host</span>
 
         <span class="n">host</span> <span class="o">=</span> <span class="n">cls_</span><span class="p">(</span><span class="o">**</span><span class="n">host_options</span><span class="p">)</span>
         <span class="c1"># set the `start_guest` function (runs once).</span>
-        <span class="n">backend_options</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;host_uses_signal_set_wakeup_fd&quot;</span><span class="p">,</span> <span class="n">host</span><span class="o">.</span><span class="n">host_uses_signal_set_wakeup_fd</span><span class="p">)</span>
+        <span class="n">backend_options</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"host_uses_signal_set_wakeup_fd"</span><span class="p">,</span> <span class="n">host</span><span class="o">.</span><span class="n">host_uses_signal_set_wakeup_fd</span><span class="p">)</span>
         <span class="n">start_guest_run</span> <span class="o">=</span> <span class="n">get_start_guest_run</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
         <span class="n">host</span><span class="o">.</span><span class="n">start_guest</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="p">[</span>
             <span class="n">start_guest_run</span><span class="p">(</span>
@@ -2534,7 +2534,7 @@ viewing the latest version.
                 <span class="n">done_callback</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">done_callback</span><span class="p">,</span>
                 <span class="o">**</span><span class="n">backend_options</span><span class="p">,</span>
             <span class="p">),</span>
-            <span class="nb">setattr</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;start_guest&quot;</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"start_guest"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">),</span>
         <span class="p">][</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">host</span><span class="o">.</span><span class="n">_instances</span><span class="p">[</span><span class="n">thread</span><span class="p">]</span> <span class="o">=</span> <span class="n">host</span>
         <span class="k">try</span><span class="p">:</span>
@@ -2552,10 +2552,10 @@ viewing the latest version.
         <span class="bp">self</span><span class="o">.</span><span class="n">_outcome</span> <span class="o">=</span> <span class="n">outcome</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">mainloop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start the main event loop of the host.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Start the main event loop of the host."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start_guest</span><span class="p">()</span>  <span class="c1"># Call at an appropriate time in the overriding subclass.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outcome</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The mainloop should only exit once done_callback has been called!&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">"The mainloop should only exit once done_callback has been called!"</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outcome</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span>  <span class="c1"># pragma: no cover</span>
 </code></pre></div></td></tr></table></div>
@@ -2629,7 +2629,7 @@ viewing the latest version.
 <span class="normal">98</span>
 <span class="normal">99</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">current</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Host</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The host running in the corresponding thread or current thread.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The host running in the corresponding thread or current thread."""</span>
     <span class="n">thread</span> <span class="o">=</span> <span class="n">thread</span> <span class="ow">or</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span>
     <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instances</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">thread</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -2712,35 +2712,35 @@ viewing the latest version.
 <span class="normal">147</span>
 <span class="normal">148</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">RunSettings</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the loop in the current thread with a backend guest.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Run the loop in the current thread with a backend guest."""</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">thread</span> <span class="o">:=</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">())</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_instances</span><span class="p">:</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;A host is already running in this thread&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">"A host is already running in this thread"</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-    <span class="n">host</span> <span class="o">=</span> <span class="n">Hosts</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">))</span>
-    <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">,</span> <span class="s2">&quot;asyncio&quot;</span><span class="p">))</span>
-    <span class="n">backend_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend_options&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
-    <span class="n">host_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host_options&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="n">Hosts</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"host"</span><span class="p">))</span>
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"backend"</span><span class="p">,</span> <span class="s2">"asyncio"</span><span class="p">))</span>
+    <span class="n">backend_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"backend_options"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="n">host_options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"host_options"</span><span class="p">)</span> <span class="ow">or</span> <span class="p">{}</span>
 
-    <span class="k">if</span> <span class="s2">&quot;host_class&quot;</span> <span class="ow">in</span> <span class="n">host_options</span><span class="p">:</span>
+    <span class="k">if</span> <span class="s2">"host_class"</span> <span class="ow">in</span> <span class="n">host_options</span><span class="p">:</span>
         <span class="n">host_options</span> <span class="o">=</span> <span class="n">host_options</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="n">cls_</span> <span class="o">=</span> <span class="n">host_options</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;host_class&quot;</span><span class="p">)</span>
+        <span class="n">cls_</span> <span class="o">=</span> <span class="n">host_options</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">"host_class"</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cls_</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="n">cls_</span> <span class="o">=</span> <span class="n">import_item</span><span class="p">(</span><span class="n">cls_</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">cls_</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cls_</span><span class="si">}</span><span class="s2"> is not a subclass of </span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s2">!&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">cls_</span><span class="si">}</span><span class="s2"> is not a subclass of </span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s2">!"</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">assert</span> <span class="n">host</span> <span class="o">!=</span> <span class="n">backend</span>
         <span class="k">if</span> <span class="n">host</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">:</span>
-            <span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;async_kernel.event_loop.</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">_host&quot;</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="n">host</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Host for </span><span class="si">{</span><span class="n">host</span><span class="si">=}</span><span class="s2"> is not implemented correctly!&quot;</span>
+            <span class="n">import_module</span><span class="p">(</span><span class="sa">f</span><span class="s2">"async_kernel.event_loop.</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">_host"</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">host</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Host for </span><span class="si">{</span><span class="n">host</span><span class="si">=}</span><span class="s2"> is not implemented correctly!"</span>
         <span class="n">cls_</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_subclasses</span><span class="p">[</span><span class="n">host</span><span class="p">]</span>
     <span class="k">assert</span> <span class="n">cls_</span><span class="o">.</span><span class="n">HOST</span> <span class="ow">is</span> <span class="n">host</span>
 
     <span class="n">host</span> <span class="o">=</span> <span class="n">cls_</span><span class="p">(</span><span class="o">**</span><span class="n">host_options</span><span class="p">)</span>
     <span class="c1"># set the `start_guest` function (runs once).</span>
-    <span class="n">backend_options</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;host_uses_signal_set_wakeup_fd&quot;</span><span class="p">,</span> <span class="n">host</span><span class="o">.</span><span class="n">host_uses_signal_set_wakeup_fd</span><span class="p">)</span>
+    <span class="n">backend_options</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"host_uses_signal_set_wakeup_fd"</span><span class="p">,</span> <span class="n">host</span><span class="o">.</span><span class="n">host_uses_signal_set_wakeup_fd</span><span class="p">)</span>
     <span class="n">start_guest_run</span> <span class="o">=</span> <span class="n">get_start_guest_run</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
     <span class="n">host</span><span class="o">.</span><span class="n">start_guest</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="p">[</span>
         <span class="n">start_guest_run</span><span class="p">(</span>
@@ -2751,7 +2751,7 @@ viewing the latest version.
             <span class="n">done_callback</span><span class="o">=</span><span class="n">host</span><span class="o">.</span><span class="n">done_callback</span><span class="p">,</span>
             <span class="o">**</span><span class="n">backend_options</span><span class="p">,</span>
         <span class="p">),</span>
-        <span class="nb">setattr</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">&quot;start_guest&quot;</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">),</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="s2">"start_guest"</span><span class="p">,</span> <span class="k">lambda</span><span class="p">:</span> <span class="kc">None</span><span class="p">),</span>
     <span class="p">][</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">host</span><span class="o">.</span><span class="n">_instances</span><span class="p">[</span><span class="n">thread</span><span class="p">]</span> <span class="o">=</span> <span class="n">host</span>
     <span class="k">try</span><span class="p">:</span>
@@ -2790,10 +2790,10 @@ viewing the latest version.
 <span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">mainloop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start the main event loop of the host.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Start the main event loop of the host."""</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">start_guest</span><span class="p">()</span>  <span class="c1"># Call at an appropriate time in the overriding subclass.</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outcome</span><span class="p">:</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;The mainloop should only exit once done_callback has been called!&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">"The mainloop should only exit once done_callback has been called!"</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_outcome</span><span class="o">.</span><span class="n">unwrap</span><span class="p">()</span>  <span class="c1"># pragma: no cover</span>
 </code></pre></div></td></tr></table></div>
@@ -2951,9 +2951,9 @@ in backend_options as a function or an importatable dotted path such as <code>'a
 <span class="normal">67</span>
 <span class="normal">68</span>
 <span class="normal">69</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">T</span><span class="p">]],</span> <span class="n">args</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">settings</span><span class="p">:</span> <span class="n">RunSettings</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run `func` to completion asynchronously in the current thread using a [backend][async_kernel.typing.Backend] with an optional host (gui event loop).</span>
+<span class="w">    </span><span class="sd">"""Run `func` to completion asynchronously in the current thread using a [backend][async_kernel.typing.Backend] with an optional host (gui event loop).</span>
 
-<span class="sd">    The default backend is [&#39;asyncio&#39;][async_kernel.typing.Backend.asyncio].</span>
+<span class="sd">    The default backend is ['asyncio'][async_kernel.typing.Backend.asyncio].</span>
 
 <span class="sd">    If [host][async_kernel.typing.Hosts] is specified in `settings`. A _host_ (gui) mainloop</span>
 <span class="sd">    will be started with the `backend` running as a guest (in the same thread). The `backend`</span>
@@ -2966,23 +2966,23 @@ in backend_options as a function or an importatable dotted path such as <code>'a
 <span class="sd">        settings: Settings to use when running func.</span>
 
 <span class="sd">    Custom host:</span>
-<span class="sd">        A custom host can be started by subclassing [Host][] and passed as the &#39;host_class&#39; as the</span>
+<span class="sd">        A custom host can be started by subclassing [Host][] and passed as the 'host_class' as the</span>
 <span class="sd">        class or a dotted path if it is importable.</span>
 
 <span class="sd">    loop_factory:</span>
-<span class="sd">        When there is no host and the backend is &#39;asyncio&#39;, the loop factory can be specified</span>
-<span class="sd">        in backend_options as a function or an importatable dotted path such as `&#39;asyncio.new_event_loop&#39;`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">):</span>
+<span class="sd">        When there is no host and the backend is 'asyncio', the loop factory can be specified</span>
+<span class="sd">        in backend_options as a function or an importatable dotted path such as `'asyncio.new_event_loop'`.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"host"</span><span class="p">):</span>
         <span class="c1"># A gui with the backend running as a guest.</span>
         <span class="k">return</span> <span class="n">Host</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
     <span class="c1"># backend only.</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">backend_options</span> <span class="o">:=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend_options&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
-        <span class="p">(</span><span class="n">loop_factory</span> <span class="o">:=</span> <span class="n">backend_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;loop_factory&quot;</span><span class="p">)),</span> <span class="nb">str</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">backend_options</span> <span class="o">:=</span> <span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"backend_options"</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">loop_factory</span> <span class="o">:=</span> <span class="n">backend_options</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"loop_factory"</span><span class="p">)),</span> <span class="nb">str</span>
     <span class="p">):</span>
         <span class="c1"># Import the loop factory</span>
-        <span class="n">backend_options</span><span class="p">[</span><span class="s2">&quot;loop_factory&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">import_item</span><span class="p">(</span><span class="n">loop_factory</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">anyio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">Backend</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;backend&quot;</span><span class="p">,</span> <span class="s2">&quot;asyncio&quot;</span><span class="p">)),</span> <span class="n">backend_options</span><span class="o">=</span><span class="n">backend_options</span><span class="p">)</span>
+        <span class="n">backend_options</span><span class="p">[</span><span class="s2">"loop_factory"</span><span class="p">]</span> <span class="o">=</span> <span class="n">import_item</span><span class="p">(</span><span class="n">loop_factory</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">anyio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">Backend</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"backend"</span><span class="p">,</span> <span class="s2">"asyncio"</span><span class="p">)),</span> <span class="n">backend_options</span><span class="o">=</span><span class="n">backend_options</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3112,7 +3112,7 @@ in backend_options as a function or an importatable dotted path such as <code>'a
 <span class="normal">96</span>
 <span class="normal">97</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">TkHost</span><span class="p">(</span><span class="n">Host</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
     <span class="n">HOST</span> <span class="o">=</span> <span class="n">Hosts</span><span class="o">.</span><span class="n">tk</span>
-    <span class="n">MATPLOTLIB_GUIS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;tk&quot;</span><span class="p">,)</span>
+    <span class="n">MATPLOTLIB_GUIS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"tk"</span><span class="p">,)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">root</span> <span class="o">=</span> <span class="n">tk</span><span class="o">.</span><span class="n">Tk</span><span class="p">()</span>
@@ -3126,44 +3126,44 @@ in backend_options as a function or an importatable dotted path such as <code>'a
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_sync_soon_threadsafe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use Tcl &quot;after&quot; command to schedule a function call.</span>
+<span class="w">        </span><span class="sd">"""Use Tcl "after" command to schedule a function call.</span>
 
 <span class="sd">        Based on [tkinter source comments](https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L1472-L1555)</span>
 <span class="sd">        the issuance of the tcl call to after itself is thread-safe since it is sent</span>
 <span class="sd">        to the [appropriate thread](https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L814-L824&gt;) on line 1522.</span>
-<span class="sd">        `Tkapp_ThreadSend` effectively uses &quot;after 0&quot; while putting the command in the</span>
-<span class="sd">        event queue so the [&quot;after idle after 0&quot;](https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061)` incantation</span>
+<span class="sd">        `Tkapp_ThreadSend` effectively uses "after 0" while putting the command in the</span>
+<span class="sd">        event queue so the ["after idle after 0"](https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061)` incantation</span>
 <span class="sd">        is unnecessary here.</span>
 
 <span class="sd">        Compare to [tkthread](https://github.com/serwy/tkthread/blob/1f612e1dd46e770bd0d0bb64d7ecb6a0f04875a3/tkthread/__init__.py#L163)</span>
 <span class="sd">        where definitely thread unsafe [eval](https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L1567-L1585)</span>
 <span class="sd">        is used to send thread safe signals between tcl interpreters.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># self.root.after_idle(lambda:self.root.after(0, func)) # does a fairly intensive wrapping to each func</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;after&quot;</span><span class="p">,</span> <span class="s2">&quot;idle&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tk_func_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">"after"</span><span class="p">,</span> <span class="s2">"idle"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tk_func_name</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">run_sync_soon_not_threadsafe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use Tcl &quot;after&quot; command to schedule a function call from the main thread.</span>
+<span class="w">        </span><span class="sd">"""Use Tcl "after" command to schedule a function call from the main thread.</span>
 
 <span class="sd">        If .call is called from the Tcl thread, the locking and sending are optimized away</span>
 <span class="sd">        so it should be fast enough.</span>
 
-<span class="sd">        The incantation [&quot;after idle after 0&quot;](https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061)</span>
+<span class="sd">        The incantation ["after idle after 0"](https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061)</span>
 <span class="sd">        avoids blocking the normal event queue when faced with an unending stream of tasks, for</span>
 <span class="sd">        example `while True: await trio.sleep(0)`.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;after&quot;</span><span class="p">,</span> <span class="s2">&quot;idle&quot;</span><span class="p">,</span> <span class="s2">&quot;after&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tk_func_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">"after"</span><span class="p">,</span> <span class="s2">"idle"</span><span class="p">,</span> <span class="s2">"after"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tk_func_name</span><span class="p">)</span>
         <span class="c1"># Not sure if this is actually an optimization because Tcl parses this eval string fresh each time.</span>
-        <span class="c1"># However it&#39;s definitely thread unsafe because the string is fed directly into the Tcl interpreter</span>
+        <span class="c1"># However it's definitely thread unsafe because the string is fed directly into the Tcl interpreter</span>
         <span class="c1"># from the current Python thread</span>
-        <span class="c1"># self.root.eval(f&#39;after idle after 0 {self._tk_func_name}&#39;)</span>
+        <span class="c1"># self.root.eval(f'after idle after 0 {self._tk_func_name}')</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">done_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outcome</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;End the Tk app.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""End the Tk app."""</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">done_callback</span><span class="p">(</span><span class="n">outcome</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
 
@@ -3235,22 +3235,22 @@ is used to send thread safe signals between tcl interpreters.</p>
 <span class="normal">66</span>
 <span class="normal">67</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_sync_soon_threadsafe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use Tcl &quot;after&quot; command to schedule a function call.</span>
+<span class="w">    </span><span class="sd">"""Use Tcl "after" command to schedule a function call.</span>
 
 <span class="sd">    Based on [tkinter source comments](https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L1472-L1555)</span>
 <span class="sd">    the issuance of the tcl call to after itself is thread-safe since it is sent</span>
 <span class="sd">    to the [appropriate thread](https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L814-L824&gt;) on line 1522.</span>
-<span class="sd">    `Tkapp_ThreadSend` effectively uses &quot;after 0&quot; while putting the command in the</span>
-<span class="sd">    event queue so the [&quot;after idle after 0&quot;](https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061)` incantation</span>
+<span class="sd">    `Tkapp_ThreadSend` effectively uses "after 0" while putting the command in the</span>
+<span class="sd">    event queue so the ["after idle after 0"](https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061)` incantation</span>
 <span class="sd">    is unnecessary here.</span>
 
 <span class="sd">    Compare to [tkthread](https://github.com/serwy/tkthread/blob/1f612e1dd46e770bd0d0bb64d7ecb6a0f04875a3/tkthread/__init__.py#L163)</span>
 <span class="sd">    where definitely thread unsafe [eval](https://github.com/python/cpython/blob/a5d6aba318ead9cc756ba750a70da41f5def3f8f/Modules/_tkinter.c#L1567-L1585)</span>
 <span class="sd">    is used to send thread safe signals between tcl interpreters.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># self.root.after_idle(lambda:self.root.after(0, func)) # does a fairly intensive wrapping to each func</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;after&quot;</span><span class="p">,</span> <span class="s2">&quot;idle&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tk_func_name</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">"after"</span><span class="p">,</span> <span class="s2">"idle"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tk_func_name</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3295,17 +3295,17 @@ example <code>while True: await trio.sleep(0)</code>.</p>
 <span class="normal">80</span>
 <span class="normal">81</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">run_sync_soon_not_threadsafe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use Tcl &quot;after&quot; command to schedule a function call from the main thread.</span>
+<span class="w">    </span><span class="sd">"""Use Tcl "after" command to schedule a function call from the main thread.</span>
 
 <span class="sd">    If .call is called from the Tcl thread, the locking and sending are optimized away</span>
 <span class="sd">    so it should be fast enough.</span>
 
-<span class="sd">    The incantation [&quot;after idle after 0&quot;](https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061)</span>
+<span class="sd">    The incantation ["after idle after 0"](https://wiki.tcl-lang.org/page/after#096aeab6629eae8b244ae2eb2000869fbe377fa988d192db5cf63defd3d8c061)</span>
 <span class="sd">    avoids blocking the normal event queue when faced with an unending stream of tasks, for</span>
 <span class="sd">    example `while True: await trio.sleep(0)`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_q</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fn</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;after&quot;</span><span class="p">,</span> <span class="s2">&quot;idle&quot;</span><span class="p">,</span> <span class="s2">&quot;after&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tk_func_name</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">"after"</span><span class="p">,</span> <span class="s2">"idle"</span><span class="p">,</span> <span class="s2">"after"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tk_func_name</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3337,7 +3337,7 @@ example <code>while True: await trio.sleep(0)</code>.</p>
 <span class="normal">90</span>
 <span class="normal">91</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">done_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outcome</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;End the Tk app.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""End the Tk app."""</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">done_callback</span><span class="p">(</span><span class="n">outcome</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -3431,15 +3431,15 @@ show_root_heading: true</p>
 <span class="normal">85</span>
 <span class="normal">86</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">QtHost</span><span class="p">(</span><span class="n">Host</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
     <span class="n">HOST</span> <span class="o">=</span> <span class="n">Hosts</span><span class="o">.</span><span class="n">qt</span>
-    <span class="n">MATPLOTLIB_GUIS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;qt&quot;</span><span class="p">,)</span>
+    <span class="n">MATPLOTLIB_GUIS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"qt"</span><span class="p">,)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;PySide6&quot;</span><span class="p">,</span> <span class="s2">&quot;PySide2&quot;</span><span class="p">,</span> <span class="s2">&quot;PyQt5&quot;</span><span class="p">,</span> <span class="s2">&quot;PyQt6&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;PySide6&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"PySide6"</span><span class="p">,</span> <span class="s2">"PySide2"</span><span class="p">,</span> <span class="s2">"PyQt5"</span><span class="p">,</span> <span class="s2">"PyQt6"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"PySide6"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">threading</span><span class="o">.</span><span class="n">main_thread</span><span class="p">():</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;QT can only be run in main thread!&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">"QT can only be run in main thread!"</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-        <span class="nb">globals</span><span class="p">()[</span><span class="s2">&quot;QtCore&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">import_from</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">&quot;QtCore&quot;</span><span class="p">)</span>
-        <span class="nb">globals</span><span class="p">()[</span><span class="s2">&quot;QtWidgets&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">import_from</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">&quot;QtWidgets&quot;</span><span class="p">)</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="s2">"QtCore"</span><span class="p">]</span> <span class="o">=</span> <span class="n">import_from</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">"QtCore"</span><span class="p">)</span>
+        <span class="nb">globals</span><span class="p">()[</span><span class="s2">"QtWidgets"</span><span class="p">]</span> <span class="o">=</span> <span class="n">import_from</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">"QtWidgets"</span><span class="p">)</span>
 
         <span class="n">REENTER_EVENT_TYPE</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QEvent</span><span class="o">.</span><span class="n">Type</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QEvent</span><span class="o">.</span><span class="n">registerEventType</span><span class="p">())</span>
 
@@ -3594,8 +3594,12 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
       <a href="#">event_loop</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.event_loop.zmq_poll.ZMQPoll"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ZMQPoll</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.event_loop.zmq_poll.ZMQPoll.socket"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;socket</a>
   </span>
 
       </li>
@@ -3842,13 +3846,13 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
 <span class="normal">142</span>
 <span class="normal">143</span>
 <span class="normal">144</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQPollSocket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">sugar</span><span class="o">.</span><span class="n">Socket</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A zmq socket which uses a [ZMQPoll][] thread to perform sensitive operation.</span>
+<span class="w">    </span><span class="sd">"""A zmq socket which uses a [ZMQPoll][] thread to perform sensitive operation.</span>
 
-<span class="sd">    For best reliability, sensitive operations are performed in the zmq_poll&#39;s thread.</span>
+<span class="sd">    For best reliability, sensitive operations are performed in the zmq_poll's thread.</span>
 <span class="sd">    This socket will close automatically when Poll is stopped. It is still better to</span>
 <span class="sd">    close the  socket when it is no longer required. The socket must be bound/connected</span>
 <span class="sd">    in the context of the [ZMQPoll][] to which it is associated.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">_zmq_poll_ref</span><span class="p">:</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">[</span><span class="n">ZMQPoll</span><span class="p">]</span>
     <span class="n">lock</span><span class="p">:</span> <span class="n">BinarySemaphore</span>
@@ -3856,19 +3860,19 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
     <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
         <span class="c1"># magic attributes cannot be be stored in `__annotations__`.</span>
         <span class="n">closed</span><span class="p">:</span> <span class="nb">bool</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set to `True` when the socket is closed.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Set to `True` when the socket is closed."""</span>
 
         <span class="n">curve_secretkey</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="kc">None</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The curve encryption secret key.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""The curve encryption secret key."""</span>
 
         <span class="n">curve_publickey</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="kc">None</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The curve encryption public key.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""The curve encryption public key."""</span>
 
         <span class="n">curve_server</span><span class="p">:</span> <span class="nb">bool</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;If it is the server (must be bound).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""If it is the server (must be bound)."""</span>
 
         <span class="n">curve_serverkey</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="kc">None</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The key to use when the socket is not a serve (normally matches curve_publickey).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""The key to use when the socket is not a serve (normally matches curve_publickey)."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -3882,7 +3886,7 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
         <span class="bp">self</span><span class="o">.</span><span class="n">_zmq_poll_ref</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">zmq_poll</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">zmq_poll</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zmq_poll</span><span class="si">}</span><span class="s2"> is stopped!&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">zmq_poll</span><span class="si">}</span><span class="s2"> is stopped!"</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">ctx_or_socket</span><span class="o">=</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">_zmq_context</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportPrivateUsage],</span>
@@ -3944,13 +3948,13 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span>
-        <span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">topic</span>
+        <span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf8"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">topic</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">subscribe</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">unsubscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">bytes</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
-            <span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">topic</span>
+            <span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">"utf8"</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">topic</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">,</span> <span class="n">topic</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -4486,12 +4490,12 @@ the same executor for setting attributes and calling methods.</p>
 <span class="normal">425</span>
 <span class="normal">426</span>
 <span class="normal">427</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQPoll</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A [zmq_poll](https://libzmq.readthedocs.io/en/latest/zmq_poll.html) based event loop.</span>
+<span class="w">    </span><span class="sd">"""A [zmq_poll](https://libzmq.readthedocs.io/en/latest/zmq_poll.html) based event loop.</span>
 
 <span class="sd">    This event loop is synchronous and is intended for quick message dispatch to separate threads</span>
 <span class="sd">    for handling. It provides thread-safe execution and manages its own custom sockets which use</span>
 <span class="sd">    the same executor for setting attributes and calling methods.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">stopped</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">ProtectedPending</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">ProtectedPending</span><span class="p">)</span>
     <span class="n">sockets</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">set</span><span class="p">[</span><span class="n">ZMQPollSocket</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
@@ -4525,7 +4529,7 @@ the same executor for setting attributes and calling methods.</p>
     <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;This zmq_poll event loop is stopped!&quot;</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">"This zmq_poll event loop is stopped!"</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__start</span><span class="p">()</span>
@@ -4541,7 +4545,7 @@ the same executor for setting attributes and calling methods.</p>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_wake</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Unblock the thread.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Unblock the thread."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_on_stopped</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_wake</span><span class="p">()</span>
@@ -4560,31 +4564,31 @@ the same executor for setting attributes and calling methods.</p>
             <span class="n">cancellers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_cancellers</span><span class="p">,</span>
             <span class="n">log</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;Runs the &#39;event&#39; loop.&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">"""Runs the 'event' loop."""</span>
             <span class="c1"># Thread: zmq_poll_thread</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">utils</span><span class="o">.</span><span class="n">LAUNCHED_BY_DEBUGPY</span><span class="p">:</span>
                 <span class="n">utils</span><span class="o">.</span><span class="n">mark_thread_pydev_do_not_trace</span><span class="p">()</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">on_wake</span><span class="p">(</span><span class="n">sock</span><span class="p">:</span> <span class="n">ZMQPollSocket</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;On receipt of a wake event clear the sockets.&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">"""On receipt of a wake event clear the sockets."""</span>
                 <span class="k">nonlocal</span> <span class="n">sockets</span>
-                <span class="c1"># Called on receipt of a message (b&#39;&#39;) on the &#39;wake&#39; socket.</span>
+                <span class="c1"># Called on receipt of a message (b'') on the 'wake' socket.</span>
                 <span class="n">sockets</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="n">sock</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">do_execute</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;Execute pending items added by the `execute` and `execute_async` methods.&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">"""Execute pending items added by the `execute` and `execute_async` methods."""</span>
                 <span class="k">while</span> <span class="n">execute</span><span class="p">:</span>
                     <span class="n">md</span> <span class="o">=</span> <span class="p">(</span><span class="n">pen</span> <span class="o">:=</span> <span class="n">execute</span><span class="o">.</span><span class="n">popleft</span><span class="p">())</span><span class="o">.</span><span class="n">metadata</span>
                     <span class="k">try</span><span class="p">:</span>
-                        <span class="n">pen</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">md</span><span class="p">[</span><span class="s2">&quot;func&quot;</span><span class="p">](</span><span class="o">*</span><span class="n">md</span><span class="p">[</span><span class="s2">&quot;args&quot;</span><span class="p">],</span> <span class="o">**</span><span class="n">md</span><span class="p">[</span><span class="s2">&quot;kwargs&quot;</span><span class="p">]))</span>
+                        <span class="n">pen</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">md</span><span class="p">[</span><span class="s2">"func"</span><span class="p">](</span><span class="o">*</span><span class="n">md</span><span class="p">[</span><span class="s2">"args"</span><span class="p">],</span> <span class="o">**</span><span class="n">md</span><span class="p">[</span><span class="s2">"kwargs"</span><span class="p">]))</span>
                     <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                         <span class="n">pen</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
                     <span class="k">del</span> <span class="n">pen</span>
 
             <span class="n">send</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="o">.</span><span class="n">PAIR</span><span class="p">)</span>
             <span class="n">wake</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="o">.</span><span class="n">PAIR</span><span class="p">)</span>
-            <span class="n">addr</span> <span class="o">=</span> <span class="s2">&quot;inproc://async_kernel_zmq_poller_wake&quot;</span>
+            <span class="n">addr</span> <span class="o">=</span> <span class="s2">"inproc://async_kernel_zmq_poller_wake"</span>
             <span class="n">sockets</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">handlers</span><span class="p">[(</span><span class="n">wake</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">)]</span> <span class="o">=</span> <span class="n">on_wake</span>
 
@@ -4609,10 +4613,10 @@ the same executor for setting attributes and calling methods.</p>
                                 <span class="k">except</span> <span class="ne">SystemExit</span><span class="p">:</span>
                                     <span class="n">stopped</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
                                 <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Ignoring exception in handler.&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Ignoring exception in handler."</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
                                 <span class="k">if</span> <span class="n">count</span> <span class="ow">and</span> <span class="p">(</span><span class="n">c</span> <span class="o">:=</span> <span class="n">count</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                                     <span class="n">c</span> <span class="o">=</span> <span class="n">count</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-                                    <span class="c1"># Auto eject after &#39;n&#39; events</span>
+                                    <span class="c1"># Auto eject after 'n' events</span>
                                     <span class="k">if</span> <span class="n">c</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                                         <span class="n">handlers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                                         <span class="n">count</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">sockets</span> <span class="o">=</span> <span class="kc">None</span>
@@ -4621,25 +4625,25 @@ the same executor for setting attributes and calling methods.</p>
                             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">handlers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                                 <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
                                     <span class="n">handlers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Closed sockets detected </span><span class="si">%s</span><span class="s2"> -&gt; </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span>
+                                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Closed sockets detected </span><span class="si">%s</span><span class="s2"> -&gt; </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">)</span>
                                 <span class="n">sockets</span> <span class="o">=</span> <span class="kc">None</span>
                         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Ignoring exception in zmq_poll_thread.&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Ignoring exception in zmq_poll_thread."</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
                 <span class="k">finally</span><span class="p">:</span>
                     <span class="n">do_execute</span><span class="p">()</span>
                     <span class="k">while</span> <span class="n">cancellers</span><span class="p">:</span>
                         <span class="k">try</span><span class="p">:</span>
                             <span class="n">cancellers</span><span class="o">.</span><span class="n">popleft</span><span class="p">()()</span>
                         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;A canceller failed&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"A canceller failed"</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
                     <span class="k">while</span> <span class="n">zmq_poll_sockets</span><span class="p">:</span>
                         <span class="k">try</span><span class="p">:</span>
                             <span class="n">zmq_poll_sockets</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Socket close call failed&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
-                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Stopped zmq_poll event loop&quot;</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"Socket close call failed"</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="n">e</span><span class="p">)</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Stopped zmq_poll event loop"</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Starting ZMQPoll event loop&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Starting ZMQPoll event loop"</span><span class="p">)</span>
         <span class="n">started</span> <span class="o">=</span> <span class="n">Pending</span><span class="p">[</span><span class="n">ZMQPollSocket</span><span class="p">]()</span>
         <span class="n">ref</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">zmq_poll_thread</span><span class="p">)</span>
@@ -4648,32 +4652,32 @@ the same executor for setting attributes and calling methods.</p>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">_wake</span><span class="p">(</span><span class="n">sock</span><span class="o">=</span><span class="n">send</span><span class="p">,</span> <span class="n">lock</span><span class="o">=</span><span class="n">send</span><span class="o">.</span><span class="n">lock</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">lock</span><span class="p">:</span>
-                <span class="n">sock</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">sock</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s2">""</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_wake</span> <span class="o">=</span> <span class="n">_wake</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span> <span class="o">:=</span> <span class="n">ref</span><span class="p">())</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_stopped</span><span class="p">())</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ZMQPoll event loop started&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"ZMQPoll event loop started"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">validate_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sock</span><span class="p">:</span> <span class="n">ZMQPollSocket</span> <span class="o">|</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZMQPollSocket</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">sock</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sockets</span><span class="p">:</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Invalid socket detected! </span><span class="si">{</span><span class="n">sock</span><span class="si">=}</span><span class="s2">&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Invalid socket detected! </span><span class="si">{</span><span class="n">sock</span><span class="si">=}</span><span class="s2">"</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">sock</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_type</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZMQPollSocket</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new [ZMQPollSocket][].</span>
+<span class="w">        </span><span class="sd">"""Create a new [ZMQPollSocket][].</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            socket_type: The type of socket.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2"> is stopped!&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2"> is stopped!"</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_socket</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="o">.</span><span class="n">socket</span><span class="p">,</span> <span class="n">socket_type</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute `func` in the thread waiting for the result synchronously.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;thread&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Execute `func` in the thread waiting for the result synchronously."""</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"thread"</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pen</span> <span class="o">:=</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">](</span><span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">))</span>
@@ -4684,17 +4688,17 @@ the same executor for setting attributes and calling methods.</p>
                 <span class="k">finally</span><span class="p">:</span>
                     <span class="n">pen</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
                     <span class="k">del</span> <span class="n">pen</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unable to execute </span><span class="si">{</span><span class="n">func</span><span class="si">=}</span><span class="s2"> in </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">. Execution is only support while in context.&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Unable to execute </span><span class="si">{</span><span class="n">func</span><span class="si">=}</span><span class="s2"> in </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">. Execution is only support while in context."</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute `func` in the thread waiting for the result asynchronously.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;thread&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Execute `func` in the thread waiting for the result asynchronously."""</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"thread"</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pen</span> <span class="o">:=</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">](</span><span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">))</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_wake</span><span class="p">()</span>
                 <span class="k">return</span> <span class="k">await</span> <span class="n">pen</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unable to execute </span><span class="si">{</span><span class="n">func</span><span class="si">=}</span><span class="s2"> in </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">. Execution is only support while in context.&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Unable to execute </span><span class="si">{</span><span class="n">func</span><span class="si">=}</span><span class="s2"> in </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">. Execution is only support while in context."</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
     <span class="nd">@contextmanager</span>
@@ -4708,7 +4712,7 @@ the same executor for setting attributes and calling methods.</p>
         <span class="n">count</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">canceller</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;A context manager where `handler` is called with the event number when it occurs for `sock`.</span>
+<span class="w">        </span><span class="sd">"""A context manager where `handler` is called with the event number when it occurs for `sock`.</span>
 
 <span class="sd">        Only one `handler` is allowed per `(socket, flags)` combination. If this context manager is entered</span>
 <span class="sd">        inside a caller managed task (call_soon, etc) and the ZMQPoll is stopped, the associated pending</span>
@@ -4722,7 +4726,7 @@ the same executor for setting attributes and calling methods.</p>
 <span class="sd">            flags: The type of event to listen for.</span>
 <span class="sd">                [zmq.PollEvent.POLLIN][]: `sock` is readable.</span>
 <span class="sd">                [zmq.PollEvent.POLLOUT][]: `sock` was read from.</span>
-<span class="sd">            count: A tuple (&#39;n&#39;, callback) where the handler is run exactly &#39;n&#39; times.</span>
+<span class="sd">            count: A tuple ('n', callback) where the handler is run exactly 'n' times.</span>
 <span class="sd">                The callback could be an `event.set` to release the context.</span>
 <span class="sd">            canceller: A callback to use on the event the poll is stopped. The default cancellation</span>
 <span class="sd">                behavior is to cancel the pending returned by [async_kernel.caller.Caller.current_pending][].</span>
@@ -4732,15 +4736,15 @@ the same executor for setting attributes and calling methods.</p>
 <span class="sd">        Tip:</span>
 <span class="sd">            The handler is called inside a dedicated thread which may have been marked using</span>
 <span class="sd">            [async_kernel.utils.mark_thread_pydev_do_not_trace][] which disables debug breakpoints.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">done</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">canceller</span> <span class="ow">is</span> <span class="n">NoValue</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pen</span> <span class="o">:=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">current_pending</span><span class="p">()):</span>
-                <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;This context is not cancellable!.&quot;</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s2">"This context is not cancellable!."</span>
                 <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
             <span class="k">def</span><span class="w"> </span><span class="nf">default_handler</span><span class="p">(</span><span class="n">pen</span><span class="o">=</span><span class="n">pen</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">pen</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;The ZMQPoll event loop has stopped!&quot;</span><span class="p">)</span>
+                <span class="n">pen</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">"The ZMQPoll event loop has stopped!"</span><span class="p">)</span>
 
             <span class="n">canceller</span> <span class="o">=</span> <span class="n">default_handler</span>
 
@@ -4821,13 +4825,13 @@ the same executor for setting attributes and calling methods.</p>
 <span class="normal">332</span>
 <span class="normal">333</span>
 <span class="normal">334</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_type</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZMQPollSocket</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new [ZMQPollSocket][].</span>
+<span class="w">    </span><span class="sd">"""Create a new [ZMQPollSocket][].</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        socket_type: The type of socket.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2"> is stopped!&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2"> is stopped!"</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">validate_socket</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_zmq_context</span><span class="o">.</span><span class="n">socket</span><span class="p">,</span> <span class="n">socket_type</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
@@ -4870,8 +4874,8 @@ the same executor for setting attributes and calling methods.</p>
 <span class="normal">348</span>
 <span class="normal">349</span>
 <span class="normal">350</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute `func` in the thread waiting for the result synchronously.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;thread&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Execute `func` in the thread waiting for the result synchronously."""</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"thread"</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pen</span> <span class="o">:=</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">](</span><span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">))</span>
@@ -4882,7 +4886,7 @@ the same executor for setting attributes and calling methods.</p>
             <span class="k">finally</span><span class="p">:</span>
                 <span class="n">pen</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
                 <span class="k">del</span> <span class="n">pen</span>
-    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unable to execute </span><span class="si">{</span><span class="n">func</span><span class="si">=}</span><span class="s2"> in </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">. Execution is only support while in context.&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Unable to execute </span><span class="si">{</span><span class="n">func</span><span class="si">=}</span><span class="s2"> in </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">. Execution is only support while in context."</span>
     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4922,13 +4926,13 @@ the same executor for setting attributes and calling methods.</p>
 <span class="normal">358</span>
 <span class="normal">359</span>
 <span class="normal">360</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute `func` in the thread waiting for the result asynchronously.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;thread&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Execute `func` in the thread waiting for the result asynchronously."""</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"thread"</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pen</span> <span class="o">:=</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">](</span><span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_wake</span><span class="p">()</span>
             <span class="k">return</span> <span class="k">await</span> <span class="n">pen</span>
-    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Unable to execute </span><span class="si">{</span><span class="n">func</span><span class="si">=}</span><span class="s2"> in </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">. Execution is only support while in context.&quot;</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Unable to execute </span><span class="si">{</span><span class="n">func</span><span class="si">=}</span><span class="s2"> in </span><span class="si">{</span><span class="bp">self</span><span class="si">}</span><span class="s2">. Execution is only support while in context."</span>
     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5132,7 +5136,7 @@ the context of this object.</p>
     <span class="n">count</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">canceller</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A context manager where `handler` is called with the event number when it occurs for `sock`.</span>
+<span class="w">    </span><span class="sd">"""A context manager where `handler` is called with the event number when it occurs for `sock`.</span>
 
 <span class="sd">    Only one `handler` is allowed per `(socket, flags)` combination. If this context manager is entered</span>
 <span class="sd">    inside a caller managed task (call_soon, etc) and the ZMQPoll is stopped, the associated pending</span>
@@ -5146,7 +5150,7 @@ the context of this object.</p>
 <span class="sd">        flags: The type of event to listen for.</span>
 <span class="sd">            [zmq.PollEvent.POLLIN][]: `sock` is readable.</span>
 <span class="sd">            [zmq.PollEvent.POLLOUT][]: `sock` was read from.</span>
-<span class="sd">        count: A tuple (&#39;n&#39;, callback) where the handler is run exactly &#39;n&#39; times.</span>
+<span class="sd">        count: A tuple ('n', callback) where the handler is run exactly 'n' times.</span>
 <span class="sd">            The callback could be an `event.set` to release the context.</span>
 <span class="sd">        canceller: A callback to use on the event the poll is stopped. The default cancellation</span>
 <span class="sd">            behavior is to cancel the pending returned by [async_kernel.caller.Caller.current_pending][].</span>
@@ -5156,15 +5160,15 @@ the context of this object.</p>
 <span class="sd">    Tip:</span>
 <span class="sd">        The handler is called inside a dedicated thread which may have been marked using</span>
 <span class="sd">        [async_kernel.utils.mark_thread_pydev_do_not_trace][] which disables debug breakpoints.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">done</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">canceller</span> <span class="ow">is</span> <span class="n">NoValue</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pen</span> <span class="o">:=</span> <span class="n">Caller</span><span class="o">.</span><span class="n">current_pending</span><span class="p">()):</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;This context is not cancellable!.&quot;</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">"This context is not cancellable!."</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">default_handler</span><span class="p">(</span><span class="n">pen</span><span class="o">=</span><span class="n">pen</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">pen</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">&quot;The ZMQPoll event loop has stopped!&quot;</span><span class="p">)</span>
+            <span class="n">pen</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">"The ZMQPoll event loop has stopped!"</span><span class="p">)</span>
 
         <span class="n">canceller</span> <span class="o">=</span> <span class="n">default_handler</span>
 
@@ -5403,7 +5407,7 @@ the context of this object.</p>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "content.code.copy", "toc.follow", "navigation.top", "header.autohide", "navigation.footer", "search.suggest", "search.highlight", "navigation.instant", "navigation.indexes", "navigation.path"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="../../js/timeago.min.js"></script>
       
