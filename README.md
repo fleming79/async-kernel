@@ -21,13 +21,14 @@ The kernel interface supports multiple connections including:
 
 ## Highlights
 
-- [aiologic](https://aiologic.readthedocs.io/latest/) thread-safe synchronisation primitives
-- Custom zmq poll thread provides thread-safe socket configuration
-- [Backend agnostic multi-thread / multi-event loop management](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
+- Built using [aiologic](https://aiologic.readthedocs.io/latest/) thread-safe synchronisation primitives.
+- The [`Caller`](https://fleming79.github.io/async-kernel/latest/reference/caller/#async_kernel.caller.Caller)
+  class provides a powerful but simple interface for cross-thread code execution in asyncio and trio
+  backends, with guest event loop support built in.
+- A zmq poll event loop for thread-safe zmq sockets.
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell)
     - top-level await ('asyncio' or 'trio' backend) in cells
     - async magic function support in cells
-- [anyio](https://pypi.org/project/anyio/) compatible asynchronous backend ([`asyncio`](https://docs.python.org/3/library/asyncio.html) (default) or [`trio`](https://pypi.org/project/trio/))
 - Per-subshell user_ns
 - GUI event loops [^1]
     - [x] inline
@@ -38,8 +39,8 @@ The kernel interface supports multiple connections including:
   [Jupyterlite](https://github.com/jupyterlite/jupyterlite) (try it online [here](https://fleming79.github.io/echo-kernel/) 👈)
     - `%pip install` magic (using micropip)
 - [Debugger client](https://jupyterlab.readthedocs.io/en/latest/user/debugger.html#debugger)
-- Local kernel client
-- ZMQ kernel client with a built-in feature to start subprocess clients.
+- Local client.
+- ZMQ client.
 
 [^1]:
     A gui (_host_) enabled kernel interface starts a gui's mainloop (host) which starts
