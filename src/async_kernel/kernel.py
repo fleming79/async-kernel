@@ -404,7 +404,7 @@ class Kernel(
 
         self.log.debug("***handle message %s*** %s %s %s", msg_type, run_mode, handler, job)
 
-    def get_shell(self, subshell_id: str | NoValue | None = NoValue) -> T_shell_co:  # pyright: ignore[reportInvalidTypeForm]
+    def get_shell(self, subshell_id: str | NoValue | None = NoValue) -> T_shell_co:
         """Get a shell by `subshell_id`.
 
         Args:

@@ -603,7 +603,7 @@ class TestCaller:
                 assert pen_ is pen
             # work directly with iterator
             n_ = 0
-            max_concurrent = caller.MAX_IDLE_POOL_INSTANCES if mode == "restricted" else n / 2
+            max_concurrent = caller.MAX_IDLE_POOL_INSTANCES if mode == "restricted" else n // 2
             async for pen in caller.as_completed(
                 (caller.to_thread(func) for _ in range(n)), max_concurrent=max_concurrent
             ):

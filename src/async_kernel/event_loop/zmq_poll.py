@@ -368,7 +368,7 @@ class ZMQPoll:
         *,
         flags: Literal[zmq.PollEvent.POLLIN, zmq.PollEvent.POLLOUT] = zmq.PollEvent.POLLIN,
         count: tuple[int, Callable[[], Any]] | None = None,
-        canceller: Callable[[], Any] | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        canceller: Callable[[], Any] | NoValue | None = NoValue,
     ) -> Generator[None, Any, None]:
         """A context manager where `handler` is called with the event number when it occurs for `sock`.
 

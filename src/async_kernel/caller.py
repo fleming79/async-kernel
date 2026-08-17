@@ -776,7 +776,7 @@ class Caller:
         kwargs: dict,
         context: contextvars.Context | None = None,
         trackers: type[PendingTracker] | tuple[type[PendingTracker], ...] = PendingTracker,
-        backend: NoValue | Backend = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        backend: NoValue | Backend = NoValue,
         /,
         **metadata: Any,
     ) -> Pending[T]:
@@ -1065,7 +1065,7 @@ class Caller:
         self,
         items: Iterable[Awaitable[T]] | AsyncGenerator[Awaitable[T]],
         *,
-        max_concurrent: NoValue | int = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        max_concurrent: NoValue | int = NoValue,
         cancel_unfinished: bool = True,
     ) -> AsyncGenerator[Pending[T], Any]:
         """An async iterator to yield a pending for each awaitable in items as they complete (are done).

@@ -281,7 +281,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
             if e:
                 raise e
 
-    def __new__(cls, argv: list | NoValue | None = NoValue, /, **kwargs) -> Self:  # noqa: ARG004  # pyright: ignore[reportInvalidTypeForm]
+    def __new__(cls, argv: list | NoValue | None = NoValue, /, **kwargs) -> Self:  # noqa: ARG004
         if Interface._instance:
             msg = "An interface already exists!"
             raise RuntimeError(msg)
@@ -290,7 +290,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
 
     def __init__(
         self,
-        argv: list | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        argv: list | NoValue | None = NoValue,
         /,
         *,
         kernel_class: type[Kernel[Self, T_shell_co]] | str | None = None,
@@ -331,7 +331,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
         self.log.info("%s, stopped", self)
 
     @override
-    def initialize(self, argv: list | NoValue | None = NoValue) -> None:  # pyright: ignore[reportInvalidTypeForm]
+    def initialize(self, argv: list | NoValue | None = NoValue) -> None:
         """Initialize the interface **DO NOT CALL DIRECTLY**."""
         assert self._instance is self
 
@@ -482,7 +482,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
         content: Content | None = None,
         *,
         metadata: dict[str, Any] | None = None,
-        parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,
         ident: bytes | list[bytes] | None = None,
         buffers: BuffersType | None = None,
     ) -> None:
