@@ -8,7 +8,7 @@ from aiologic.lowlevel import create_async_event
 from async_kernel.common import SingleAsyncQueue
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface import Interface, start_kernel_callable_interface
-from async_kernel.messaging.base import LocalClient
+from async_kernel.messaging import LocalClient
 from async_kernel.typing import Backend, BuffersType, Channel, ExecuteContent, MsgType
 
 if TYPE_CHECKING:

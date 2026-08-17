@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from async_kernel.interface import Interface
-from async_kernel.messaging.base import LocalClient
+from async_kernel.messaging import LocalClient
 from async_kernel.outstream import OutStream
 from async_kernel.shell.base import BaseShell
 from async_kernel.typing import MsgType

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import pytest
 
 from async_kernel.interface import Interface
-from async_kernel.messaging.base import LocalClient
+from async_kernel.messaging import LocalClient
 
 if TYPE_CHECKING:
     from async_kernel import Caller

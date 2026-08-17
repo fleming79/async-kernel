@@ -277,6 +277,11 @@ class Caller:
         """Returns `True` if the caller is protected from stopping."""
         return self._protected
 
+    @protected.setter
+    def protected(self, value=True) -> None:
+        assert value is True
+        self._protected = True
+
     @property
     def running(self) -> bool:
         """Returns `True` when the caller is available to run requests."""

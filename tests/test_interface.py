@@ -15,7 +15,7 @@ from traitlets.config.configurable import Configurable
 import async_kernel
 from async_kernel.comm import Comm
 from async_kernel.interface import HasInterface, Interface
-from async_kernel.messaging.base import LocalClient
+from async_kernel.messaging import LocalClient
 from async_kernel.shell.base import BaseShell
 from async_kernel.typing import Channel, Job, MsgType
 from tests import utils

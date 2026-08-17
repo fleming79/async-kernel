@@ -9,7 +9,7 @@ import pytest
 import async_kernel
 from async_kernel import Caller, Kernel
 from async_kernel.interface import Interface
-from async_kernel.messaging.base import LocalClient
+from async_kernel.messaging import LocalClient
 from async_kernel.messaging.zmq import ZMQClient, ZMQConnection
 from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MessageProtocol, MsgHeader, MsgType
 

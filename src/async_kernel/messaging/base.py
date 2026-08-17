@@ -94,11 +94,11 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
         self.session_id  # noqa: B018
         del self._session_id
         self.set_task_function(self.connection_task, caller=caller or Caller())
+        self.caller.protected = True
 
     async def connection_task(self, started: Callable[[], Any], stop: ProtectedPending) -> None:
-        async with self.caller:
-            started()
-            await stop
+        started()
+        await stop
 
     @override
     def handle_reply(self, msg: Message) -> None:
