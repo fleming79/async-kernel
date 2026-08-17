@@ -229,18 +229,17 @@ class Caller:
     _pen_stop: list[Pending]
 
     started = Fixed(ProtectedPending)
-    "A pending that is set once the caller has started."
+    """A pending that is set once the caller has started."""
 
     stopping = Fixed(ProtectedPending)
-    "A pending that is set done the first time stop is called."
+    """A pending that is set done the first time stop is called."""
 
     stopped = Fixed(ProtectedPending)
-    "A pending that is done when the caller is stopped."
+    """A pending that is done when the caller is stopped."""
 
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
     log: logging.LoggerAdapter
-    ""
 
     @property
     def name(self) -> str:
@@ -1259,16 +1258,17 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
     """
 
     started: Fixed[Self, ProtectedPending[None]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
-    "A `ProtectedPending` that is set once `func` indicates it is started."
+    """A `ProtectedPending` that is set once `func` indicates it is started."""
 
     stopping: Fixed[Self, ProtectedPending[None]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
-    "A `ProtectedPending` that is set when the method `stop` is called."
+    """A `ProtectedPending` that is set when the method `stop` is called."""
 
     stopped: Fixed[Self, ProtectedPending[T]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
-    "A `ProtectedPending` that is set when the shielded call of `func` is finished."
+    """A `ProtectedPending` that is set when the shielded call of `func` is finished."""
 
     @property
     def caller(self) -> Caller:
+        """The caller where the task is running."""
         # requires `self.set_function`.
         try:
             return self._caller_ref()  # pyright: ignore[reportReturnType]
@@ -1283,6 +1283,12 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         *,
         caller: Caller | None = None,
     ) -> Self:
+        """Set the task function for this instance.
+
+        Args:
+            func: The coroutine function to run as a task.
+            caller: Specify the caller to run the function.
+        """
         if hasattr(self, "_caller_ref"):
             msg = "`func` can only be set once!"
             raise RuntimeError(msg)
@@ -1335,7 +1341,15 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
                 await self.stop().wait(shield=True)
 
     def start(self, *args: P.args, **kwargs: P.kwargs) -> Self:
-        ""
+        """Start the task function.
+
+        Args:
+            *args: Arguments to pass to the task coroutine function.
+            **kwargs: Keyword arguments to pass to the task coroutine function.
+
+        Returns:
+            Self: Returns the instance to make it convenient to chain function calls.
+        """
         if not hasattr(self, "_func"):
             msg = "The task function has not been set. Tip: Use the method `set_task_function`."
             raise RuntimeError(msg)
@@ -1375,7 +1389,11 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         return self
 
     def stop(self, _=None) -> ProtectedPending[T]:
-        """Stop the Task."""
+        """Stop the Task.
+
+        Returns:
+            ProtectedPending: Resolves with the result of the function.
+        """
         self.started.cancel("Stopped early!")
         self.stopping.set_result(None)
         with contextlib.suppress(AttributeError):

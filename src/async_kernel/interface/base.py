@@ -90,10 +90,10 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
     """
 
     kernel_name = traitlets.Unicode("async").tag(config=True)
-    "The kernel's name."
+    """The kernel's name."""
 
     classes: ClassesType = final([])
-    "The classes registered with the interface."
+    """The classes registered with the interface."""
 
     aliases: dict[str | tuple[str, ...], str] = (  # pyright: ignore[reportIncompatibleVariableOverride]
         Application.aliases
@@ -163,7 +163,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
     """The value used to import the interface using [async_kernel.kernelspec.import_launcher][]."""
 
     force_shutdown_delay = traitlets.Float(2 if not utils.LAUNCHED_BY_DEBUGPY else 1e6)
-    "The time in seconds to wait after stop is called before stop with force enabled is called."
+    """The time in seconds to wait after stop is called before stop with force enabled is called."""
 
     callers: Fixed[Self, dict[Literal[Channel.shell, Channel.control], Caller]] = Fixed(
         lambda c: {Channel.shell: c["owner"].caller, Channel.control: c["owner"].caller.get(name="Control")}
@@ -179,10 +179,10 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
     """The global comm manager."""
 
     autostart_connections = traitlets.List().tag(config=True)
-    "A list of connections to start with the app."
+    """A list of connections to start with the app."""
 
     _connections: tuple[Connection[Self], ...] = ()
-    "The connections to the interface for messaging."
+    """The connections to the interface for messaging."""
 
     iopub_send_first_connection_only = traitlets.Bool(False).tag(config=True)
     """Send iopub messages on the first connection only."""
@@ -190,7 +190,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
     _connections_lock = Fixed(BinarySemaphore)
 
     shell: Fixed[Self, T_shell_co] = Fixed(lambda c: c["owner"].kernel.main_shell)
-    "The main shell."
+    """The main shell."""
 
     _instance: Self | None = None
 

@@ -22,14 +22,7 @@ if TYPE_CHECKING:
 
     from async_kernel.caller import Caller
 
-__all__ = [
-    "Pending",
-    "PendingCancelled",
-    "PendingGroup",
-    "PendingManager",
-    "PendingNotDone",
-    "PendingTracker",
-]
+__all__ = ["Pending", "PendingCancelled", "PendingGroup", "PendingManager", "PendingNotDone", "PendingTracker"]
 
 truncated_rep = reprlib.Repr()
 truncated_rep.maxlevel = 1
@@ -196,11 +189,12 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
     _cancelled: str | None = None
     _leaving_context: bool = False
     _failed: Fixed[Self, list[Pending]] = Fixed(list)
+
     cancellation_timeout = 10
-    "The maximum time to wait for cancelled pending to be done."
+    """The maximum time to wait for cancelled pending to be done."""
 
     caller: Fixed[Self, Caller] = Fixed(lambda _: async_kernel.Caller())
-    "The caller where the pending group was instantiated."
+    """The caller where the pending group was instantiated."""
 
     def __init__(
         self,
@@ -359,10 +353,10 @@ class Pending(Awaitable[T]):
     ]
 
     _REPR_OMIT: ClassVar[list[str]] = ["func", "args", "kwargs", "caller"]
-    "Keys of metadata to omit when creating a repr of the pending."
+    """Keys of metadata to omit when creating a repr of the pending."""
 
     _metadata_mappings: ClassVar[dict[int, dict[str, Any]]] = {}
-    "A mapping of pending ids to metadata."
+    """A mapping of pending ids to metadata."""
 
     _cancelled: str | None
     _canceller: Callable[[str | None], Any] | None

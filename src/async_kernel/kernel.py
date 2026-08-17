@@ -58,41 +58,37 @@ class Kernel(
     """The class containing the handler methods to implement a Jupyter Kernel."""
 
     help_links = traitlets.List(trait=traitlets.Dict()).tag(config=True)
-    "A list of links provided kernel info request."
+    """A list of links provided kernel info request."""
 
     supported_features = traitlets.List(traitlets.Unicode()).tag(config=True)
-    "A list of features supported by the kernel."
+    """A list of features supported by the kernel."""
 
     handle_in_shell_thread = traitlets.List(
         traitlets.UseEnum(MsgType),
         [MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close],
     ).tag(config=True)
-    """
-    A list of `MsgType` that are always handled in the shell's thread (typically the _MainThread_).
-    """
+    """A list of `MsgType` that are always handled in the shell's thread (typically the _MainThread_)."""
 
     handle_in_thread = traitlets.Dict(key_trait=traitlets.UseEnum(MsgType), value_trait=traitlets.Unicode())
-    """
-    A mapping of `MsgType` to the name of a separate caller (thread) in which to run the handler.
-    """
+    """A mapping of `MsgType` to the name of a separate caller (thread) in which to run the handler."""
 
     callers: Fixed[Self, dict] = Fixed(lambda c: c["owner"].parent.callers)
-    "A shortcut to the callers dict on the parent."
+    """A shortcut to the callers dict on the parent."""
 
     caller: Fixed[Self, Caller] = Fixed(lambda c: c["owner"].callers[Channel.shell])
-    "The caller for the shell thread."
+    """The caller for the shell thread."""
 
     debugger = Fixed(Debugger)
-    "The debugger for handling debug requests."
+    """The debugger for handling debug requests."""
 
     comm_manager: Fixed[Self, CommManager] = Fixed(lambda c: c["owner"].parent.comm_manager)
-    "Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."
+    """Creates [async_kernel.comm.Comm][] instances and maintains a mapping to `comm_id` to `Comm` instances."""
 
     stopped = Fixed(ProtectedPending)
-    "A pending that is set once the kernel has stopped."
+    """A pending that is set once the kernel has stopped."""
 
     active_execute_requests: Fixed[Self, set[Pending[Any]]] = Fixed(set)
-    "A set of active execute requests that gets updated by the shell."
+    """A set of active execute requests that gets updated by the shell."""
 
     _interrupt_message = "Kernel interrupted"
 

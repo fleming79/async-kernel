@@ -244,6 +244,7 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
     default_input_hander: Callable[[Content], CoroutineType[Any, Any, str]] | None = traitlets.Callable(  # pyright: ignore[reportAssignmentType]
         None, allow_none=True
     ).tag(config=True)
+    """The default handler for input requests."""
 
     _iopub_queues: Fixed[Self, deque[tuple[bytes, SingleAsyncQueue]]] = Fixed(deque)
 
@@ -444,6 +445,7 @@ class LocalClient(HasInterface[T_interface_co], BaseClient[T_interface_co], Gene
     """A client for an interface running in the current process."""
 
     connection: Fixed[Self, Connection[T_interface_co]] = Fixed(lambda c: Connection(session_id=c["owner"].session_id))
+    """A local connection to the interface."""
 
     @override
     async def connection_task(self, started: Callable[[], Any], stop: ProtectedPending) -> None:
