@@ -188,6 +188,8 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
                 match channel:
                     case Channel.shell | Channel.control | Channel.heartbeat | Channel.stdin:
                         socket = self.zmq_poll.socket(zmq.SocketType.ROUTER)
+                        # ref: https://github.com/ipython/ipykernel/issues/270
+                        socket.router_handover = 1
                     case Channel.iopub:
                         socket = self.zmq_poll.socket(zmq.SocketType.XPUB)
                 socket.setsockopt(zmq.SocketOption.LINGER, 500)
