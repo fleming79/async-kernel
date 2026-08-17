@@ -97,7 +97,7 @@ class Kernel(
     _interrupt_message = "Kernel interrupted"
 
     _restart = False
-    _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Channel], HandlerType]] = {}
+    _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Channel] | MsgType, HandlerType]] = {}
     _subshells: dict[str, T_shell_co]
     _interrupt_requested: Pending | None = None
 
@@ -309,11 +309,9 @@ class Kernel(
             except KeyError:
                 subshell_id = None
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
-
-        if msg_type is MsgType.execute_request:
-            key = (subshell_id, msg_type, job["msg"]["channel"])
-        else:
-            key = (None, msg_type, job["msg"]["channel"])
+        key = (
+            (subshell_id, msg_type, Channel(job["msg"]["channel"])) if msg_type is MsgType.execute_request else msg_type
+        )
         try:
             # Return an existing handler from the cache.
             return self._handler_cache[key]
@@ -350,8 +348,8 @@ class Kernel(
                     del job
 
             # Cache and return the new handler.
-            self._handler_cache[key] = run_job
-            return run_job
+            self._handler_cache.setdefault(key, run_job)
+            return self._handler_cache[key]
 
     def handle_request(self, job: Job) -> None:
         """Schedule handling of the job (msg) with a handler running in a Task managed by a Caller.
