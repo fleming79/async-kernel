@@ -5,7 +5,7 @@ from __future__ import annotations
 import enum
 import typing
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, Any, Generic, Literal, NotRequired, ParamSpec, Self, final, runtime_checkable
+from typing import TYPE_CHECKING, Any, Final, Generic, Literal, NotRequired, ParamSpec, Self, final, runtime_checkable
 
 import traitlets
 from typing_extensions import Sentinel, TypedDict, TypeVar, get_annotations, override
@@ -41,7 +41,7 @@ __all__ = [
     "Tags",
 ]
 
-NoValue = Sentinel("NoValue")
+NoValue: Final = Sentinel("NoValue")
 "A sentinel to indicate a value has not been provided."
 
 

@@ -61,7 +61,7 @@ class IPApp(Interface[T_ipshell_co], BaseIPythonApplication, InteractiveShellApp
         return self.shell.user_ns
 
     @override
-    def initialize(self, argv: list | NoValue | None = ...) -> None:  # pyright: ignore[reportInvalidTypeForm]
+    def initialize(self, argv: list | NoValue | None = None) -> None:
         super().initialize(argv)
         if self.host is None:
             for k in ["pylab", "gui", "matplotlib"]:

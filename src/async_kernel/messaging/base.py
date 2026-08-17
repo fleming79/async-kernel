@@ -80,7 +80,7 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
     _pending_messages: Fixed[Self, dict[str, PendingMessage[Any]]] = Fixed(dict)
     """A mapping of the `msg_id` of message requests to the pending that is resolved with a reply."""
 
-    def __init__(self, caller: Caller | None = None, /, session_id: str | NoValue = NoValue, **kwargs: Any) -> None:  # pyright: ignore[reportInvalidTypeForm]
+    def __init__(self, caller: Caller | None = None, /, session_id: str | NoValue = NoValue, **kwargs: Any) -> None:
         """Initialize the instance.
 
         Args:
@@ -217,7 +217,7 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
         content: Content | None = None,
         *,
         metadata: dict[str, Any] | None = None,
-        parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,
         ident: bytes | list[bytes] | None = None,
         buffers: BuffersType | None = None,
     ) -> None:
@@ -320,9 +320,9 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         *,
         store_history: bool = True,
         user_expressions: dict[str, str] | None = None,
-        stop_on_error: NoValue | bool = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        stop_on_error: NoValue | bool = NoValue,
         metadata: dict[str, Any] | None = None,
-        input_handler: Callable[[Content], CoroutineType[Any, Any, str]] | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
+        input_handler: Callable[[Content], CoroutineType[Any, Any, str]] | NoValue | None = NoValue,
         channel: Literal[Channel.shell, Channel.control] = Channel.shell,
         subshell_id: str | None = None,
     ) -> PendingMessage:
