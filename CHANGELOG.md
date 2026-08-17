@@ -5,7 +5,81 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.21.0] - 2026-07-18
+## [0.22.0] - 2026-08-17
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Major interface refactoring, new features and capabilities [#538](https://github.com/fleming79/async-kernel/pull/538)
+
+### <!-- 1 --> 🚀 Features
+
+- Add ShieldedTask. [#553](https://github.com/fleming79/async-kernel/pull/553)
+
+- Change caller async context manager to be first in last out, intermediate contexts are not managed. [#549](https://github.com/fleming79/async-kernel/pull/549)
+
+- Add ProtectedPending to prevent accidental propagation of cancellation of a cancelled waiter. [#546](https://github.com/fleming79/async-kernel/pull/546)
+
+- Add cancellation support in ZMQPoll. [#541](https://github.com/fleming79/async-kernel/pull/541)
+
+- Rename Poll to ZMQPoll and add ZMQPollSocket [#539](https://github.com/fleming79/async-kernel/pull/539)
+
+- Caller async context management changes [#537](https://github.com/fleming79/async-kernel/pull/537)
+
+- Split BaseInterface into BaseMessageApplication [#536](https://github.com/fleming79/async-kernel/pull/536)
+
+### <!-- 2 --> 🐛 Fixes
+
+- Fix heartbeat [#532](https://github.com/fleming79/async-kernel/pull/532)
+
+### <!-- 5 --> 📝 Documentation
+
+- Use Ruff lint pydocstyle [#531](https://github.com/fleming79/async-kernel/pull/531)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Bump uv from 0.11.32 to 0.12.4 [#562](https://github.com/fleming79/async-kernel/pull/562)
+
+- Bump astral-sh/setup-uv from 9.0.0 to 10.0.1 in the actions group [#559](https://github.com/fleming79/async-kernel/pull/559)
+
+- Pre-commit autoupdate and update uv.lock. [#565](https://github.com/fleming79/async-kernel/pull/565)
+
+- Fix pyright type hinting of NoValue. [#564](https://github.com/fleming79/async-kernel/pull/564)
+
+- Rename ShieldedTask to StartStopTask. [#557](https://github.com/fleming79/async-kernel/pull/557)
+
+- More features fro ShieldedTask. [#556](https://github.com/fleming79/async-kernel/pull/556)
+
+- Compatibility fix with ipython. [#555](https://github.com/fleming79/async-kernel/pull/555)
+
+- Change ShieldedTask to use set_task_function to set the function and caller to avoid clashing when used as a mixin. [#554](https://github.com/fleming79/async-kernel/pull/554)
+
+- Refactor Pending._set_done. [#552](https://github.com/fleming79/async-kernel/pull/552)
+
+- Refactor Pending._set_done. [#551](https://github.com/fleming79/async-kernel/pull/551)
+
+- Improve Caller auto shutdown support [#550](https://github.com/fleming79/async-kernel/pull/550)
+
+- Make Caller a bit safer for shutdown where it's context is held inside a pending task. [#548](https://github.com/fleming79/async-kernel/pull/548)
+
+- Improve caller shutdown management and tests [#547](https://github.com/fleming79/async-kernel/pull/547)
+
+- Bump astral-sh/setup-uv from 8.3.2 to 9.0.0 in the actions group [#544](https://github.com/fleming79/async-kernel/pull/544)
+
+- ZMQPoll support multiple context entry and re-entry. [#545](https://github.com/fleming79/async-kernel/pull/545)
+
+- Improve kernel shutdown. [#543](https://github.com/fleming79/async-kernel/pull/543)
+
+- More Messge types and general fixes. [#542](https://github.com/fleming79/async-kernel/pull/542)
+
+- Improve ZMQPollSocket autoclose. [#540](https://github.com/fleming79/async-kernel/pull/540)
+
+- Fix the ident of input request messages. [#535](https://github.com/fleming79/async-kernel/pull/535)
+
+- Bump the actions group with 2 updates [#533](https://github.com/fleming79/async-kernel/pull/533)
+
+- Improve uv magic. [#534](https://github.com/fleming79/async-kernel/pull/534)
+
+## [0.21.0] - 2026-07-19
 
 ### <!-- 1 --> 🚀 Features
 
@@ -16,6 +90,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support loop_factory as an importable path. [#514](https://github.com/fleming79/async-kernel/pull/514)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.21.0 [#530](https://github.com/fleming79/async-kernel/pull/530)
 
 - Poll maintenance [#529](https://github.com/fleming79/async-kernel/pull/529)
 
@@ -1453,6 +1529,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.22.0]: https://github.com/fleming79/async-kernel/compare/v0.21.0..v0.22.0
 [0.21.0]: https://github.com/fleming79/async-kernel/compare/v0.20.2..v0.21.0
 [0.20.2]: https://github.com/fleming79/async-kernel/compare/v0.20.1..v0.20.2
 [0.20.1]: https://github.com/fleming79/async-kernel/compare/v0.20.0..v0.20.1
