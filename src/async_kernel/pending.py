@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import contextvars
+import logging
 import math
 import reprlib
 import uuid
@@ -578,7 +579,7 @@ class Pending(Awaitable[T]):
             try:
                 callbacks.pop()(self)
             except Exception:
-                pass
+                logging.getLogger().exception("An exception occurred in pending callback %r", self, exc_info=e)
             except BaseException as exc:
                 e = exc
         if e:

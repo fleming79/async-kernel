@@ -26,7 +26,7 @@ class Test_zmq_Poll:
     async def test_event_handler_busy_resource(self, caller: Caller) -> None:
         with ZMQPoll() as zmq_poll:
             sock = zmq_poll.socket(zmq.SocketType.PAIR)
-            with (
+            with (  # noqa: ASYNC100
                 anyio.fail_after(tests.utils.TIMEOUT),
                 zmq_poll.event_handler(sock, lambda _, __: None, canceller=None),
                 pytest.raises(BusyResourceError),

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import builtins
+import contextlib
 import math
 import shlex
 import shutil
@@ -660,7 +661,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                 cell_id=cell_id,
                 cell_meta=cell_meta,
             )
-            return result  # noqa: RET504
+            return result
         finally:
             self.events.trigger("post_execute")
             if not silent:
@@ -985,12 +986,10 @@ class KernelMagics(HasInterface[Interface[IPShell]], Magics):
           %uv pip install [pkgs]
         """
         fname = shutil.which("uv") or "uv"
-        try:
+        with contextlib.suppress(Exception):
             import uv  # noqa: PLC0415
 
             fname = uv.find_uv_bin()  # pragma: no cover
-        except Exception:
-            pass
 
         cmd = [fname, *shlex.split(line or "-h")]
         if "--color" not in line:

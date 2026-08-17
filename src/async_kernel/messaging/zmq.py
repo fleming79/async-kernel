@@ -348,7 +348,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
         try:
             # We deliberately use subprocess directly because it is safer in pytest and debugpy.
             async with self.start(connect_timeout=0):
-                process = subprocess.Popen(command)
+                process = subprocess.Popen(command)  # noqa: ASYNC220
                 await self._establish_connection(connect_timeout)
                 if heartbeat_interval is not None:
                     hb = self.caller.create_start_stop_task(self._monitor_heartbeat)

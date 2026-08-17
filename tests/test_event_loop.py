@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import importlib.util
 from typing import Any
 
@@ -62,10 +63,8 @@ class TrioHost(Host):
         self.start_guest()
         while not self._outcome:
             fn = await queue.async_get()
-            try:
+            with contextlib.suppress(Exception):
                 fn()
-            except Exception:
-                continue
 
     @override
     def done_callback(self, outcome) -> None:
