@@ -12,7 +12,6 @@ from async_kernel.connection.base import LocalClient
 from async_kernel.connection.zmq import ZMQClient, ZMQConnection
 from async_kernel.interface import Interface
 from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MessageProtocol, MsgHeader, MsgType
-from tests import utils
 
 if TYPE_CHECKING:
     import pathlib
@@ -81,9 +80,7 @@ async def kernel(client: ZMQClient | LocalClient) -> Kernel:
 async def subprocess_kernel_client(anyio_backend: Backend):
     # Launching the subprocess from a fixture enables coverage to be patched correctly by pytest coverage.
     client = ZMQClient(encryption="curve")
-    async with client.subprocess_kernel(
-        startup_delay=0.1, heartbeat_interval=None, start_timeout=utils.TIMEOUT, backend=anyio_backend
-    ):
+    async with client.subprocess_kernel(heartbeat_interval=None, backend=anyio_backend):
         yield client
 
 

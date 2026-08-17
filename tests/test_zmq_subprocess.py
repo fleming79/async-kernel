@@ -5,7 +5,6 @@ import signal
 import sys
 from typing import TYPE_CHECKING, Literal
 
-import anyio
 import pytest
 from aiologic.lowlevel import create_async_event, create_async_waiter
 
@@ -46,10 +45,8 @@ async def test_input(
         assert reply["content"]["status"] == "error"
         assert reply["content"].get("ename") == "RuntimeError"
         return
-
     pen = client.execute(code, input_handler=input_handler, user_expressions={"response": "response"})
     await ready
-    await anyio.sleep(0.5)
 
     if test_mode == "interrupt":
         await client.send_message(client.msg(MsgType.interrupt_request, None, Channel.control))
@@ -118,7 +115,7 @@ async def test_subprocess_kernel_keyboard_interrupt(tmp_path: pathlib.Path, anyi
     client = ZMQClient()
     okay = False
     with pytest.raises(RuntimeError, match="Heartbeat not detected"):  # noqa: PT012
-        async with client.subprocess_kernel(heartbeat_interval=0.1, start_timeout=utils.TIMEOUT) as process:
+        async with client.subprocess_kernel(heartbeat_interval=0.1) as process:
             # Simulate a keyboard interrupt from the console.
             result = await client.execute("import os\npid=os.getpid()", user_expressions={"pid": "pid"})
             pid = int(result["content"]["user_expressions"]["pid"]["data"]["text/plain"])

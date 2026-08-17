@@ -202,16 +202,12 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
 
     @override
     def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
-
-        match msg["channel"]:
-            case Channel.control | Channel.shell:
-                self.parent.kernel.handle_request(
-                    Job(msg=msg, ident=ident, received_time=time.monotonic(), owner=self.as_owner)
-                )
-            case Channel.stdin:
-                self.handle_reply(msg)
-            case _:
-                self.log.debug("Unhandled message %r %r", msg, ident)
+        if msg["header"]["msg_type"].endswith("_reply"):
+            self.handle_reply(msg)
+        else:
+            self.parent.kernel.handle_request(
+                Job(msg=msg, ident=ident, received_time=time.monotonic(), owner=self.as_owner)
+            )
 
     def connection_info(self) -> str:
         return ""
@@ -254,17 +250,14 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
 
     @override
     def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
-        match msg["channel"]:
-            case Channel.control | Channel.shell:
-                self.handle_reply(msg)
-            case Channel.stdin:
-                self._handle_request(Job(owner=self.as_owner, msg=msg, ident=ident, received_time=time.monotonic()))
-            case Channel.iopub:
-                for topic, queue in self._iopub_queues:
-                    if not topic or any(topic == v[: len(topic)] for v in ident):
-                        queue.append(msg)
-            case _:
-                self.log.debug("Unhandled message %r", msg)
+        if msg["channel"] is Channel.iopub:
+            for topic, queue in self._iopub_queues:
+                if not topic or any(topic == v[: len(topic)] for v in ident):
+                    queue.append(msg)
+        elif msg["header"]["msg_type"].endswith("_reply"):
+            self.handle_reply(msg)
+        else:
+            self._handle_request(Job(owner=self.as_owner, msg=msg, ident=ident, received_time=time.monotonic()))
 
     def _handle_request(self, job: Job) -> None:
         # Thread: undefined

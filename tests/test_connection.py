@@ -19,12 +19,6 @@ class TestConnection:
         connection = Connection()
         assert connection.parent is kernel.parent
 
-        # Check unhandled messages
-        debug = mocker.patch.object(connection.log, "debug")
-        connection.handle_incoming_msg({"channel": Channel.heartbeat}, [])  # pyright: ignore[reportArgumentType]
-        assert debug.call_count == 1
-        assert debug.call_args.args[0].startswith("Unhandled message")
-
         connection.start()
         await connection.started
         assert connection.parent.connections
@@ -33,12 +27,6 @@ class TestConnection:
 
     async def test_base_client(self, kernel: Kernel, mocker):
         async with BaseClient().start() as client:
-            # Check unhandled messages
-            debug = mocker.patch.object(client.log, "debug")
-            client.handle_incoming_msg({"channel": Channel.heartbeat}, [])  # pyright: ignore[reportArgumentType]
-            assert debug.call_count == 1
-            assert debug.call_args.args[0].startswith("Unhandled message")
-
             msg = client.msg(MsgType.comm_open, None, Channel.shell)
             with pytest.raises(TypeError, match="does not send a reply"):
                 client.send_message(msg)

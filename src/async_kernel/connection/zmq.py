@@ -54,6 +54,13 @@ Interface.classes.append(Session)
 
 
 class ZMQMessage(BaseMessage, ConnectionFileMixin):  # pyright: ignore[reportUnsafeMultipleInheritance]
+    """ZMQ socket based messaging.
+
+    refs:
+        - https://zeromq.org/socket-api/
+        - https://zguide.zeromq.org/
+    """
+
     session: Fixed[Self, Session] = Fixed(lambda c: Session(session=c["owner"].session_id))
     "Provides messaging utilities."
 
@@ -274,28 +281,32 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
         async with self.iopub_subscribe(timeout=timeout):
             pass
         self.log.debug("Getting kernel info to configure session")
-        msg = await self.kernel_info()
+        # The stdin socket is used to send the request to ensure the connection is established.
+        # This should help prevent input request messages from being silently discarded before
+        # the socket is connected. This primarily occurs when running tests that execute code
+        # requesting input. This can make the tests appear flaky for no apparent reason.
+        msg = await self.send_message(self.msg(MsgType.kernel_info_request, None, Channel.stdin))
         adapt_version = int(msg["content"]["protocol_version"].split(".")[0])
         if adapt_version != jupyter_client.protocol_version_info[0]:  # pyright: ignore[reportPrivateImportUsage]
             self.session.adapt_version = adapt_version  # pragma: no cover
         self.log.debug("Session config complete")
 
     @override
-    def start(self, *, start_timeout: float | None = None) -> Self:
+    def start(self, *, connect_timeout: float | None = None) -> Self:
         """Connect this client to the interface.
 
         Args:
-            start_timeout: The maximum time to wait for the connection to reply with a welcome message and to configure the session.
-                passing `start_timeout=0` will skip the `_establish_connection` step.
+            connect_timeout: The maximum time to wait for the connection to reply with a welcome message and to configure the session.
+                passing `connect_timeout=0` will skip the `_establish_connection` step.
         """
         if not self.shell_port:
             msg = "Connection info has not been set. Tip: consider using the method `subprocess_kernel` or `load_connection_info`."
             raise RuntimeError(msg)
-        return super().start(start_timeout=start_timeout)
+        return super().start(connect_timeout=connect_timeout)
 
     @override
     async def connection_task(
-        self, started: Callable[[], Any], stop: ProtectedPending, *, start_timeout: float | None = None
+        self, started: Callable[[], Any], stop: ProtectedPending, *, connect_timeout: float | None = None
     ) -> None:
         def handler(sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg) -> None:
             ident, msg = recv(sock)
@@ -310,8 +321,8 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
                 zpoll.event_handler(await connect(Channel.shell), partial(handler, channel=Channel.shell)),
                 zpoll.event_handler(await connect(Channel.stdin), partial(handler, channel=Channel.stdin)),
             ):
-                if start_timeout != 0:
-                    await self._establish_connection(start_timeout)
+                if connect_timeout != 0:
+                    await self._establish_connection(connect_timeout)
                 await super().connection_task(started, stop)
                 self._sockets.clear()
 
@@ -319,8 +330,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
     async def subprocess_kernel(
         self,
         *,
-        startup_delay: float = 0.1,
-        start_timeout: float | None = None,
+        connect_timeout: float | None = None,
         heartbeat_interval: float | None = 10.0,
         shutdown_timeout: float | None = 10.0,
         **kwargs,
@@ -331,16 +341,14 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
         process: subprocess.Popen | None = None
         try:
             # We deliberately use subprocess directly because it is safer in pytest and debugpy.
-            async with self.start(start_timeout=0):
+            async with self.start(connect_timeout=0):
                 process = subprocess.Popen(command)
-                await self._establish_connection(start_timeout)
+                await self._establish_connection(connect_timeout)
                 if heartbeat_interval is not None:
                     hb = self.caller.create_start_stop_task(self._monitor_heartbeat)
-                    await anyio.sleep(startup_delay)
                     async with hb.start(interval=heartbeat_interval):
                         yield process
                 else:
-                    await anyio.sleep(startup_delay)
                     yield process
                 await self.shutdown(False).wait(timeout=shutdown_timeout)
                 process.wait(timeout=shutdown_timeout)
@@ -377,10 +385,6 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
                         if not reply:
                             msg = f"Heartbeat not detected after {interval}s!"
                             raise RuntimeError(msg) from None
-
-    @override
-    def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:
-        return self.session.send(self._sockets[msg["channel"]], msg, buffers=msg.pop("buffers", None), ident=ident)  # pyright: ignore[reportReturnType, reportArgumentType]
 
     @asynccontextmanager
     @override
