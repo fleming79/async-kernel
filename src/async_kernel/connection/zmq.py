@@ -1,4 +1,4 @@
-"""Defines a base kernel interface using zmq sockets."""
+"""ZMQ messaging objects for both Connection and Client."""
 
 from __future__ import annotations
 
@@ -223,8 +223,11 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
 class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co]):
     """A client for an interface that provides a [ZMQConnection][].
 
-    The client can be connected to an existing interface's connection (with ZMQClient.load_connection_info[]).
-    or [ZMQClient.load_connection_file][]), or a new interface/kernel can be started with [ZMQClient.subprocess_kernel][].
+    The client can be connected to an existing interface's using either:
+    - `ZMQClient.load_connection_info` or,
+    - `ZMQClient.load_connection_file`
+
+    A new interface/kernel can be started with [ZMQClient.subprocess_kernel][].
     """
 
     encryption = traitlets.Enum(["curve"], default_value=None, allow_none=True)

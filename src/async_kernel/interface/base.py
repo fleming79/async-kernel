@@ -1,4 +1,4 @@
-"""The base class definition to interface with the kernel."""
+"""The interface class definition which provides configuration, access to the kernel and connections."""
 
 from __future__ import annotations
 

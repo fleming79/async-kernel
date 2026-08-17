@@ -1,4 +1,4 @@
-"""The base class definition to interface with the kernel."""
+"""Default Messaging object definitions for Messaging including `BaseMessage`, `Connection` and `Client`."""
 
 from __future__ import annotations
 
@@ -80,13 +80,12 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
     _pending_messages: Fixed[Self, dict[str, PendingMessage[Any]]] = Fixed(dict)
     """A mapping of the `msg_id` of message requests to the pending that is resolved with a reply."""
 
-    def __init__(self, caller: Caller | None = None, /, session_id: str | NoValue = NoValue, **kwargs) -> None:  # pyright: ignore[reportInvalidTypeForm]
+    def __init__(self, caller: Caller | None = None, /, session_id: str | NoValue = NoValue, **kwargs: Any) -> None:  # pyright: ignore[reportInvalidTypeForm]
         """Initialize the instance.
 
         Args:
             caller: The caller to use to run the interface.
-            send: The callback to send a serialized message.
-            session_id: The id to use for to identify the instance in `msg["header"]["session"]`, if a blank string is passed, the
+            session_id: The id to use for to identify the instance in `msg["header"]["session"]`.
             **kwargs: Additional arguments to configure the instance.
         """
         super().__init__(**kwargs)
@@ -286,7 +285,7 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
 
     @asynccontextmanager
     async def iopub_subscribe(
-        self, topic=b"", *, timeout: float | None = 1
+        self, topic: bytes = b"", *, timeout: float | None = 1
     ) -> AsyncGenerator[SingleAsyncQueue[Message]]:
         """Open a new iopub socket and subscribe to a particular topic.
 
