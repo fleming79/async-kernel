@@ -82,7 +82,7 @@ async def subprocess_kernel_client(anyio_backend: Backend):
     # Launching the subprocess from a fixture enables coverage to be patched correctly by pytest coverage.
     client = ZMQClient(encryption="curve")
     async with client.subprocess_kernel(
-        startup_delay=1, heartbeat_interval=None, start_timeout=utils.TIMEOUT, backend=anyio_backend
+        startup_delay=0.1, heartbeat_interval=None, start_timeout=utils.TIMEOUT, backend=anyio_backend
     ):
         yield client
 

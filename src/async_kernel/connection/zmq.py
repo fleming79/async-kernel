@@ -269,9 +269,9 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
 
         return await self.zmq_poll.execute_async(open_socket)
 
-    async def _establish_connection(self) -> None:
+    async def _establish_connection(self, timeout: float | None) -> None:
         # Wait for welcome
-        async with self.iopub_subscribe():
+        async with self.iopub_subscribe(timeout=timeout):
             pass
         self.log.debug("Getting kernel info to configure session")
         msg = await self.kernel_info()
@@ -286,6 +286,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
 
         Args:
             start_timeout: The maximum time to wait for the connection to reply with a welcome message and to configure the session.
+                passing `start_timeout=0` will skip the `_establish_connection` step.
         """
         if not self.shell_port:
             msg = "Connection info has not been set. Tip: consider using the method `subprocess_kernel` or `load_connection_info`."
@@ -302,22 +303,23 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
             handle_msg(msg, ident)
 
         connect = self._connect_socket
-        with (
-            self.zmq_poll as zpoll,
-            zpoll.event_handler(await connect(Channel.control), partial(handler, channel=Channel.control)),
-            zpoll.event_handler(await connect(Channel.shell), partial(handler, channel=Channel.shell)),
-            zpoll.event_handler(await connect(Channel.stdin), partial(handler, channel=Channel.stdin)),
-        ):
-            with anyio.fail_after(start_timeout):
-                await self._establish_connection()
-            await super().connection_task(started, stop)
-            self._sockets.clear()
+        async with self.caller:
+            with (
+                self.zmq_poll as zpoll,
+                zpoll.event_handler(await connect(Channel.control), partial(handler, channel=Channel.control)),
+                zpoll.event_handler(await connect(Channel.shell), partial(handler, channel=Channel.shell)),
+                zpoll.event_handler(await connect(Channel.stdin), partial(handler, channel=Channel.stdin)),
+            ):
+                if start_timeout != 0:
+                    await self._establish_connection(start_timeout)
+                await super().connection_task(started, stop)
+                self._sockets.clear()
 
     @asynccontextmanager
     async def subprocess_kernel(
         self,
         *,
-        startup_delay: float = 0.5,
+        startup_delay: float = 0.1,
         start_timeout: float | None = None,
         heartbeat_interval: float | None = 10.0,
         shutdown_timeout: float | None = 10.0,
@@ -325,19 +327,20 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
     ) -> AsyncGenerator[subprocess.Popen]:
         """Start a kernel interface as a subprocess."""
         self.write_connection_file()
+        command = make_argv(connection_file=self.connection_file, **kwargs)
         process: subprocess.Popen | None = None
         try:
             # We deliberately use subprocess directly because it is safer in pytest and debugpy.
-            command = make_argv(connection_file=self.connection_file, **kwargs)
-            process = subprocess.Popen(command)
-            # Delay for process to start
-            await anyio.sleep(startup_delay)
-            async with self.start(start_timeout=start_timeout):
+            async with self.start(start_timeout=0):
+                process = subprocess.Popen(command)
+                await self._establish_connection(start_timeout)
                 if heartbeat_interval is not None:
                     hb = self.caller.create_start_stop_task(self._monitor_heartbeat)
+                    await anyio.sleep(startup_delay)
                     async with hb.start(interval=heartbeat_interval):
                         yield process
                 else:
+                    await anyio.sleep(startup_delay)
                     yield process
                 await self.shutdown(False).wait(timeout=shutdown_timeout)
                 process.wait(timeout=shutdown_timeout)
