@@ -29,7 +29,7 @@ class Comm(HasInterface, BaseComm):
         msg_type: IOPubMsgTypeAlias | str,
         data: dict | None = None,
         metadata: dict | None = None,
-        buffers: BuffersType = None,
+        buffers: BuffersType | None = None,
         **keys,
     ) -> None:
         """Helper for sending a comm message on IOPub."""

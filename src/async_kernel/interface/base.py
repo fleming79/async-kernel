@@ -484,7 +484,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
         metadata: dict[str, Any] | None = None,
         parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         ident: bytes | list[bytes] | None = None,
-        buffers: BuffersType = None,
+        buffers: BuffersType | None = None,
     ) -> None:
         """Publish an iopub message on all connections."""
         for c in self._connections:

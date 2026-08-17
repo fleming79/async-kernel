@@ -419,7 +419,7 @@ class CallerState(enum.Enum):
     stopped = enum.auto()
 
 
-BuffersType = list[bytes | memoryview] | None
+BuffersType = list[bytes | memoryview]
 
 
 class MessageMeta(typing._ProtocolMeta, traitlets.MetaHasTraits):  # pyright: ignore[reportUnsafeMultipleInheritance, reportPrivateUsage]
@@ -446,7 +446,7 @@ class MessageProtocol(typing.Protocol, metaclass=MessageMeta):
         parent: Message | dict[str, Any] | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
-        buffers: BuffersType = None,
+        buffers: BuffersType | None = None,
     ) -> Message[T]:
         """Create a new message."""
         ...
@@ -465,7 +465,7 @@ class MessageProtocol(typing.Protocol, metaclass=MessageMeta):
         """Sends the message to the opposite side and return a PendingMessage."""
         ...
 
-    def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType = None) -> None:
+    def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType | None = None) -> None:
         """Send a reply to a job (a message of msg_type ending in '_request')."""
 
     def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:

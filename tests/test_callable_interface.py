@@ -21,7 +21,7 @@ async def test_start_kernel_callable_interface(anyio_backend: Backend):
     reader = aiter(messages)
     stopped = create_async_event()
 
-    def from_interface(packed_msg: str, buffers: BuffersType = None, ident=None) -> str | None:
+    def from_interface(packed_msg: str, buffers: BuffersType | None = None, ident=None) -> str | None:
         msg: Message = unpack_json(packed_msg)
         if msg["header"]["msg_type"] == MsgType.input_request:
             msg = client.msg(
@@ -42,7 +42,7 @@ async def test_start_kernel_callable_interface(anyio_backend: Backend):
     async with LocalClient().start() as client:
         await client.kernel_info()
         callable_interface["handle_msg"](
-            pack_json_str(client.msg(MsgType.kernel_info_request, None, Channel.shell)), None
+            pack_json_str(client.msg(MsgType.kernel_info_request, None, Channel.shell)), []
         )
 
         while True:
@@ -62,7 +62,7 @@ async def test_start_kernel_callable_interface(anyio_backend: Backend):
             "subshell_id": None,
         }
         msg = client.msg(MsgType.execute_request, content, Channel.shell)
-        callable_interface["handle_msg"](pack_json_str(msg), None)
+        callable_interface["handle_msg"](pack_json_str(msg), [])
         while True:
             msg = await anext(reader)
             assert msg["header"]["session"]

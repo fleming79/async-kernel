@@ -122,7 +122,7 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
         parent: Message | dict[str, Any] | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
-        buffers: BuffersType = None,
+        buffers: BuffersType | None = None,
     ) -> Message[T]:
         parent = parent or utils.get_parent_message()
         if header is None:
@@ -140,7 +140,7 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
             parent_header=extract_header(parent),  # pyright: ignore[reportArgumentType]
             content={} if content is None else content,
             metadata=metadata if metadata is not None else {},
-            buffers=buffers,
+            buffers=[] if buffers is None else buffers,
         )
 
     @final
@@ -170,7 +170,7 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
         self._base_send_msg(msg, ident)
 
     @override
-    def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType = None) -> None:
+    def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType | None = None) -> None:
         if "status" not in content:
             content["status"] = "ok"
         msg = self.msg(
@@ -219,7 +219,7 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
         metadata: dict[str, Any] | None = None,
         parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,  # pyright: ignore[reportInvalidTypeForm]
         ident: bytes | list[bytes] | None = None,
-        buffers: BuffersType = None,
+        buffers: BuffersType | None = None,
     ) -> None:
         """Publish an iopub message."""
         self._base_send_msg(

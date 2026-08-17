@@ -122,12 +122,12 @@ class ZMQMessage(BaseMessage, ConnectionFileMixin):  # pyright: ignore[reportUns
         parent: Message | dict[str, Any] | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
-        buffers: BuffersType = None,
+        buffers: BuffersType | None = None,
     ) -> Message[T]:
         """Create a message suitable for sending."""
         msg: Message = self.session.msg(msg_type, content, parent, header, metadata)  # pyright: ignore[reportAssignmentType, reportArgumentType]
         msg["channel"] = channel
-        msg["buffers"] = buffers
+        msg["buffers"] = [] if buffers is None else buffers
         return msg
 
     @override

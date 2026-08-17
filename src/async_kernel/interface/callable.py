@@ -84,10 +84,10 @@ def create_interface_messge_callback_handler(
     session_calls = set()
     pack, unpack = pack_unpack
 
-    def handle_msg(packed_msg: T, buffers: BuffersType = None) -> None:
+    def handle_msg(packed_msg: T, buffers: BuffersType | None = None) -> None:
         """Handle a packed message."""
         msg: Message = unpack(packed_msg)
-        msg["buffers"] = buffers
+        msg["buffers"] = [] if buffers is None else buffers
         session: str = msg["header"]["session"]
         session_calls.add(session)
         conn: Connection | None
@@ -100,7 +100,7 @@ def create_interface_messge_callback_handler(
                     def transmit_msg(msg: Message, ident: list[bytes]) -> None:
                         """Pack and send a message."""
                         # `ident` is not sent.
-                        buffers: BuffersType = msg.pop("buffers", None)  # pyright: ignore[reportAssignmentType]
+                        buffers: BuffersType = msg.pop("buffers")  # pyright: ignore[reportAssignmentType]
                         reply = send(pack(msg), buffers, blocking_reply := msg["channel"] == Channel.stdin)
                         if blocking_reply:
                             conn.handle_incoming_msg(unpack(reply), [conn.bsession])
