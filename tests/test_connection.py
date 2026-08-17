@@ -68,8 +68,9 @@ class TestZMQConnection:
             async with client.start():
                 async with client.iopub_subscribe():
                     pass
+                connection._sockets[Channel.iopub].close()  # pyright: ignore[reportPrivateUsage]
                 with pytest.raises(TimeoutError, match="Welcome message not received"):
-                    async with client.iopub_subscribe(timeout=0):
+                    async with client.iopub_subscribe(timeout=0.001):
                         pass
 
     async def test_too_late(self, kernel):
