@@ -105,7 +105,7 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
     def handle_reply(self, msg: Message) -> None:
         # Thread: undefined
         if (parent := msg.get("parent_header")) and (f := self._pending_messages.pop(parent["msg_id"], None)):
-            self.log.debug("Received %s %s", msg["header"]["msg_type"], msg)
+            self.log.debug("Received %s %r", msg["header"]["msg_type"], msg)
             f.set_result(msg)
 
     @property
@@ -264,10 +264,11 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
                     if not topic or any(topic == v[: len(topic)] for v in ident):
                         queue.append(msg)
             case _:
-                self.log.debug("Unhandled message")
+                self.log.debug("Unhandled message %r", msg)
 
     def _handle_request(self, job: Job) -> None:
         # Thread: undefined
+        self.log.debug("Client handler request  %s %r", job["msg"]["header"]["msg_type"], job["msg"])
         handler = getattr(self, job["msg"]["header"]["msg_type"])
         self.caller.to_thread(self._wrap_request_handler, handler, job)
 
