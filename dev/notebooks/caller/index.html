@@ -863,6 +863,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -1126,6 +1128,34 @@ viewing the latest version.
     
   
     kernelspec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/messaging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    messaging
   
 
     
@@ -2466,8 +2496,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="caller-a-backend-agnostic-executor-notebook">Caller: A backend agnostic executor (notebook)<a class="anchor-link" href="#caller-a-backend-agnostic-executor-notebook">¶</a></h1><p><em>This notebook has the Python dependencies: <code>trio</code>, <code>matplotlib</code></em></p>
-<p><code>Caller</code> is a thread-local class that coordinates the execution of functions and coroutines in the event loop of a <code>asyncio</code> or <code>trio</code> backend.</p>
+<h1 id="caller-a-backend-agnostic-executor-notebook">Caller: A backend agnostic executor (notebook)<a class="anchor-link" href="#caller-a-backend-agnostic-executor-notebook">¶</a></h1><p><em>This notebook uses <code>trio</code> in some cells.</em></p>
+<p><code>Caller</code> is a thread-local object that coordinates the execution of functions and coroutines in the event loop of an <code>asyncio</code> or <code>trio</code> backend.</p>
 </div>
 </div>
 </div>
@@ -2494,13 +2524,13 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>A <code>Caller</code> instance can be started with one gui as a host to one backend started as a guest.</p>
-<p>A second backend can also be started in the same thread with or without a host gui event loop.
+<p>A second backend can also be started in the same thread/caller with or without a host gui event loop.
 Potentially the same thread could have up to:</p>
 <ul>
 <li>One host gui event loop (<code>tk</code>, <code>qt</code>, <code>...</code>)</li>
 <li>Two asynchronous backends (<code>asyncio</code>, <code>trio</code>)</li>
 </ul>
-<p>It should be noted that gui's generally assume/require their mainloop runs in the main thread.</p>
+<p>It should be noted that gui's generally assume/require that their mainloop runs in the main thread.</p>
 </div>
 </div>
 </div>
@@ -2548,10 +2578,10 @@ Potentially the same thread could have up to:</p>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>     Name    Running Protected     Thread             Caller       
-────────────────────────────────────────────────────────────────────────
-Shell           ✓       🔐       MainThread   139916014526592 ← current
-Control         ✓       🔐        Control     139915958531776
+<pre>      Name      Running Protected     Thread             Caller       
+───────────────────────────────────────────────────────────────────────────
+MainThread         ✓       🔐       MainThread   139640132952192 ← current
+Control            ✓       🔐        Control     139640077137600
 </pre>
 </div>
 </div>
@@ -2565,7 +2595,7 @@ Control         ✓       🔐        Control     139915958531776
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>There are two caller instances associated with the Kernel:</p>
+<p>There are two caller instances associated with the kernel interface:</p>
 <ul>
 <li>Shell: The caller for the shell channel (normally the MainThread).</li>
 <li>Control: The caller for the control channel (a child of the shell).</li>
@@ -2623,12 +2653,11 @@ caller = Caller()</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="modifiers">Modifiers<a class="anchor-link" href="#modifiers">¶</a></h2><p>There are four modifiers that determine which instance is returned when calling <code>Caller</code>.</p>
+<h2 id="modifiers">Modifiers<a class="anchor-link" href="#modifiers">¶</a></h2><p>There are three modifiers that can change the instance that is returned when calling <code>Caller</code>.</p>
 <ul>
 <li><code>CurrentThread</code> (default): Access the caller that belongs to the current thread (or context with Pyodide).</li>
 <li><code>MainThread</code>: Access main thread for the Caller.</li>
 <li><code>NewThread</code>: Create a new thread.</li>
-<li><code>manual</code>: Manually create a new instance for the current thread (must be started manually).</li>
 </ul>
 </div>
 </div>
@@ -2725,7 +2754,7 @@ del caller1</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;Caller ⚪🏃 running name='My caller1' backend='asyncio' host=None thread='My caller1' id=139915606095552&gt;</pre>
+<pre>&lt;Caller ⚪🏃 running name='My caller1' backend='asyncio' host=None thread='My caller1' id=139639838992064&gt;</pre>
 </div>
 </div>
 </div>
@@ -2792,9 +2821,11 @@ del trio_caller</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="callerget">Caller.get<a class="anchor-link" href="#callerget">¶</a></h2><p><code>Caller.get</code> is a method to get an instance of a <code>Caller</code> by name, passing the same name will return the same caller on subsequent calls.
-The same <a href="#caller-creation-options">options</a> for creation of a new <code>Caller</code> can be specified. Calling <code>caller.get()</code> with no <code>name</code> will always return a
-new instance of a <code>Caller</code>.</p>
+<h2 id="callerget">Caller.get<a class="anchor-link" href="#callerget">¶</a></h2><p><code>Caller.get</code> is a method to obtain a <em>child</em> instance of a <code>Caller</code> by name.
+Passing the same name on the same caller will return the same child caller on subsequent calls.
+The same <a href="#caller-creation-options">options</a> for creation of a new <code>Caller</code> can be specified.
+Calling <code>caller.get()</code> with no <code>name</code> will always return a new instance of a <code>Caller</code>. All children
+of a caller will stop when the parent stops.</p>
 </div>
 </div>
 </div>
@@ -3049,7 +3080,7 @@ for backend in ["asyncio", "trio"]:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>thread: &lt;_MainThread(MainThread, started 139916014526592)&gt;
+<pre>thread: &lt;_MainThread(MainThread, started 139640132952192)&gt;
 </pre>
 </div>
 </div>
@@ -3071,7 +3102,7 @@ for backend in ["asyncio", "trio"]:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>thread: &lt;_MainThread(MainThread, started 139916014526592)&gt;
+<pre>thread: &lt;_MainThread(MainThread, started 139640132952192)&gt;
 </pre>
 </div>
 </div>
@@ -3093,7 +3124,7 @@ for backend in ["asyncio", "trio"]:
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="low-level-methods">Low-level methods<a class="anchor-link" href="#low-level-methods">¶</a></h2><h3 id="callerqueue_call">Caller.queue_call<a class="anchor-link" href="#callerqueue_call">¶</a></h3><p>This method is used extensively by the kernel for message handling. Each time the <code>queue_call</code> is called with the same function the function and call arguments are appended to a queue. On the first call a task is started in the backend to process the queue as items are added. The task remains alive until the function is deleted or the queue is stopped. Any exceptions that occur are logged.</p>
+<h2 id="low-level-methods">Low-level methods<a class="anchor-link" href="#low-level-methods">¶</a></h2><h3 id="callerqueue_call">Caller.queue_call<a class="anchor-link" href="#callerqueue_call">¶</a></h3><p>This method is used extensively by the kernel for message handling. Each time the <code>queue_call</code> is called with the same function, the function and call arguments are appended to a queue. On the first call a task is started in the backend to process the queue as items are added. The task remains alive until the function is deleted or the queue is stopped. Any exceptions that occur are logged.</p>
 </div>
 </div>
 </div>
@@ -3125,7 +3156,7 @@ for backend in ["asyncio", "trio"]:
 <span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="nb">float</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
     <span class="n">done</span><span class="o">.</span><span class="n">down</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">done</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">done</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="s2">"Pending id:"</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="n">Caller</span><span class="o">.</span><span class="n">current_pending</span><span class="p">()))</span>
 
 
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
@@ -3146,7 +3177,7 @@ done = CountdownEvent(N)
 def f(n):
     float(n)
     done.down()
-    print(done)
+    print(done.value, "Pending id:", id(Caller.current_pending()))
 
 
 for i in range(N):
@@ -3168,70 +3199,70 @@ assert caller.queue_get(f) is None</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f40a2ea1c70 [value=9, waiting=1]&gt;
+<pre>9 Pending id: 139640059284960
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f40a2ea1c70 [value=8, waiting=1]&gt;
+<pre>8 Pending id: 139640059284960
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f40a2ea1c70 [value=7, waiting=1]&gt;
+<pre>7 Pending id: 139640059284960
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f40a2ea1c70 [value=6, waiting=1]&gt;
+<pre>6 Pending id: 139640059284960
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f40a2ea1c70 [value=5, waiting=1]&gt;
+<pre>5 Pending id: 139640059284960
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f40a2ea1c70 [value=4, waiting=1]&gt;
+<pre>4 Pending id: 139640059284960
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f40a2ea1c70 [value=3, waiting=1]&gt;
+<pre>3 Pending id: 139640059284960
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f40a2ea1c70 [value=2, waiting=1]&gt;
+<pre>2 Pending id: 139640059284960
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f40a2ea1c70 [value=1, waiting=1]&gt;
+<pre>1 Pending id: 139640059284960
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>&lt;aiologic.CountdownEvent(10) at 0x7f40a2ea1c70 [value=0]&gt;
+<pre>0 Pending id: 139640059284960
 </pre>
 </div>
 </div>
@@ -3338,13 +3369,11 @@ await event</div>
 <div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">anyio</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ipw</span>
 
 <span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
 <span class="n">stop</span> <span class="o">=</span> <span class="n">ipw</span><span class="o">.</span><span class="n">RadioButtons</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">[</span><span class="s2">"Stop"</span><span class="p">])</span>
 <span class="n">box</span> <span class="o">=</span> <span class="n">ipw</span><span class="o">.</span><span class="n">VBox</span><span class="p">([</span><span class="n">stop</span><span class="p">])</span>
-<span class="k">await</span> <span class="n">anyio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
 <span class="n">display</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
 
 
@@ -3373,13 +3402,11 @@ await event</div>
 <div class="clipboard-copy-txt" id="cell-12">import random
 import time
 
-import anyio
 import ipywidgets as ipw
 
 outputs = {}
 stop = ipw.RadioButtons(value=None, options=["Stop"])
 box = ipw.VBox([stop])
-await anyio.sleep(0.2)
 display(box)
 
 
@@ -3421,19 +3448,7 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 2</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 7</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 12</pre>
+<pre>Finished: 9</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3445,13 +3460,13 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 6</pre>
+<pre>Finished: 1</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 10</pre>
+<pre>Finished: 2</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3463,79 +3478,13 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 8</pre>
+<pre>Finished: 12</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 11</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 15</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 13</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 1</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 17</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 4</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 21</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 9</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 19</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 18</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 23</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 25</pre>
+<pre>Finished: 7</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3547,19 +3496,49 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 26</pre>
+<pre>Finished: 18</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 31</pre>
+<pre>Finished: 8</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 24</pre>
+<pre>Finished: 15</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 6</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 4</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 11</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 21</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 13</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3571,7 +3550,31 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 19</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>Finished: 20</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 10</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 23</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 26</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3583,37 +3586,13 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 25</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>Finished: 22</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 33</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 29</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 28</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 36</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 34</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3625,61 +3604,31 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 32</pre>
+<pre>Finished: 17</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 45</pre>
+<pre>Finished: 29</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 38</pre>
+<pre>Finished: 24</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 47</pre>
+<pre>Finished: 33</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 44</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 39</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 35</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 37</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 42</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 53</pre>
+<pre>Finished: 28</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3691,7 +3640,55 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 46</pre>
+<pre>Finished: 37</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 35</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 36</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 31</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 42</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 39</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 32</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 38</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 34</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3703,13 +3700,25 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 48</pre>
+<pre>Finished: 46</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 49</pre>
+<pre>Finished: 50</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 44</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 54</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3721,7 +3730,49 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 47</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 45</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 49</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 51</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 48</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 62</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>Finished: 57</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 52</pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
@@ -3733,7 +3784,85 @@ async for fut in Caller().as_completed(run_forever()):
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Finished: 51</pre>
+<pre>Finished: 63</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 53</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 58</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 65</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 59</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 55</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 60</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 69</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 67</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 71</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 68</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 75</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 61</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
+<pre>Finished: 77</pre>
 </div>
 </div>
 </div>
@@ -3898,7 +4027,7 @@ print("Out of context pending=", len(pg.pending))</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 19, 2026 09:30:47 UTC"><span class="timeago" datetime="2026-07-19T09:30:47+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 19, 2026 09:30:47 UTC">2026-07-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 17, 2026 09:33:35 UTC"><span class="timeago" datetime="2026-08-17T09:33:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 17, 2026 09:33:35 UTC">2026-08-17</span>
   </span>
 
     

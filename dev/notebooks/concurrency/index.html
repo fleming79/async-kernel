@@ -640,10 +640,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#zmq-socket-based-interface" class="md-nav__link">
+  <a href="#connections" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ZMQ Socket Based Interface
+        Connections
       
     </span>
   </a>
@@ -651,10 +651,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#callable-interface" class="md-nav__link">
+  <a href="#zmq-socket-based-connection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Callable Interface
+        ZMQ Socket Based connection
       
     </span>
   </a>
@@ -894,6 +894,8 @@ viewing the latest version.
       
         
           
+        
+      
         
       
         
@@ -1187,6 +1189,34 @@ viewing the latest version.
     
   
     kernelspec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/messaging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    messaging
   
 
     
@@ -1613,10 +1643,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#zmq-socket-based-interface" class="md-nav__link">
+  <a href="#connections" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ZMQ Socket Based Interface
+        Connections
       
     </span>
   </a>
@@ -1624,10 +1654,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#callable-interface" class="md-nav__link">
+  <a href="#zmq-socket-based-connection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Callable Interface
+        ZMQ Socket Based connection
       
     </span>
   </a>
@@ -2588,26 +2618,24 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="concurrent-message-handling-notebook">Concurrent message handling (notebook)<a class="anchor-link" href="#concurrent-message-handling-notebook">¶</a></h1><p>async-kernel is capable of concurrent message handling. It provides a separate message handler for each channel and msg_type.</p>
-<p>As messages are received they are queued for execution by the message handler.</p>
+<h1 id="concurrent-message-handling-notebook">Concurrent message handling (notebook)<a class="anchor-link" href="#concurrent-message-handling-notebook">¶</a></h1><p>async-kernel provides concurrent message handling with a separate message handler queue for each channel and msg_type.
+Execute requests also provide a separate queue per subshell.</p>
 <h2 id="callers">Callers<a class="anchor-link" href="#callers">¶</a></h2><p>async-kernel provides two <code>Callers</code> for the <em>shell</em> and <em>control</em> channels. The shell's <code>Caller</code> is
-associated with the thread where the kernel is started, normally this is the <em>MainThread</em>.
-In CPython, the <code>Caller</code> for the <em>control</em> channel is started as a child of the shell caller with
-it's own thread and asynchronous backend ('asyncio' or 'trio').</p>
-<h2 id="interface">Interface<a class="anchor-link" href="#interface">¶</a></h2><p>The interface starts the kernel and is provided to interact with the kernel.</p>
-<h2 id="zmq-socket-based-interface">ZMQ Socket Based Interface<a class="anchor-link" href="#zmq-socket-based-interface">¶</a></h2><p>In CPython the interface
-can be started from the command line and specifying a connection file. The way the kernel starts
+associated with the thread where the kernel is started, normally this is the <em>MainThread</em>.</p>
+<h2 id="interface">Interface<a class="anchor-link" href="#interface">¶</a></h2><p>The interface is a singleton which provides configuration for all classes that subclass from <code>HasInterface</code>.
+The interface coordinates the startup and shutdown of the kernel and connections to communicate with the
+kernel.</p>
+<p>In CPython the interface can be started from the command line with a connection file. The interface
 is configurable via settings defined in the kernel spec, or by using the traitlets style configuration
-files.
-The kernel interface also starts two additional threads dedicated to receive the messages on
-the  <em>shell</em> and <em>control</em> channels, the specific function call is <code>session.recv(socket, mode=zmq.BLOCKY, copy=False)</code>.</p>
-<p>Each thread blocks until a new message is received on the zmq socket. When a message is received,
-the kernel's <code>message_handler</code> is called with detail of the message (Job), the channel and a function
-that is to be used to send the response corresponding to the message. The <code>message_handler</code> obtains
-the dedicated handler according to the <code>message_type</code>, <code>run_mode</code>, <code>channel</code> and <code>subshell_id</code> and
-schedules execution of the dedicated message handler in <code>Caller's</code> thread.</p>
-<h2 id="callable-interface">Callable Interface<a class="anchor-link" href="#callable-interface">¶</a></h2><h2 id="shell-messaging">Shell messaging<a class="anchor-link" href="#shell-messaging">¶</a></h2><p>Both <code>execute_request</code> and <code>com_msg</code> are always run in the shell's thread (normally the <em>MainThread</em>).
-All other messages on the shell channel are run in the control thread.</p>
+files. Multiple connections are allow on the connection.</p>
+<h2 id="connections">Connections<a class="anchor-link" href="#connections">¶</a></h2><p>Connections are provided to communicate with the kernel in the same thread. There is
+no limit to the number of connections, however increasing the number of connections will slow
+down the interface because all iopub messages are sent on every connection. Additional connection
+subclasses can created by subclassing from Connection.</p>
+<h2 id="zmq-socket-based-connection">ZMQ Socket Based connection<a class="anchor-link" href="#zmq-socket-based-connection">¶</a></h2><p>Currently zmq sockets are the only <em>external</em> connection provided. A ZMQConnection is automatically
+started when the interface is started in CPython.</p>
+<h2 id="shell-messaging">Shell messaging<a class="anchor-link" href="#shell-messaging">¶</a></h2><p>Both <code>execute_request</code> and <code>com_msg</code> are always handled in the shell's thread (normally the <em>MainThread</em>).
+All other messages on the shell channel are handled in the control thread.</p>
 <h2 id="control-messaging">Control messaging<a class="anchor-link" href="#control-messaging">¶</a></h2><p>All messages on the control channel are handled in the control thread.</p>
 </div>
 </div>
@@ -2941,9 +2969,9 @@ await demo()</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-Shell                                  ✓       🔐                 MainThread             139973511565440
-Control                                ✓       🔐                  Control               139973457901248
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139973162428096 ← current
+MainThread                             ✓       🔐                 MainThread             140570444996736
+Control                                ✓       🔐                  Control               140570391316160
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140570095773376 ← current
 </pre>
 </div>
 </div>
@@ -2998,10 +3026,10 @@ Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-Shell                                  ✓       🔐                 MainThread             139973511565440
-Control                                ✓       🔐                  Control               139973457901248
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139973162428096
-My thread                              ✓                          My thread              139973145646784 ← current
+MainThread                             ✓       🔐                 MainThread             140570444996736
+Control                                ✓       🔐                  Control               140570391316160
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140570095773376
+My thread                              ✓                          My thread              140570078992064 ← current
 </pre>
 </div>
 </div>
@@ -3066,10 +3094,10 @@ My thread                              ✓                          My thread   
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-Shell                                  ✓       🔐                 MainThread             139973511565440
-Control                                ✓       🔐                  Control               139973457901248
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139973162428096 ← current
-My thread                              ✓                          My thread              139973145646784
+MainThread                             ✓       🔐                 MainThread             140570444996736
+Control                                ✓       🔐                  Control               140570391316160
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140570095773376 ← current
+My thread                              ✓                          My thread              140570078992064
 </pre>
 </div>
 </div>
@@ -3124,11 +3152,11 @@ My thread                              ✓                          My thread   
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-Shell                                  ✓       🔐                 MainThread             139973511565440
-Control                                ✓       🔐                  Control               139973457901248
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139973162428096
-My thread                              ✓                          My thread              139973145646784
-My executor                            ✓                         My executor             139972917065408 ← current
+MainThread                             ✓       🔐                 MainThread             140570444996736
+Control                                ✓       🔐                  Control               140570391316160
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140570095773376
+My thread                              ✓                          My thread              140570078992064
+My executor                            ✓                         My executor             140569850410688 ← current
 </pre>
 </div>
 </div>
@@ -3191,12 +3219,12 @@ await trio.sleep(0)</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-Shell                                  ✓       🔐                 MainThread             139973511565440
-Control                                ✓       🔐                  Control               139973457901248
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139973162428096
-My thread                              ✓                          My thread              139973145646784
-My executor                            ✓                         My executor             139972917065408
-My trio executor                       ✓                       My trio executor          139972900284096 ← current
+MainThread                             ✓       🔐                 MainThread             140570444996736
+Control                                ✓       🔐                  Control               140570391316160
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140570095773376
+My thread                              ✓                          My thread              140570078992064
+My executor                            ✓                         My executor             140569850410688
+My trio executor                       ✓                       My trio executor          140569833629376 ← current
 </pre>
 </div>
 </div>
@@ -3343,12 +3371,12 @@ await trio.sleep(0)</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-Shell                                  ✓       🔐                 MainThread             139973511565440 ← current
-Control                                ✓       🔐                  Control               139973457901248
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139973162428096
-My thread                              ✓                          My thread              139973145646784
-My executor                            ✓                         My executor             139972917065408
-My trio executor                       ✓                       My trio executor          139972900284096
+MainThread                             ✓       🔐                 MainThread             140570444996736 ← current
+Control                                ✓       🔐                  Control               140570391316160
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140570095773376
+My thread                              ✓                          My thread              140570078992064
+My executor                            ✓                         My executor             140569850410688
+My trio executor                       ✓                       My trio executor          140569833629376
 </pre>
 </div>
 </div>
@@ -3367,12 +3395,12 @@ My trio executor                       ✓                       My trio executo
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>                Name                Running Protected               Thread                       Caller       
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-Shell                                  ✓       🔐                 MainThread             139973511565440 ← current
-Control                                ✓       🔐                  Control               139973457901248
-Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   139973162428096
-My thread                              ✓                          My thread              139973145646784
-My executor                            ✓                         My executor             139972917065408
-My trio executor                       ✓                       My trio executor          139972900284096
+MainThread                             ✓       🔐                 MainThread             140570444996736 ← current
+Control                                ✓       🔐                  Control               140570391316160
+Thread-2 (async_kernel_caller)         ✓                Thread-2 (async_kernel_caller)   140570095773376
+My thread                              ✓                          My thread              140570078992064
+My executor                            ✓                         My executor             140569850410688
+My trio executor                       ✓                       My trio executor          140569833629376
 </pre>
 </div>
 </div>
@@ -3409,7 +3437,7 @@ My trio executor                       ✓                       My trio executo
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 19, 2026 09:30:47 UTC"><span class="timeago" datetime="2026-07-19T09:30:47+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 19, 2026 09:30:47 UTC">2026-07-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 17, 2026 09:33:35 UTC"><span class="timeago" datetime="2026-08-17T09:33:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 17, 2026 09:33:35 UTC">2026-08-17</span>
   </span>
 
     

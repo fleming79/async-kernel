@@ -680,6 +680,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -1039,6 +1041,34 @@ viewing the latest version.
     
   
     kernelspec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../messaging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    messaging
   
 
     
@@ -1684,9 +1714,7 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/comm.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">23</span>
 <span class="normal">24</span>
 <span class="normal">25</span>
 <span class="normal">26</span>
@@ -1712,23 +1740,25 @@ viewing the latest version.
 <span class="normal">46</span>
 <span class="normal">47</span>
 <span class="normal">48</span>
-<span class="normal">49</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Comm</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">,</span> <span class="n">BaseComm</span><span class="p">):</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Comm</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">,</span> <span class="n">BaseComm</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/)).&quot;&quot;&quot;</span>
 
     <span class="nd">@override</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">publish_msg</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">publish_msg</span><span class="p">(</span>  <span class="c1"># pyright: ignore[reportIncompatibleMethodOverride]</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">data</span><span class="p">:</span> <span class="n">MaybeDict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">metadata</span><span class="p">:</span> <span class="n">MaybeDict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">msg_type</span><span class="p">:</span> <span class="n">IOPubMsgTypeAlias</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">keys</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Helper for sending a comm message on IOPub.&quot;&quot;&quot;</span>
         <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="p">,</span> <span class="s2">&quot;comm_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm_id</span><span class="p">}</span> <span class="o">|</span> <span class="n">keys</span>
         <span class="k">if</span> <span class="n">parent</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
             <span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
-                <span class="n">msg_or_type</span><span class="o">=</span><span class="n">msg_type</span><span class="p">,</span>
+                <span class="n">msg_type</span><span class="o">=</span><span class="n">msg_type</span><span class="p">,</span>
                 <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
                 <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
                 <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1766,10 +1796,10 @@ viewing the latest version.
 
 <a href="#async_kernel.comm.Comm.publish_msg" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">publish_msg</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.comm.Comm.publish_msg(msg_type)">msg_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.comm.Comm.publish_msg(data)">data</span></span><span class="p">:</span> <span class="n"><span title="comm.base_comm.MaybeDict">MaybeDict</span></span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.comm.Comm.publish_msg(metadata)">metadata</span></span><span class="p">:</span> <span class="n"><span title="comm.base_comm.MaybeDict">MaybeDict</span></span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.comm.Comm.publish_msg(buffers)">buffers</span></span><span class="p">:</span> <span class="n"><span title="comm.base_comm.BuffersType">BuffersType</span></span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.comm.Comm.publish_msg(msg_type)">msg_type</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.IOPubMsgTypeAlias">IOPubMsgTypeAlias</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.comm.Comm.publish_msg(data)">data</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.comm.Comm.publish_msg(metadata)">metadata</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.comm.Comm.publish_msg(buffers)">buffers</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.BuffersType">BuffersType</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n"><span title="async_kernel.comm.Comm.publish_msg(**keys)">keys</span></span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
@@ -1782,9 +1812,7 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/comm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">24</span>
-<span class="normal">25</span>
-<span class="normal">26</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">26</span>
 <span class="normal">27</span>
 <span class="normal">28</span>
 <span class="normal">29</span>
@@ -1801,20 +1829,22 @@ viewing the latest version.
 <span class="normal">40</span>
 <span class="normal">41</span>
 <span class="normal">42</span>
-<span class="normal">43</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">publish_msg</span><span class="p">(</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">publish_msg</span><span class="p">(</span>  <span class="c1"># pyright: ignore[reportIncompatibleMethodOverride]</span>
     <span class="bp">self</span><span class="p">,</span>
-    <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">data</span><span class="p">:</span> <span class="n">MaybeDict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">metadata</span><span class="p">:</span> <span class="n">MaybeDict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">msg_type</span><span class="p">:</span> <span class="n">IOPubMsgTypeAlias</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">keys</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Helper for sending a comm message on IOPub.&quot;&quot;&quot;</span>
     <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="p">,</span> <span class="s2">&quot;comm_id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm_id</span><span class="p">}</span> <span class="o">|</span> <span class="n">keys</span>
     <span class="k">if</span> <span class="n">parent</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
         <span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
-            <span class="n">msg_or_type</span><span class="o">=</span><span class="n">msg_type</span><span class="p">,</span>
+            <span class="n">msg_type</span><span class="o">=</span><span class="n">msg_type</span><span class="p">,</span>
             <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>
             <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
             <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1846,11 +1876,11 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/comm.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">47</span>
 <span class="normal">48</span>
-<span class="normal">49</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">comm</span><span class="o">.</span><span class="n">base_comm</span><span class="o">.</span><span class="n">MessageType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Handle an comm_msg message.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg_callback</span><span class="p">:</span>

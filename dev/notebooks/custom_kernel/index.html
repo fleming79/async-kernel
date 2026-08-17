@@ -780,6 +780,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -1043,6 +1045,34 @@ viewing the latest version.
     
   
     kernelspec
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/messaging/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    messaging
   
 
     
@@ -2434,12 +2464,12 @@ write_kernel_spec(
 <pre>
 <span class="ansi-red-fg">---------------------------------------------------------------------------</span>
 <span class="ansi-red-fg">AssertionError</span>                            Traceback (most recent call last)
-<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/shell/ipshell.py:616</span>, in <span class="ansi-cyan-fg">IPShell.run_code</span><span class="ansi-blue-fg">(self, code_obj, result, async_)</span>
-<span class="ansi-green-fg">    614</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> <span style="color: rgb(0,135,0)">eval</span>(code_obj, <span style="color: rgb(0,135,0)">self</span>.user_global_ns, <span style="color: rgb(0,135,0)">self</span>.user_ns)
-<span class="ansi-green-fg">    615</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
-<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">616</span>         <span class="ansi-black-fg ansi-yellow-bg">exec</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">code_obj</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">user_global_ns</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">user_ns</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
-<span class="ansi-green-fg">    617</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span style="color: rgb(0,135,0)">self</span>.custom_exceptions:
-<span class="ansi-green-fg">    618</span>     etype, value, tb = sys.exc_info()
+<span class="ansi-cyan-fg">File </span><span class="ansi-green-fg">~/work/async-kernel/async-kernel/src/async_kernel/shell/ipshell.py:614</span>, in <span class="ansi-cyan-fg">IPShell.run_code</span><span class="ansi-blue-fg">(self, code_obj, result, async_)</span>
+<span class="ansi-green-fg">    612</span>         <span class="ansi-bold" style="color: rgb(0,135,0)">await</span> <span style="color: rgb(0,135,0)">eval</span>(code_obj, <span style="color: rgb(0,135,0)">self</span>.user_global_ns, <span style="color: rgb(0,135,0)">self</span>.user_ns)
+<span class="ansi-green-fg">    613</span>     <span class="ansi-bold" style="color: rgb(0,135,0)">else</span>:
+<span class="ansi-green-fg">--&gt; </span><span class="ansi-green-fg">614</span>         <span class="ansi-black-fg ansi-yellow-bg">exec</span><span class="ansi-black-fg ansi-yellow-bg">(</span><span class="ansi-black-fg ansi-yellow-bg">code_obj</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">user_global_ns</span><span class="ansi-black-fg ansi-yellow-bg">,</span><span class="ansi-black-fg ansi-yellow-bg"> </span><span class="ansi-black-fg ansi-yellow-bg">self</span><span class="ansi-black-fg ansi-yellow-bg">.</span><span class="ansi-black-fg ansi-yellow-bg">user_ns</span><span class="ansi-black-fg ansi-yellow-bg">)</span>
+<span class="ansi-green-fg">    615</span> <span class="ansi-bold" style="color: rgb(0,135,0)">except</span> <span style="color: rgb(0,135,0)">self</span>.custom_exceptions:
+<span class="ansi-green-fg">    616</span>     etype, value, tb = sys.exc_info()
 
 <span class="ansi-cyan-fg">Cell</span><span class="ansi-cyan-fg"> </span><span class="ansi-green-fg">In[2]</span><span class="ansi-green-fg">, line 6</span>
 <span class="ansi-green-fg">      2</span> 
@@ -2505,14 +2535,14 @@ write_kernel_spec(
 <span class="k">def</span><span class="w"> </span><span class="nf">launcher</span><span class="p">(</span><span class="n">settings</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 
     <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Kernel</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel.interface.zmq</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZMQInterface</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel.interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interface</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">EchoKernel</span><span class="p">(</span><span class="n">Kernel</span><span class="p">):</span>
         <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">execute_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"content"</span><span class="p">][</span><span class="s2">"code"</span><span class="p">])</span>
             <span class="k">return</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">,</span> <span class="s2">"execution_count"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"user_expressions"</span><span class="p">:</span> <span class="p">{}}</span>
 
-    <span class="n">ZMQInterface</span><span class="o">.</span><span class="n">launch_instance</span><span class="p">(</span><span class="n">kernel_class</span><span class="o">=</span><span class="n">EchoKernel</span><span class="p">)</span>
+    <span class="n">Interface</span><span class="o">.</span><span class="n">launch_instance</span><span class="p">(</span><span class="n">kernel_class</span><span class="o">=</span><span class="n">EchoKernel</span><span class="p">)</span>
 
 
 <span class="c1"># Write the kernel spec</span>
@@ -2524,14 +2554,14 @@ write_kernel_spec(
 def launcher(settings: dict) -&gt; None:
 
     from async_kernel import Kernel
-    from async_kernel.interface.zmq import ZMQInterface
+    from async_kernel.interface import Interface
 
     class EchoKernel(Kernel):
         async def execute_request(self, job):
             print(job["msg"]["content"]["code"])
             return {"status": "ok", "execution_count": 0, "user_expressions": {}}
 
-    ZMQInterface.launch_instance(kernel_class=EchoKernel)
+    Interface.launch_instance(kernel_class=EchoKernel)
 
 
 # Write the kernel spec
@@ -2591,7 +2621,7 @@ async_kernel.kernelspec.write_kernel_spec(name="echo", display_name="Echo kernel
 
     <span class="kn">from</span><span class="w"> </span><span class="nn">traitlets</span><span class="w"> </span><span class="kn">import</span> <span class="n">traitlets</span>
 
-    <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel.interface.zmq</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZMQInterface</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel.interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Interface</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">async_kernel.shell</span><span class="w"> </span><span class="kn">import</span> <span class="n">IPShell</span>
 
     <span class="k">class</span><span class="w"> </span><span class="nc">EchoShell</span><span class="p">(</span><span class="n">IPShell</span><span class="p">):</span>
@@ -2604,7 +2634,7 @@ async_kernel.kernelspec.write_kernel_spec(name="echo", display_name="Echo kernel
                 <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">transform_cell</span><span class="p">(</span><span class="n">raw_cell</span><span class="p">)</span>
             <span class="k">return</span> <span class="sa">f</span><span class="s1">'print("""</span><span class="si">{</span><span class="n">raw_cell</span><span class="si">}</span><span class="s1">""")'</span>
 
-    <span class="n">ZMQInterface</span><span class="o">.</span><span class="n">launch_instance</span><span class="p">(</span><span class="n">shell_class</span><span class="o">=</span><span class="n">EchoShell</span><span class="p">)</span>
+    <span class="n">Interface</span><span class="o">.</span><span class="n">launch_instance</span><span class="p">(</span><span class="n">shell_class</span><span class="o">=</span><span class="n">EchoShell</span><span class="p">)</span>
 
 
 <span class="c1"># Write the kernel spec</span>
@@ -2619,7 +2649,7 @@ def launcher(settings: dict) -&gt; None:
 
     from traitlets import traitlets
 
-    from async_kernel.interface.zmq import ZMQInterface
+    from async_kernel.interface import Interface
     from async_kernel.shell import IPShell
 
     class EchoShell(IPShell):
@@ -2632,7 +2662,7 @@ def launcher(settings: dict) -&gt; None:
                 return super().transform_cell(raw_cell)
             return f'print("""{raw_cell}""")'
 
-    ZMQInterface.launch_instance(shell_class=EchoShell)
+    Interface.launch_instance(shell_class=EchoShell)
 
 
 # Write the kernel spec
@@ -2724,7 +2754,7 @@ async_kernel.kernelspec.write_kernel_spec(
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="May 25, 2026 23:32:10 UTC"><span class="timeago" datetime="2026-05-25T23:32:10+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="May 25, 2026 23:32:10 UTC">2026-05-25</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 17, 2026 09:33:35 UTC"><span class="timeago" datetime="2026-08-17T09:33:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 17, 2026 09:33:35 UTC">2026-08-17</span>
   </span>
 
     
