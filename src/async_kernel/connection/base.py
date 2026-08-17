@@ -286,7 +286,7 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
 
     @asynccontextmanager
     async def iopub_subscribe(
-        self, topic=b"", *, timeout: float | None = None
+        self, topic=b"", *, timeout: float | None = 1
     ) -> AsyncGenerator[SingleAsyncQueue[Message]]:
         """Open a new iopub socket and subscribe to a particular topic.
 

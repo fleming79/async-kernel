@@ -389,7 +389,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
     @asynccontextmanager
     @override
     async def iopub_subscribe(
-        self, topic=b"", *, timeout: float | None = None
+        self, topic=b"", *, timeout: float | None = 1.0
     ) -> AsyncGenerator[SingleAsyncQueue[Message]]:
 
         def forward_messages(sock: ZMQPollSocket, event: int) -> None:
