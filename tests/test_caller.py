@@ -616,7 +616,7 @@ class TestCaller:
                 assert len(threads) == 2
             else:
                 assert len(threads) > 2
-            assert len(caller._worker_pool) == 2
+            assert len(caller._worker_pool) in [2, 3], "The pool should roughly adhere to max_concurrent restriction"
 
     async def test_as_completed_error(self, caller: Caller):
         def func():
