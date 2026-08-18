@@ -79,27 +79,30 @@ def create_interface_messge_callback_handler(
     pack_unpack: tuple[Callable[[Message], T], Callable[[T], Message]] = (pack_json_str, unpack_json),
 ) -> Callable[[T, BuffersType], None]:
     ""
-    cache: dict[str, Connection] = {}
+    conn: Connection | None = None
     lock = BinarySemaphore()
     session_calls = set()
     pack, unpack = pack_unpack
 
     def handle_msg(packed_msg: T, buffers: BuffersType | None = None) -> None:
         """Handle a packed message."""
+        nonlocal conn
         msg: Message = unpack(packed_msg)
         msg["buffers"] = [] if buffers is None else buffers
         session: str = msg["header"]["session"]
         session_calls.add(session)
-        conn: Connection | None
 
-        if (conn := cache.get(session)) is None or conn.stopping.done():
+        if conn is None:
             with lock:
-                if (conn := cache.get(session)) is None or conn.stopping.done():
+                if conn is None:
                     conn = Connection(interface.caller, session_id=session)
 
-                    def transmit_msg(msg: Message, ident: list[bytes]) -> None:
+                    def transmit_msg(msg: Message, ident: list[bytes], conn=conn) -> None:
                         """Pack and send a message."""
-                        # `ident` is not sent.
+                        # Jupyterlite
+                        if parent := msg["parent_header"]:
+                            msg["header"]["session"] = parent["session"]
+
                         buffers: BuffersType = msg.pop("buffers")  # pyright: ignore[reportAssignmentType]
                         reply = send(pack(msg), buffers, blocking_reply := msg["channel"] == Channel.stdin)
                         if blocking_reply:
@@ -108,9 +111,7 @@ def create_interface_messge_callback_handler(
                     conn.transmit_msg = transmit_msg
                     conn.stopped.add_done_callback(lambda _: delattr(conn, "transmit_msg"))
                     conn.start()
-                    conn.stopping.add_done_callback(lambda _: cache.pop(session))
 
-                    cache[session] = conn
         conn.handle_incoming_msg(msg, [])
 
     return handle_msg
