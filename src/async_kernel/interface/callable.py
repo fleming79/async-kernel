@@ -103,7 +103,7 @@ def create_interface_messge_callback_handler(
                         buffers: BuffersType = msg.pop("buffers")  # pyright: ignore[reportAssignmentType]
                         reply = send(pack(msg), buffers, blocking_reply := msg["channel"] == Channel.stdin)
                         if blocking_reply:
-                            conn.handle_incoming_msg(unpack(reply), [conn.bsession])
+                            conn.handle_incoming_msg(unpack(reply), [])
 
                     conn.transmit_msg = transmit_msg
                     conn.stopped.add_done_callback(lambda _: delattr(conn, "transmit_msg"))
@@ -111,6 +111,6 @@ def create_interface_messge_callback_handler(
                     conn.stopping.add_done_callback(lambda _: cache.pop(session))
 
                     cache[session] = conn
-        conn.handle_incoming_msg(msg, [conn.bsession])
+        conn.handle_incoming_msg(msg, [])
 
     return handle_msg

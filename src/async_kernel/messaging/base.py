@@ -74,9 +74,6 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
     session_id: Fixed[Self, str] = Fixed(lambda c: c["owner"]._session_id)
     """Used to identify this object as the `session` in a message header."""
 
-    bsession: Fixed[Self, bytes] = Fixed[Self, bytes](lambda c: c["owner"].session_id.encode())
-    """Used to identfiy this object as the origin of a message."""
-
     _pending_messages: Fixed[Self, dict[str, PendingMessage[Any]]] = Fixed(dict)
     """A mapping of the `msg_id` of message requests to the pending that is resolved with a reply."""
 
