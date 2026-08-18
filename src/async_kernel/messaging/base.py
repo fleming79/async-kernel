@@ -198,6 +198,13 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
 
     @override
     def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
+        """The handler for  messages received on this connection.
+
+        Args:
+            msg: A new message.
+            ident: A list of bytes to route a reply message back to the origin. This can
+                be an empty list when there is only one connection, such as [LocalClient][].
+        """
         if msg["header"]["msg_type"].endswith("_reply"):
             self.handle_reply(msg)
         else:
