@@ -184,9 +184,6 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
     _connections: tuple[Connection[Self], ...] = ()
     """The connections to the interface for messaging."""
 
-    iopub_send_first_connection_only = traitlets.Bool(False).tag(config=True)
-    """Send iopub messages on the first connection only."""
-
     _connections_lock = Fixed(BinarySemaphore)
 
     shell: Fixed[Self, T_shell_co] = Fixed(lambda c: c["owner"].kernel.main_shell)
@@ -225,10 +222,6 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
         from async_kernel.shell.ipshell import IPShell  # noqa: PLC0415
 
         return IPShell
-
-    @traitlets.default("iopub_send_first_connection_only")
-    def _default_iopub_send_first_connection_only(self) -> bool:
-        return sys.platform == "emscripten"
 
     @classmethod
     @override
@@ -490,8 +483,6 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
         for c in self._connections:
             try:
                 c.iopub_send(msg_type, content, metadata=metadata, parent=parent, ident=ident, buffers=buffers)
-                if self.iopub_send_first_connection_only:
-                    break
             except Exception as e:
                 self.log.exception("iopub_send failed for connection %r", c, exc_info=e)
 

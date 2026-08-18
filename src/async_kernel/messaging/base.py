@@ -74,9 +74,6 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
     session_id: Fixed[Self, str] = Fixed(lambda c: c["owner"]._session_id)
     """Used to identify this object as the `session` in a message header."""
 
-    bsession: Fixed[Self, bytes] = Fixed[Self, bytes](lambda c: c["owner"].session_id.encode())
-    """Used to identfiy this object as the origin of a message."""
-
     _pending_messages: Fixed[Self, dict[str, PendingMessage[Any]]] = Fixed(dict)
     """A mapping of the `msg_id` of message requests to the pending that is resolved with a reply."""
 
@@ -201,6 +198,13 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
 
     @override
     def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
+        """The handler for  messages received on this connection.
+
+        Args:
+            msg: A new message.
+            ident: A list of bytes to route a reply message back to the origin. This can
+                be an empty list when there is only one connection, such as [LocalClient][].
+        """
         if msg["header"]["msg_type"].endswith("_reply"):
             self.handle_reply(msg)
         else:

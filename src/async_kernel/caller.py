@@ -949,6 +949,7 @@ class Caller:
                 pass
         except IndexError:
             caller = self.get()
+            caller._name = f"async-kernel worker of {self.id}"
         pen = caller.call_soon(func, *args, **kwargs)
         pen.add_done_callback(_to_thread_on_done)
         return pen
