@@ -3660,12 +3660,8 @@ in the context of the <a class="autorefs autorefs-internal" title="            Z
       <a href="#">event_loop</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.event_loop.zmq_poll.ZMQPoll"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ZMQPoll</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.event_loop.zmq_poll.ZMQPoll.socket"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;socket</a>
+      <a href="#async_kernel.event_loop.zmq_poll.ZMQPoll"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ZMQPoll</a>
   </span>
 
       </li>
@@ -4648,7 +4644,8 @@ sockets to reduce thread switching.</p>
 <span class="normal">438</span>
 <span class="normal">439</span>
 <span class="normal">440</span>
-<span class="normal">441</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQPoll</span><span class="p">:</span>
+<span class="normal">441</span>
+<span class="normal">442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQPoll</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""A [zmq_poll](https://libzmq.readthedocs.io/en/latest/zmq_poll.html) based event loop.</span>
 
 <span class="sd">    When a `(socket, flags) -&gt; handler` mapping context manager is used [ZMQPoll.event_handler][]</span>
@@ -4756,15 +4753,16 @@ sockets to reduce thread switching.</p>
                         <span class="n">pen</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
                     <span class="k">del</span> <span class="n">pen</span>
 
-            <span class="n">send</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="o">.</span><span class="n">PAIR</span><span class="p">)</span>
-            <span class="n">wake</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="o">.</span><span class="n">PAIR</span><span class="p">)</span>
+            <span class="n">send</span><span class="p">:</span> <span class="n">ZMQPollSocket</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="o">.</span><span class="n">PAIR</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportAssignmentType]</span>
+            <span class="n">wake</span><span class="p">:</span> <span class="n">ZMQPollSocket</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="o">.</span><span class="n">PAIR</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportAssignmentType]</span>
             <span class="n">addr</span> <span class="o">=</span> <span class="s2">"inproc://async_kernel_zmq_poller_wake"</span>
             <span class="n">sockets</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">handlers</span><span class="p">[(</span><span class="n">wake</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">)]</span> <span class="o">=</span> <span class="n">on_wake</span>
 
             <span class="k">with</span> <span class="n">context</span><span class="p">,</span> <span class="n">wake</span><span class="p">,</span> <span class="n">send</span><span class="p">,</span> <span class="n">wake</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">addr</span><span class="p">),</span> <span class="n">send</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">):</span>
+                <span class="n">k</span><span class="p">:</span> <span class="n">T_key</span>
                 <span class="n">c</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
-                <span class="n">started</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">send</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
+                <span class="n">started</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">send</span><span class="p">)</span>
                 <span class="c1"># The main loop polls the handler keys for events in a loop.</span>
                 <span class="c1"># It will block until an event occurs.</span>
                 <span class="k">try</span><span class="p">:</span>
@@ -4775,9 +4773,9 @@ sockets to reduce thread switching.</p>
                             <span class="n">do_execute</span><span class="p">()</span>
                             <span class="k">continue</span>
                         <span class="k">try</span><span class="p">:</span>
-                            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_zmq_poll</span><span class="p">(</span><span class="n">sockets</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+                            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">_zmq_poll</span><span class="p">(</span><span class="n">sockets</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>  <span class="c1"># pyright: ignore[reportAssignmentType]</span>
                                 <span class="k">try</span><span class="p">:</span>
-                                    <span class="n">handlers</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="o">*</span><span class="n">k</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
+                                    <span class="n">handlers</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="o">*</span><span class="n">k</span><span class="p">)</span>
                                 <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
                                     <span class="n">sockets</span> <span class="o">=</span> <span class="kc">None</span>
                                 <span class="k">except</span> <span class="ne">SystemExit</span><span class="p">:</span>
@@ -4888,7 +4886,7 @@ sockets to reduce thread switching.</p>
 <span class="sd">        Only one `handler` is allowed per `(socket, flags)` combination.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            sock: A zmq socket or a IO style object with a `fileno`.</span>
+<span class="sd">            sock: A registered [ZMQPollSocket][].</span>
 <span class="sd">            handler: A handler to handle the event. The handler is called inside the</span>
 <span class="sd">                zmq_poll thread. Thread-safe primitives must be used by the handler such</span>
 <span class="sd">                as [async_kernel.caller.Caller.call_soon][],[async_kernel.caller.Caller.queue_call][], etc.</span>
@@ -5027,12 +5025,12 @@ sockets to reduce thread switching.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/event_loop/zmq_poll.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">330</span>
-<span class="normal">331</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">331</span>
 <span class="normal">332</span>
 <span class="normal">333</span>
 <span class="normal">334</span>
-<span class="normal">335</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sock</span><span class="p">:</span> <span class="n">ZMQPollSocket</span> <span class="o">|</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZMQPollSocket</span><span class="p">:</span>
+<span class="normal">335</span>
+<span class="normal">336</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">validate_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sock</span><span class="p">:</span> <span class="n">ZMQPollSocket</span> <span class="o">|</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZMQPollSocket</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Check `sock` is correctly registered."""</span>
     <span class="k">if</span> <span class="n">sock</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sockets</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Invalid socket detected! </span><span class="si">{</span><span class="n">sock</span><span class="si">=}</span><span class="s2">"</span>
@@ -5099,8 +5097,7 @@ sockets to reduce thread switching.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/event_loop/zmq_poll.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">337</span>
-<span class="normal">338</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">338</span>
 <span class="normal">339</span>
 <span class="normal">340</span>
 <span class="normal">341</span>
@@ -5108,7 +5105,8 @@ sockets to reduce thread switching.</p>
 <span class="normal">343</span>
 <span class="normal">344</span>
 <span class="normal">345</span>
-<span class="normal">346</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_type</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZMQPollSocket</span><span class="p">:</span>
+<span class="normal">346</span>
+<span class="normal">347</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_type</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">SocketType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZMQPollSocket</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Create a new [ZMQPollSocket][].</span>
 
 <span class="sd">    Args:</span>
@@ -5166,8 +5164,7 @@ sockets to reduce thread switching.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/event_loop/zmq_poll.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">348</span>
-<span class="normal">349</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">349</span>
 <span class="normal">350</span>
 <span class="normal">351</span>
 <span class="normal">352</span>
@@ -5180,7 +5177,8 @@ sockets to reduce thread switching.</p>
 <span class="normal">359</span>
 <span class="normal">360</span>
 <span class="normal">361</span>
-<span class="normal">362</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="normal">362</span>
+<span class="normal">363</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Execute `func` in the 'zmq_poll' thread waiting for the result synchronously."""</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"thread"</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span> <span class="ow">is</span> <span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">:</span>
@@ -5247,15 +5245,15 @@ sockets to reduce thread switching.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/event_loop/zmq_poll.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">364</span>
-<span class="normal">365</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">365</span>
 <span class="normal">366</span>
 <span class="normal">367</span>
 <span class="normal">368</span>
 <span class="normal">369</span>
 <span class="normal">370</span>
 <span class="normal">371</span>
-<span class="normal">372</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aexecute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="normal">372</span>
+<span class="normal">373</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">aexecute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">],</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">P</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Execute `func` in the 'zmq_poll' thread waiting for the result asynchronously."""</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"thread"</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pen</span> <span class="o">:=</span> <span class="n">Pending</span><span class="p">[</span><span class="n">T</span><span class="p">](</span><span class="n">func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">))</span>
@@ -5312,7 +5310,7 @@ sockets to reduce thread switching.</p>
 <a href="#async_kernel.event_loop.zmq_poll.ZMQPoll.event_handler(sock)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-internal" title="            ZMQPollSocket (async_kernel.event_loop.zmq_poll.ZMQPollSocket)" href="#async_kernel.event_loop.zmq_poll.ZMQPollSocket">ZMQPollSocket</a></code>)
           –
           <div class="doc-md-description">
-            <p>A zmq socket or a IO style object with a <code>fileno</code>.</p>
+            <p>A registered <a class="autorefs autorefs-internal" title="            ZMQPollSocket" href="#async_kernel.event_loop.zmq_poll.ZMQPollSocket">ZMQPollSocket</a>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -5430,8 +5428,7 @@ in the event handler may interfere with debugging.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/event_loop/zmq_poll.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">374</span>
-<span class="normal">375</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">375</span>
 <span class="normal">376</span>
 <span class="normal">377</span>
 <span class="normal">378</span>
@@ -5497,7 +5494,8 @@ in the event handler may interfere with debugging.</p>
 <span class="normal">438</span>
 <span class="normal">439</span>
 <span class="normal">440</span>
-<span class="normal">441</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
+<span class="normal">441</span>
+<span class="normal">442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">event_handler</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">sock</span><span class="p">:</span> <span class="n">ZMQPollSocket</span><span class="p">,</span>
@@ -5513,7 +5511,7 @@ in the event handler may interfere with debugging.</p>
 <span class="sd">    Only one `handler` is allowed per `(socket, flags)` combination.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        sock: A zmq socket or a IO style object with a `fileno`.</span>
+<span class="sd">        sock: A registered [ZMQPollSocket][].</span>
 <span class="sd">        handler: A handler to handle the event. The handler is called inside the</span>
 <span class="sd">            zmq_poll thread. Thread-safe primitives must be used by the handler such</span>
 <span class="sd">            as [async_kernel.caller.Caller.call_soon][],[async_kernel.caller.Caller.queue_call][], etc.</span>
