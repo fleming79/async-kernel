@@ -144,7 +144,7 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
             self.zmq_poll.execute(super().unsubscribe, topic)
 
 
-T_key = tuple[Any | ZMQPollSocket, int]
+T_key = tuple[ZMQPollSocket, int]
 
 
 class ZMQPoll:
@@ -255,15 +255,16 @@ class ZMQPoll:
                         pen.set_exception(e)
                     del pen
 
-            send = context.socket(zmq.SocketType.PAIR)
-            wake = context.socket(zmq.SocketType.PAIR)
+            send: ZMQPollSocket = context.socket(zmq.SocketType.PAIR)  # pyright: ignore[reportAssignmentType]
+            wake: ZMQPollSocket = context.socket(zmq.SocketType.PAIR)  # pyright: ignore[reportAssignmentType]
             addr = "inproc://async_kernel_zmq_poller_wake"
             sockets = None
             handlers[(wake, zmq.POLLIN)] = on_wake
 
             with context, wake, send, wake.bind(addr), send.connect(addr):
+                k: T_key
                 c: tuple[int, Callable] | None
-                started.set_result(send)  # pyright: ignore[reportArgumentType]
+                started.set_result(send)
                 # The main loop polls the handler keys for events in a loop.
                 # It will block until an event occurs.
                 try:
@@ -274,9 +275,9 @@ class ZMQPoll:
                             do_execute()
                             continue
                         try:
-                            for k in _zmq_poll(sockets, timeout=-1):
+                            for k in _zmq_poll(sockets, timeout=-1):  # pyright: ignore[reportAssignmentType]
                                 try:
-                                    handlers[k](*k)  # pyright: ignore[reportArgumentType]
+                                    handlers[k](*k)
                                 except KeyError:
                                     sockets = None
                                 except SystemExit:
@@ -387,7 +388,7 @@ class ZMQPoll:
         Only one `handler` is allowed per `(socket, flags)` combination.
 
         Args:
-            sock: A zmq socket or a IO style object with a `fileno`.
+            sock: A registered [ZMQPollSocket][].
             handler: A handler to handle the event. The handler is called inside the
                 zmq_poll thread. Thread-safe primitives must be used by the handler such
                 as [async_kernel.caller.Caller.call_soon][],[async_kernel.caller.Caller.queue_call][], etc.
