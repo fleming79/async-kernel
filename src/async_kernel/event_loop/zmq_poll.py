@@ -41,7 +41,7 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
     """
 
     _zmq_poll_ref: weakref.ref[ZMQPoll]
-    lock: BinarySemaphore
+    lock: threading.Lock
 
     if TYPE_CHECKING:
         # magic attributes cannot be be stored in `__annotations__`.
@@ -68,7 +68,7 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
         zmq_poll: ZMQPoll,
         copy_threshold: int | None = None,
     ) -> None:
-        self.lock = BinarySemaphore()
+        self.lock = threading.Lock()
         self._zmq_poll_ref = weakref.ref(zmq_poll)
 
         if zmq_poll.stopped.done():
@@ -99,10 +99,13 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
         track: bool = False,
         **kwargs,
     ) -> MessageTracker | None:
-        with self.lock:
+        self.lock.acquire()
+        try:
             if self.closed:
                 return None
             return super().send_multipart(msg_parts, flags, copy, track)
+        finally:
+            self.lock.release()
 
     @override
     def close(self, linger=None) -> None:
