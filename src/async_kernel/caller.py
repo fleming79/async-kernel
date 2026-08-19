@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Concatenate, Generic, Literal, 
 from weakref import ReferenceType
 
 import anyio
-from aiologic import BinarySemaphore, CountdownEvent
+from aiologic import CountdownEvent
 from aiologic.lowlevel import async_checkpoint, create_async_event, current_async_library
 from aiologic.meta import await_for, iscoroutinelike
 from typing_extensions import override
@@ -191,7 +191,7 @@ class Caller:
 
     _caller_token = contextvars.ContextVar("caller_tokens", default=CALLER_MAIN_THREAD_ID)
     _instances: ClassVar[weakref.WeakValueDictionary[int, Self]] = weakref.WeakValueDictionary()
-    _lock: ClassVar = BinarySemaphore()
+    _lock: ClassVar = threading.Lock()
 
     _thread: threading.Thread
     _caller_id: int
@@ -219,7 +219,7 @@ class Caller:
     _worker_pool: Fixed[Self, deque[Self]] = Fixed(deque)
 
     # Private
-    _inst_lock: BinarySemaphore
+    _inst_lock: threading.Lock
     _children: set[Self]
     _tasks: set[asyncio.Task]
     _queue_map: dict[int, Pending]
@@ -394,7 +394,7 @@ class Caller:
                 thread = threading.current_thread()
 
             # Add private objects
-            inst._inst_lock = BinarySemaphore()
+            inst._inst_lock = threading.Lock()
             inst._children = set()
             inst._tasks = set()
             inst._queue_map = {}
