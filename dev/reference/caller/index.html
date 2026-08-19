@@ -4491,7 +4491,7 @@ parent caller is stopped.</p>
 
     <span class="n">_caller_token</span> <span class="o">=</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">ContextVar</span><span class="p">(</span><span class="s2">"caller_tokens"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">CALLER_MAIN_THREAD_ID</span><span class="p">)</span>
     <span class="n">_instances</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">weakref</span><span class="o">.</span><span class="n">WeakValueDictionary</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Self</span><span class="p">]]</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">WeakValueDictionary</span><span class="p">()</span>
-    <span class="n">_lock</span><span class="p">:</span> <span class="n">ClassVar</span> <span class="o">=</span> <span class="n">BinarySemaphore</span><span class="p">()</span>
+    <span class="n">_lock</span><span class="p">:</span> <span class="n">ClassVar</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
 
     <span class="n">_thread</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span>
     <span class="n">_caller_id</span><span class="p">:</span> <span class="nb">int</span>
@@ -4519,7 +4519,7 @@ parent caller is stopped.</p>
     <span class="n">_worker_pool</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">deque</span><span class="p">[</span><span class="n">Self</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">deque</span><span class="p">)</span>
 
     <span class="c1"># Private</span>
-    <span class="n">_inst_lock</span><span class="p">:</span> <span class="n">BinarySemaphore</span>
+    <span class="n">_inst_lock</span><span class="p">:</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span>
     <span class="n">_children</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">Self</span><span class="p">]</span>
     <span class="n">_tasks</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Task</span><span class="p">]</span>
     <span class="n">_queue_map</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Pending</span><span class="p">]</span>
@@ -4694,7 +4694,7 @@ parent caller is stopped.</p>
                 <span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span>
 
             <span class="c1"># Add private objects</span>
-            <span class="n">inst</span><span class="o">.</span><span class="n">_inst_lock</span> <span class="o">=</span> <span class="n">BinarySemaphore</span><span class="p">()</span>
+            <span class="n">inst</span><span class="o">.</span><span class="n">_inst_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
             <span class="n">inst</span><span class="o">.</span><span class="n">_children</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
             <span class="n">inst</span><span class="o">.</span><span class="n">_tasks</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
             <span class="n">inst</span><span class="o">.</span><span class="n">_queue_map</span> <span class="o">=</span> <span class="p">{}</span>
@@ -6198,7 +6198,7 @@ parent caller is stopped.</p>
             <span class="n">thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span>
 
         <span class="c1"># Add private objects</span>
-        <span class="n">inst</span><span class="o">.</span><span class="n">_inst_lock</span> <span class="o">=</span> <span class="n">BinarySemaphore</span><span class="p">()</span>
+        <span class="n">inst</span><span class="o">.</span><span class="n">_inst_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         <span class="n">inst</span><span class="o">.</span><span class="n">_children</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="n">inst</span><span class="o">.</span><span class="n">_tasks</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="n">inst</span><span class="o">.</span><span class="n">_queue_map</span> <span class="o">=</span> <span class="p">{}</span>
@@ -6679,8 +6679,12 @@ parent caller is stopped.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.call_using_backend"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;call_using_backend</a>
   </span>
 
       </li>
@@ -7270,12 +7274,8 @@ parent caller is stopped.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.task"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;task</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -7721,12 +7721,8 @@ of the callers backend.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -8210,8 +8206,12 @@ of the callers backend.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.queue_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;queue_call</a>
   </span>
 
       </li>
