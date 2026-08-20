@@ -158,9 +158,8 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
             msg = socket.recv()
             if msg[0] == 1:
                 ident = msg[1:]
-                # Note: The welcome message is cached until parent._started is called.
                 msg = self.msg(MsgType.iopub_welcome, {"subscription": ident.decode()}, Channel.iopub)
-                self.session.send(socket, msg, ident=ident)  # pyright: ignore[reportArgumentType]
+                self.session.send(socket, msg, ident=[ident])  # pyright: ignore[reportArgumentType]
 
         def handler(sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg) -> None:
             # Thread: zmq_poll_thread
