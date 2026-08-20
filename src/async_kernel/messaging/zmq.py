@@ -159,7 +159,8 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
             if msg[0] == 1:
                 ident = msg[1:]
                 # Note: The welcome message is cached until parent._started is called.
-                self.parent.iopub_send(MsgType.iopub_welcome, content={"subscription": ident.decode()}, ident=ident)
+                msg = self.msg(MsgType.iopub_welcome, {"subscription": ident.decode()}, Channel.iopub)
+                self.session.send(socket, msg, ident=ident)  # pyright: ignore[reportArgumentType]
 
         def handler(sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg) -> None:
             # Thread: zmq_poll_thread
@@ -169,6 +170,9 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
 
         with self.zmq_poll as zpoll:
             await self._bind_sockets()
+            self.parent.update_connections(self)
+            started()
+            await self.parent.started
             with (
                 zpoll.event_handler(self._sockets[Channel.control], partial(handler, channel=Channel.control)),
                 zpoll.event_handler(self._sockets[Channel.shell], functools.partial(handler, channel=Channel.shell)),
@@ -176,7 +180,8 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
                 zpoll.event_handler(self._sockets[Channel.heartbeat], heartbeat_handler),
                 zpoll.event_handler(self._sockets[Channel.iopub], iopub_reg_handler),
             ):
-                await super().connection_task(started, stop)
+                await stop
+                self.parent.update_connections()
 
     async def _bind_sockets(self):
         """Create, configure and bind all sockets."""
@@ -395,7 +400,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
     @asynccontextmanager
     @override
     async def iopub_subscribe(
-        self, topic=b"", *, timeout: float | None = 1.0
+        self, topic=b"", *, timeout: float | None = 10.0
     ) -> AsyncGenerator[SingleAsyncQueue[Message]]:
 
         def forward_messages(sock: ZMQPollSocket, event: int) -> None:
@@ -414,10 +419,11 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
         iopub = await self._connect_socket(Channel.iopub)
         with iopub, self.zmq_poll.event_handler(iopub, forward_messages, canceller=canceller), scope:
             iopub.subscribe(topic)
-            self.log.debug("Waiting for welcome message.")
-            if await ready.with_(timeout=timeout):
-                self.log.debug("Welcome message received.")
-            else:
-                msg = f"Welcome message not received after {timeout:0.1f}s!"
-                raise TimeoutError(msg)
+            if timeout is not None:
+                self.log.debug("Waiting for welcome message.")
+                if await ready.with_(timeout=timeout):
+                    self.log.debug("Welcome message received.")
+                else:
+                    msg = f"Welcome message not received after {timeout:0.1f}s!"
+                    raise TimeoutError(msg)
             yield queue
