@@ -4,6 +4,7 @@ import importlib.util
 import os
 from typing import TYPE_CHECKING, Any
 
+import anyio
 import pytest
 
 import async_kernel.utils
@@ -66,8 +67,13 @@ async def read_until_msg_type(reader: AsyncGenerator, msg_type: IOPubMsgTypeAlia
     Args:
         reader: An async iterator for a queue returned from iopub subscribe.
         msg_type: The type of iopub message to wait for."""
-    while (msg := await anext(reader))["header"]["msg_type"] != msg_type:
-        continue
+    try:
+        with anyio.fail_after(TIMEOUT):
+            while (msg := await anext(reader))["header"]["msg_type"] != msg_type:
+                continue
+    except TimeoutError as e:
+        msg_ = f"Timeout waiting for {msg_type=} {content_checks=}"
+        raise TimeoutError(msg_) from e
     check_pub_message(msg, msg_type=msg_type, **content_checks)
     return msg
 
