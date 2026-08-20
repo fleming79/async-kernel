@@ -12,7 +12,7 @@ import weakref
 from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
 
 from aiologic import BinarySemaphore
-from aiologic.lowlevel import AsyncLibraryNotFoundError, current_async_library
+from aiologic.lowlevel import AsyncLibraryNotFoundError, async_checkpoint, current_async_library
 from traitlets import import_item, traitlets
 from traitlets.config import Config, Configurable
 from traitlets.config.application import Application, ClassesType
@@ -395,19 +395,22 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
             await self._pre_start()
             self.log.info("Interface started: %s", self.summary)
             started()
-            del started
+            # Allow connections to react to being started.
+            await async_checkpoint(force=True)
+            # Send iopub messages captured during startup.
+            del started, self.iopub_send
+            while self._iopub_cache:
+                self._iopub_cache.reverse()
+                args, kwargs = self._iopub_cache.pop()
+                self.iopub_send(*args, **kwargs)
             await stop
 
     async def _pre_start(self) -> None:
-        """Opens the kernel, starts autostart connections and releases iopub messages."""
+        """Perform tasks just prior to setting as started."""
+        # Autostart connections waiting until they have started.
         if pending := [import_item(pth)().start().started for pth in self.autostart_connections]:
             self.log.info("Waiting for connections to establish %d", len(pending))
-        await self.caller.wait(pending)
-        del self.iopub_send
-        while self._iopub_cache:
-            self._iopub_cache.reverse()
-            args, kwargs = self._iopub_cache.pop()
-            self.iopub_send(*args, **kwargs)
+            await self.caller.wait(pending)
 
     def update_connections(self, *new: Connection[Self]) -> None:
         """Update the list of connections.
