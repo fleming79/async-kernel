@@ -192,7 +192,6 @@ class ZMQPoll:
         self._handlers: dict[T_key, Callable[[ZMQPollSocket, int], Any]] = {}
         self._count: dict[T_key, tuple[int, Callable[[], Any]] | None] = {}
         self._execute: deque[Pending] = deque[Pending[Any]]()
-        self._not_started = False
         self.log = logging.LoggerAdapter(logging.getLogger())
         self._cancellers = deque()
         self._ctx_count = 0
@@ -324,8 +323,9 @@ class ZMQPoll:
         send = started.wait_sync()
 
         def _wake(sock=send, lock=send.lock) -> None:
-            with lock:
-                sock.send(b"")
+            lock.acquire()
+            sock.send(b"")
+            lock.release()
 
         self._wake = _wake
         self.stopped.add_done_callback(lambda _: (self := ref()) and self._on_stopped())
