@@ -36,7 +36,6 @@ from IPython.utils.tokenutil import token_at_cursor
 from traitlets import traitlets
 from typing_extensions import override
 
-import async_kernel
 from async_kernel import utils
 from async_kernel.caller import Caller
 from async_kernel.common import Fixed, KernelInterrupt, MethodNotSupported
@@ -491,10 +490,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
 
     @traitlets.default("banner1")
     def _default_banner1(self) -> str:
-        kernel_info = (
-            f"async-kernel v{async_kernel.__version__} name:{self.parent.name!r} backend:{str(self.parent.backend)!r}"
-        )
-        return f"Python {sys.version}\n{kernel_info}\nIPython shell {IPython.core.release.version}\n"
+        info = super().banner
+        return f"Python {sys.version}\n{info}\nIPython shell {IPython.core.release.version}\n"
 
     @traitlets.observe("exit_now")
     def _update_exit_now(self, _) -> None:

@@ -173,7 +173,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
     kernel: Fixed[Self, Kernel[Self, T_shell_co]] = Fixed(
         lambda c: c["owner"].kernel_class(c["owner"], c["owner"].shell_class)
     )
-    """The kernel."""
+    """The kernel is defines the request handlers and handles incoming jobs (message requests)."""
 
     comm_manager: Fixed[Self, CommManager] = Fixed("async_kernel.comm.CommManager")
     """The global comm manager."""
@@ -193,10 +193,17 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
 
     @property
     def summary(self) -> str:
-        return f"name={self.kernel_name!r} backend={str(self.backend)!r}"
+        """Summary info about the interface."""
+        return f"name={self.kernel_name!r} backend={str(self.backend)!r} host={self.host!s}"
 
     @property
     def connections(self) -> tuple[Connection[Self], ...]:
+        """The connections currently registered with the interface.
+
+        Depending on the type of connection there could be zero or more clients connected.
+        - Connection: There is a 1-1 connection client ratio for a `LocalCient`.
+        - ZMQConnection: There can be 0+ connected `ZMQClient`s.
+        """
         return self._connections
 
     @traitlets.default("backend")
