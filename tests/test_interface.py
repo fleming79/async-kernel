@@ -102,7 +102,7 @@ class TestInterface:
 
         async with Interface(shell_class=BaseShell).start() as interface:
             assert isinstance(interface.kernel.shell, BaseShell)
-            assert "name:" in interface.kernel.shell.banner
+            assert "name=" in interface.kernel.shell.banner
             assert isinstance(interface.kernel.shell.user_ns, dict)
             with pytest.raises(NotImplementedError):
                 await interface.kernel.do_execute("1+1", True)

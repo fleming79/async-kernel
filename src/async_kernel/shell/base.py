@@ -79,9 +79,7 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
 
     @property
     def banner(self) -> str:
-        return (
-            f"async-kernel v{async_kernel.__version__} name:{self.parent.name!r} backend:{str(self.parent.backend)!r}"
-        )
+        return f"async-kernel v{async_kernel.__version__} {self.parent.summary}"
 
     @property
     def execution_count(self) -> int:
