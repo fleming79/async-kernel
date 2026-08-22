@@ -248,3 +248,10 @@ class Test_zmq_Poll:
 
         done.wake()
         await pen.wait(result=False)
+
+    async def test_socket_close(self, caller: Caller):
+
+        with ZMQPoll() as zmq_poll:
+            sock = zmq_poll.socket(zmq.SocketType.REP)
+            with zmq_poll.event_handler(sock, lambda _, __: None, canceller=None):
+                sock.close()
