@@ -111,8 +111,11 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
     def close(self, linger=None) -> None:
         with self.lock:
             if not self.closed:
-                self.zmq_poll.execute(super().close, linger)
+                # Remove from `zmq_poll._handlers` before closing to avoid heap corruption (Windows).
+                for k in (k_ for k_ in list(self.zmq_poll._handlers.keys()) if k_[0] is self):  # pyright: ignore[reportPrivateUsage]
+                    self.zmq_poll._handlers.pop(k, None)  # pyright: ignore[reportPrivateUsage]
                 self.zmq_poll.sockets.discard(self)
+                self.zmq_poll.execute(super().close, linger)
 
     @override
     def bind(self, addr: str) -> _SocketContext[Self]:
@@ -308,6 +311,7 @@ class ZMQPoll:
                             cancellers.popleft()()
                         except Exception as e:
                             self.log.exception("A canceller failed", exc_info=e)
+                    handlers.clear()
                     while zmq_poll_sockets:
                         try:
                             zmq_poll_sockets.pop().close()
@@ -424,13 +428,13 @@ class ZMQPoll:
 
             canceller = default_handler
 
-        sock_ = self.validate_socket(sock)
+        self.validate_socket(sock)
         if count:
             assert count[0] > 0
             assert callable(count[1])
         if canceller:
             self._cancellers.append(canceller)
-        if handler is not self._handlers.setdefault(k := (sock_, int(flags)), handler):
+        if handler is not self._handlers.setdefault(k := (sock, int(flags)), handler):
             raise BusyResourceError
         self._count[k] = count
         self._wake()
