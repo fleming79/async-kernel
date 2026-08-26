@@ -3,9 +3,13 @@ from __future__ import annotations
 import argparse
 import ast
 import contextlib
+import gc
 import sys
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
+
+import zmq
+import zmq.utils.garbage
 
 import async_kernel
 from async_kernel.kernelspec import (
@@ -227,4 +231,8 @@ Tips:
         case _:
             parser.print_help()
 
+    # Shutdown known zmq context and garbage collector.
+    zmq.Context.instance().term()
+    gc.collect()
+    zmq.utils.garbage.gc.stop()
     sys.exit(0)

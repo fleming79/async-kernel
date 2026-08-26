@@ -1,3 +1,4 @@
+import gc
 import logging
 import os
 import sys
@@ -5,6 +6,8 @@ from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING, Literal
 
 import pytest
+import zmq
+import zmq.utils.garbage
 
 import async_kernel
 from async_kernel import Caller, Kernel
@@ -38,6 +41,15 @@ def pytest_configure(config):
 # anyio_backends = [("asyncio", {"use_uvloop": False}), ("trio", {})]
 # if importlib.util.find_spec("winloop") or importlib.util.find_spec("uvloop"):
 #     anyio_backends.append(("asyncio", {"use_uvloop": True}))
+
+
+@pytest.fixture(scope="session", autouse=True)
+def cleanup_zmq():
+    yield
+    # Force cleanup of ZMQ context on test completion
+    zmq.Context.instance().term()
+    gc.collect()
+    zmq.utils.garbage.gc.stop()
 
 
 @pytest.fixture(params=[Backend.asyncio, Backend.trio], scope="module")
