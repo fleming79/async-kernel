@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.3] - 2026-08-26
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Bump uv from 0.12.4 to 0.12.5 [#582](https://github.com/fleming79/async-kernel/pull/582)
+
+- Update uv.lock and update zmq type hints. [#583](https://github.com/fleming79/async-kernel/pull/583)
+
+- When closing zmq sockets remove the socket from the zmq_poll handlers first. [#577](https://github.com/fleming79/async-kernel/pull/577)
+
+- Fix banner info missing kernel_name. [#576](https://github.com/fleming79/async-kernel/pull/576)
+
 ## [0.22.2] - 2026-08-21
 
 ### <!-- 1 --> 🚀 Features
@@ -14,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace BinarySemaphore with threading.Lock for faster performance in heavily used places. [#571](https://github.com/fleming79/async-kernel/pull/571)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.22.2 [#575](https://github.com/fleming79/async-kernel/pull/575)
 
 - Tweak Interface startup sequence. [#573](https://github.com/fleming79/async-kernel/pull/573)
 
@@ -1561,6 +1575,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.22.3]: https://github.com/fleming79/async-kernel/compare/v0.22.2..v0.22.3
 [0.22.2]: https://github.com/fleming79/async-kernel/compare/v0.22.1..v0.22.2
 [0.22.1]: https://github.com/fleming79/async-kernel/compare/v0.22.0..v0.22.1
 [0.22.0]: https://github.com/fleming79/async-kernel/compare/v0.21.0..v0.22.0
