@@ -45,8 +45,6 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
 
     if TYPE_CHECKING:
         # magic attributes cannot be be stored in `__annotations__`.
-        closed: bool
-        """Set to `True` when the socket is closed."""
 
         curve_secretkey: bytes | None
         """The curve encryption secret key."""
@@ -86,9 +84,9 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
         return self._zmq_poll_ref()  # pyright: ignore[reportReturnType]
 
     @override
-    def set(self, option: int, value: int | bytes | str) -> None:
+    def set(self, option: int, optval: int | bytes) -> None:
         assert not self.closed
-        self.zmq_poll.execute(super().set, option, value)
+        self.zmq_poll.execute(super().set, option, optval)
 
     @override
     def send_multipart(
@@ -123,9 +121,9 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
         return self.zmq_poll.execute(super().bind, addr)
 
     @override
-    def unbind(self, url: str) -> None:
+    def unbind(self, addr: str | bytes) -> None:
         if not self.closed:
-            self.zmq_poll.execute(super().unbind, url)
+            self.zmq_poll.execute(super().unbind, addr)
 
     @override
     def connect(self, addr: str) -> _SocketContext[Self]:
@@ -133,9 +131,9 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
         return self.zmq_poll.execute(super().connect, addr)
 
     @override
-    def disconnect(self, url: str) -> None:
+    def disconnect(self, addr: str | bytes) -> None:
         if not self.closed:
-            self.zmq_poll.execute(super().disconnect, url)
+            self.zmq_poll.execute(super().disconnect, addr)
 
     @override
     def subscribe(self, topic: str | bytes) -> None:
