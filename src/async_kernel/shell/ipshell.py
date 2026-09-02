@@ -436,7 +436,6 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         self.init_hooks()
         self.init_events()
         self.init_pushd_popd_magic()
-        self.init_logger()
 
         self.init_completer()
 
