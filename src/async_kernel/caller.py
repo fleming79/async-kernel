@@ -1217,6 +1217,11 @@ class Caller:
 class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
     """A class which provides start/stop functionality to run a coroutine function.
 
+    The task is 'stopped' rather being 'cancelled', the difference being that in normal
+    circumstances the task function will not be cancelled. The advantage being that the
+    function will run to completion meaning `try` `finally` blocks are not required, neither
+    are shielded CancelScopes.
+
     The stages are:
 
     1. set_task_function: Set the task function and caller to associate it with.
@@ -1286,16 +1291,13 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
             msg = "`func` can only be set once!"
             raise RuntimeError(msg)
         self._caller_ref: ReferenceType[Caller] = weakref.ref(caller or Caller())
-        self.caller.stopping.add_done_callback(self._caller_stopping)
+        self.caller.stopping.add_done_callback(self.stop)
         self._start_token = ""
         self._func = func
         return self
 
     def _info(self, name: str) -> str:
         return f"{self.__class__}.{name}"
-
-    def _caller_stopping(self, _) -> None:
-        self.stop()
 
     def _wait_checks(self):
         if not self.stopping.done() and (hasattr(self, "_start_token") or not hasattr(self, "_caller_ref")):
@@ -1361,7 +1363,7 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
                 self = ref()
                 assert self
                 self.caller.log.debug("Task stopped %r", self._func)
-                self.caller.stopping.remove_done_callback(self._caller_stopping)
+                self.caller.stopping.remove_done_callback(self.stop)
 
                 if pen.cancelled():
                     self.stopped.cancel(f"The Task {self._func} was cancelled!")
@@ -1378,10 +1380,14 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
                 del pen, self
 
             if not self.stopping.done():
-                self.caller.call_soon(self._func, started, self.stopping, *args, **kwargs).add_done_callback(done)
+                pen = self.caller.call_soon(self._func, started, self.stopping, *args, **kwargs)
+                pen.add_done_callback(done)
+                pen.set_canceller(self.stop)
+                # Set the canceller again to override `Caller._scheduler`.
+                self.started.add_done_callback(lambda _: pen.set_canceller(self.stop))
         return self
 
-    def stop(self, _=None) -> ProtectedPending[T]:
+    def stop(self, _=None, /) -> ProtectedPending[T]:
         """Stop the task.
 
         This sets the `stopping` `ProtectedPending`. The task function should respond to the change and exit normally.
