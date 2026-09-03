@@ -5185,7 +5185,7 @@ stop itself, only leaving the context once it has stopped.</p>
                 <span class="k">pass</span>
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
             <span class="n">caller</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-            <span class="n">caller</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"async-kernel worker of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">caller</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="s2">"async-kernel worker"</span>
         <span class="n">pen</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">pen</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="n">_to_thread_on_done</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">pen</span>
@@ -7691,7 +7691,7 @@ be made to avoid blocking the scheduler.</strong></p>
             <span class="k">pass</span>
     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
         <span class="n">caller</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-        <span class="n">caller</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"async-kernel worker of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">caller</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="s2">"async-kernel worker"</span>
     <span class="n">pen</span> <span class="o">=</span> <span class="n">caller</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">pen</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="n">_to_thread_on_done</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">pen</span>
@@ -7853,8 +7853,12 @@ be made to avoid blocking the scheduler.</strong></p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.queue_close"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;queue_close</a>
   </span>
 
       </li>
