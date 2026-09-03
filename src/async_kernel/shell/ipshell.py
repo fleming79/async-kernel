@@ -916,29 +916,49 @@ class KernelMagics(HasInterface[Interface[IPShell]], Magics):
     @line_magic
     def callers(self, _) -> None:
         """Print a table of the current [Callers][async_kernel.caller.Caller]s."""
-        callers = Caller.all_callers()
-        n_1 = max(len(c.name) for c in callers)
-        n_2 = max(len(repr(c.id)) for c in callers) + 10
-        n_3 = len(" Protected ")
-        n_4 = max(len(str(c.backend)) for c in callers) + 6
+        callers, all_callers = [], Caller.all_callers()
+
+        def iter_children(caller: Caller):
+            if caller not in callers:
+                yield caller
+            for c in sorted(caller.children, key=all_callers.index):
+                if c not in callers:
+                    yield c
+            for c in caller.children:
+                yield from iter_children(c)
+
+        for c_ in all_callers:
+            for c in iter_children(c_):
+                callers.append(c)  # noqa: PERF402
+
+        n_1 = max(len(repr(c.id)) for c in callers) + 10
+        n_2 = max(len(repr(c.id)) for c in callers) + 2
+        n_3 = len("  Backend  ")
+        n_4 = max((6, max(len(c.name) for c in callers)))
+        n_5 = len("Children")
+        n_6 = len("Protected")
         lines = [
             "".join(
                 [
-                    "Caller ID".center(n_2),
-                    "Backend".center(n_4),
-                    "Name".ljust(n_1),
-                    "Protected".center(n_3),
+                    "Caller ID".center(n_1),
+                    "Parent's ID".center(n_2),
+                    "Backend".center(n_3),
+                    "Name".center(n_4),
+                    "Children  ".center(n_5),
+                    "Protected".center(n_6),
                 ]
             ),
-            "─" * (n_1 + n_2 + n_3 + n_4),
+            "─" * (n_1 + n_2 + n_3 + n_4 + n_5 + n_6 + 6),
         ]
         lines.extend(
             "".join(
                 [
-                    f"{'current →' if Caller.get_existing() is caller else ''} {caller.id}".rjust(n_2),
-                    caller.backend.center(n_4),
-                    caller.name.ljust(n_1),
-                    f"{'🔐' if caller.protected else ''}".center(n_3),
+                    f"{'current →' if Caller.get_existing() is caller else ''} {caller.id}".rjust(n_1),
+                    f" {caller.parent.id if caller.parent else ''}".ljust(n_2),
+                    caller.backend.center(n_3),
+                    caller.name.ljust(n_4),
+                    f"{len(caller.children) if caller.children else ''}".rjust(n_5),
+                    f"{'🔐' if caller.protected else ''}".center(n_6),
                 ]
             )
             for caller in callers
