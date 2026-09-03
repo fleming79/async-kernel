@@ -726,8 +726,8 @@ class Caller:
     def get(self, **kwargs: Unpack[CallerCreateOptions]) -> Self:
         """Get an existing caller by name or create a new one.
 
-        If 'name' is provided and a child with that name exists, the child will be returned. If 'name'
-        is not specified, a new caller is created.
+        If 'name' is provided and a child with that name exists, the child will be returned,
+        otherwise a new caller is created.
 
         Args:
             **kwargs: Options for creating or retrieving a caller.
@@ -776,7 +776,7 @@ class Caller:
         /,
         **metadata: Any,
     ) -> Pending[T]:
-        """A low-level function to dispatch `func` as a task running in the caller's backend event loop.
+        """A low-level method to schedule `func` to be run as a task running in the caller's backend event loop.
 
         Args:
             func: The function to be called.
@@ -884,7 +884,7 @@ class Caller:
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> None:
-        """A low-level function to perform the call to `func` directly in caller's backend scheduler.
+        """A low-level method to perform the call to `func` directly in caller's backend scheduler.
 
         Args:
             func: The function.
@@ -953,7 +953,7 @@ class Caller:
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> None:
-        """A low-level function to queue the execution of `func` in a queue unique to it and the caller.
+        """A low-level method to queue the execution of `func` in a queue unique to it and the caller.
 
         This sets up a long-lived task to provide a fast pathway for repetitive calls to a function.
 
@@ -1018,7 +1018,7 @@ class Caller:
     ) -> StartStopTask[P, T]:
         """Wrap the coroutine function `func` with a `StartStopTask`.
 
-        The method [StartStopTask.start][] must be called to start the task. Args and Kwargs
+        The method [StartStopTask.start][] must be called to start the task. args and kwargs
         can be passed in the function call. Subsequent calls are noop.
 
         `func` must accept two position only arguments:
@@ -1039,9 +1039,6 @@ class Caller:
             async with caller.create_start_stop_task(func).start():
                 pass
             ```
-        Notes:
-            - The start call uses `call_soon` to start the task meaning that the
-                context and pending group registration are made there also.
         """
         return StartStopTask().set_task_function(func, caller=self)
 
@@ -1212,14 +1209,16 @@ class Caller:
 class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
     """A class which provides start/stop functionality to run a coroutine function.
 
-    The task is 'stopped' rather being 'cancelled', the difference being that in normal
-    circumstances the task function will not be cancelled. The advantage being that the
-    function will run to completion meaning `try` `finally` blocks are not required, neither
-    are shielded CancelScopes.
+    The task function is 'stopped' rather being 'cancelled'. This means that the function
+    will run to completion, so that `try` - `finally` blocks and shielded CancelScopes can
+    be omitted. The function must accept two positional arguments:
 
-    The stages are:
+    1. A callable to indicate the function has 'started'.
+    2. A `ProtectedPending` that should be awaited to stop the task.
 
-    1. set_task_function: Set the task function and caller to associate it with.
+    The sequencing of a `StartStopTask` is:
+
+    1. set_task_function: Set the task function and the caller to use.
     2. start: Start the task.
     3. started: `func` indicates it has started.
     4. stopping: `stop` has been called which signals to the task that it should commence it's shutdown.
@@ -1274,13 +1273,16 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         *,
         caller: Caller | None = None,
     ) -> Self:
-        """Set the task function.
+        """Set the task function and optionally specify the caller to use to run the task.
 
         This should only be called once.
 
         Args:
             func: The coroutine function to run as a task.
             caller: Specify the caller to run the function.
+
+        Raises:
+            RuntimeError: If called more than once.
         """
         if hasattr(self, "_caller_ref"):
             msg = "`func` can only be set once!"
@@ -1331,14 +1333,14 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
                 await self.stop().wait(shield=True)
 
     def start(self, *args: P.args, **kwargs: P.kwargs) -> Self:
-        """Start the task function.
+        """Start the task function that was set via [StartStopTask.set_task_function][].
 
         Args:
-            *args: Arguments to use with the function set in [StartStopTask.set_task_function][].
-            **kwargs: Keyword arguments to use with the [StartStopTask.set_task_function][].
+            *args: Arguments to use with the function.
+            **kwargs: Keyword arguments to use with the function.
 
         Returns:
-            Self: Making it convenient to chain the call in an async context or await.
+            Self: This makes it convenient to chain the call in an async context or await.
         """
         if not hasattr(self, "_func"):
             msg = "The task function has not been set. Tip: Use the method `set_task_function`."
@@ -1359,6 +1361,8 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
                 assert self
                 self.caller.log.debug("Task stopped %r", self._func)
                 self.caller.stopping.remove_done_callback(self.stop)
+                with self.caller._inst_lock:  # pyright: ignore[reportPrivateUsage]
+                    self.caller._pen_stop.remove(pen)  # pyright: ignore[reportPrivateUsage]
 
                 if pen.cancelled():
                     self.stopped.cancel(f"The Task {self._func} was cancelled!")
@@ -1375,9 +1379,12 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
                 del pen, self
 
             if not self.stopping.done():
-                pen = self.caller.call_soon(self._func, started, self.stopping, *args, **kwargs)
+                args_ = (started, self.stopping, *args)
+                pen = self.caller.schedule_call(self._func, args_, kwargs, None, PendingManager)
                 pen.add_done_callback(done)
                 pen.set_canceller(self.stop)
+                with self.caller._inst_lock:  # pyright: ignore[reportPrivateUsage]
+                    self.caller._pen_stop.append(pen)  # pyright: ignore[reportPrivateUsage]
                 # Set the canceller again to override `Caller._scheduler`.
                 self.started.add_done_callback(lambda _: pen.set_canceller(self.stop))
         return self
