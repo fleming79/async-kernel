@@ -14,7 +14,7 @@ import anyio.to_thread
 import pytest
 import trio
 from aiologic import CountdownEvent, Event, Latch
-from aiologic.lowlevel import create_async_event, create_async_waiter, current_async_library
+from aiologic.lowlevel import async_sleep_forever, create_async_event, create_async_waiter, current_async_library
 
 from async_kernel.caller import Caller, StartStopTask
 from async_kernel.pending import Pending, PendingCancelled
@@ -775,13 +775,24 @@ class TestCaller:
         for pen in pending:
             assert pen.result() == opposite
 
-    async def test_call_soon_with_backend_cancel(self, anyio_backend):
+    async def test_call_using_backend_cancel(self, anyio_backend):
         async with Caller() as caller:
             opposite = next(b for b in Backend if b is not caller.backend)
             assert await caller.call_using_backend(opposite, lambda: 1 + 1) == 2
             pen = caller.call_using_backend(opposite, lambda: 1 + 1)
             caller.stop()
         assert pen.cancelled()
+
+    async def test_call_using_backend_pending_cancel(self, caller: Caller):
+        async def f():
+            ready.wake()
+            assert current_async_library() == opposite
+            await async_sleep_forever()
+
+        opposite = next(b for b in Backend if b is not caller.backend)
+        pen = caller.call_using_backend(opposite, f)
+        await (ready := create_async_waiter())
+        await pen.cancel_wait()
 
     async def test_caller_with_host(self, anyio_backend: Backend):
 

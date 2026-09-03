@@ -594,7 +594,7 @@ class Caller:
                     if backend is Backend.asyncio:
                         task = asyncio.current_task()
                         assert task
-                        pen.set_canceller(lambda msg: self.call_direct(task.cancel, msg))
+                        pen.set_canceller(lambda msg: queue.append((task.cancel, (msg,), {})))
                         try:
                             pen.set_result(await result)
                         except asyncio.CancelledError:
@@ -602,7 +602,7 @@ class Caller:
                             raise
                     else:
                         with trio.CancelScope() as scope:
-                            pen.set_canceller(lambda msg: self.call_direct(scope.cancel, msg))
+                            pen.set_canceller(lambda msg: queue.append((scope.cancel, (msg,), {})))
                             try:
                                 pen.set_result(await result)
                             except trio.Cancelled:
