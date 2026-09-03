@@ -232,13 +232,13 @@ class Caller:
     _pen_stop: list[Pending]
 
     started = Fixed(ProtectedPending)
-    """A `ProtectedPending` that is set once the caller has started."""
+    """A `ProtectedPending` that is set when the caller has started."""
 
     stopping = Fixed(ProtectedPending)
-    """A `ProtectedPending` that is set done when it is stopping."""
+    """A `ProtectedPending` that is set done when the caller is stopping."""
 
     stopped = Fixed(ProtectedPending)
-    """A `ProtectedPending` that is set done when the caller is stopped."""
+    """A `ProtectedPending` that is set done when the caller has stopped."""
 
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
@@ -256,17 +256,17 @@ class Caller:
 
     @property
     def backend(self) -> Backend:
-        """The backend used by caller."""
+        """The primary backend of the caller."""
         return self._backend
 
     @property
     def backend_options(self) -> dict | None:
-        """Options used to create the backend."""
+        """Options used to create the backend event loop when the caller is started."""
         return self._backend_options
 
     @property
     def host(self) -> Hosts | None:
-        """The [name][async_kernel.typing.Hosts] of the host if one is in use."""
+        """The [name][async_kernel.typing.Hosts] of the host if the caller is started with a host."""
         return self._host
 
     @property
@@ -495,6 +495,7 @@ class Caller:
                 self._set_state(CallerState.stopped)
 
         if caller_id_thread:
+            assert self.host is None, "host is not valid"
             self._caller_id, self._thread = caller_id_thread
 
             if self.backend == Backend.asyncio:
@@ -565,9 +566,9 @@ class Caller:
         return old_state
 
     async def _scheduler(self, queue: SingleAsyncQueue) -> None:
-        """A function that async iterates the queue.
+        """A function that async iterates the queue to dispatch scheduled function calls.
 
-        As items arrive they are executed or started in task or ignored in the case of pre-cancelled pending.
+        As items arrive they are executed or started in task or ignored if the pending was cancelled.
 
         It handles two types of items:
             - tuple: A tuple of `func`, `args`, `kwargs` is called directly in the scheduler.
@@ -781,12 +782,12 @@ class Caller:
 
         Args:
             func: The function to be called.
-            args: Arguments corresponding to in the call to  `func`.
-            kwargs: Keyword arguments to use with in the call to `func`.
+            args: Arguments to use when calling `func`.
+            kwargs: Keyword arguments to use when calling `func`.
             context: A context to copy, if not provided the current context is copied.
-            trackers: The tracker subclasses of active trackers which to add the pending.
-            backend: The backend to use to execute func which may execute the code a backend running as a guest.
-            **metadata: Additional metadata to store in the instance.
+            trackers: A tuple of tracker subclasses where the pending should be registered.
+            backend: An optional backend to require `func`.
+            **metadata: Additional metadata to store in the pending.
 
         Returns:
             Pending: A pending that can be awaited to obtain the result of func.
@@ -822,13 +823,10 @@ class Caller:
         """Schedule `func` to be called in the caller's backend event loop with a delay using a copy of the current context.
 
         Args:
-            func: The function.
             delay: The minimum delay to add between submission and execution.
+            func: The function.
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
-
-        Info:
-            All call arguments are packed into the instance's metadata.
         """
 
         async def _call_later(*args: P.args, **kwargs: P.kwargs) -> T:
@@ -888,7 +886,7 @@ class Caller:
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> None:
-        """A low-level function to call `func` directly in caller's backend scheduler.
+        """A low-level function to perform the call to `func` directly in caller's backend scheduler.
 
         Args:
             func: The function.
@@ -908,7 +906,7 @@ class Caller:
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Pending[T]:
-        """Call `func` in a child 'worker' that the same type of backend as the caller (parent).
+        """Call `func` in a child 'worker' that has the same type of backend as the caller (parent).
 
         Args:
             func: The function.
@@ -916,11 +914,7 @@ class Caller:
             **kwargs: Keyword arguments to use with `func`.
 
         Notes:
-            - A pool of workers are maintained.
-            - Structured concurrency tools should be used to creating task such as:
-                - [Caller.create_pending_group][]
-                - [asyncio.TaskGroup][]
-                - [anyio.create_task_group][]
+            - A pool of workers are retained to enable quick dispatch.
         """
 
         def _to_thread_on_done(_) -> None:
@@ -977,8 +971,8 @@ class Caller:
                 3. `func` is deleted (utilising [weakref.finalize][]).
             - The [context][contextvars.Context] of the initial call is used for subsequent queue calls.
             - Exceptions are logged to caller.log but not propagated.
-            - The pending created on the first call will only registered with PendingManager subclassed
-                trackers and **not** PendingGroup.
+            - The pending created on the first call will only be registered with [async_kernel.pending.PendingManager][]
+                subclassed trackers and **not** PendingGroup.
         """
         if not (pen_ := self._queue_map.get(key := hash(func))):
             with self._inst_lock:
@@ -1047,6 +1041,9 @@ class Caller:
             async with caller.create_start_stop_task(func).start():
                 pass
             ```
+        Notes:
+            - The start call uses `call_soon` to start the task meaning that the
+                context and pending group registration are made there also.
         """
         return StartStopTask().set_task_function(func, caller=self)
 
