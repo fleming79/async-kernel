@@ -915,24 +915,34 @@ class KernelMagics(HasInterface[Interface[IPShell]], Magics):
 
     @line_magic
     def callers(self, _) -> None:
-        """Print a table of [Callers][async_kernel.caller.Caller] indicating it's status."""
-        callers = Caller.all_callers(running_only=False)
-        n = max(len(c.name) for c in callers) + 6
-        m = max(len(repr(c.id)) for c in callers) + 6
-        t = max(len(str(c.thread.name)) for c in callers) + 6
+        """Print a table of the current [Callers][async_kernel.caller.Caller]s."""
+        callers = Caller.all_callers()
+        n_1 = max(len(c.name) for c in callers)
+        n_2 = max(len(repr(c.id)) for c in callers) + 10
+        n_3 = len(" Protected ")
+        n_4 = max(len(str(c.backend)) for c in callers) + 6
         lines = [
-            "".join(["Name".center(n), "Running ", "Protected", "Thread".center(t), "Caller".center(m)]),
-            "─" * (n + m + t + 22),
+            "".join(
+                [
+                    "Caller ID".center(n_2),
+                    "Backend".center(n_4),
+                    "Name".ljust(n_1),
+                    "Protected".center(n_3),
+                ]
+            ),
+            "─" * (n_1 + n_2 + n_3 + n_4),
         ]
-        for caller in callers:
-            running = ("✓" if caller.running else "✗").center(8)
-            protected = "   🔐    " if caller.protected else "         "
-            name = caller.name + " " * (n - len(caller.name))
-            thread = str(caller.thread.name).center(t)
-            caller_id = str(caller.id)
-            if caller.id == Caller.id_current():
-                caller_id += " ← current"
-            lines.append("".join([name, running.center(8), protected, thread, caller_id]))
+        lines.extend(
+            "".join(
+                [
+                    f"{'current →' if Caller.get_existing() is caller else ''} {caller.id}".rjust(n_2),
+                    caller.backend.center(n_4),
+                    caller.name.ljust(n_1),
+                    f"{'🔐' if caller.protected else ''}".center(n_3),
+                ]
+            )
+            for caller in callers
+        )
         print(*lines, sep="\n")
 
     @line_magic
