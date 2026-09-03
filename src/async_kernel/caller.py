@@ -565,16 +565,14 @@ class Caller:
                         pass
         return old_state
 
-    async def _scheduler(self, queue: SingleAsyncQueue) -> None:
-        """A function that async iterates the queue to dispatch scheduled function calls.
-
-        As items arrive they are executed or started in task or ignored if the pending was cancelled.
+    async def _scheduler(self, queue: SingleAsyncQueue[tuple[Callable, tuple, dict] | Pending]) -> None:
+        """A function that async iterates the queue scheduling execution of items as they arrive.
 
         It handles two types of items:
-            - tuple: A tuple of `func`, `args`, `kwargs` is called directly in the scheduler.
-            - Pending: A pending is started as a task. The pending is expected to include
-                `func`, `args`, `kwargs` and `context` in it's metadata. The pending is set
-                as the `active_pending` of the `context`.
+            - tuple: A tuple of `func`, `args`, `kwargs` which is called directly in the scheduler.
+            - Pending: A pending to start as a 'task'. The pending must include `func`,
+                `args` and `kwargs` as metadata. The pending's context is used to start the task,
+                and the pending is set as the `active_pending` for that context.
 
         Args:
             queue: The queue to access the items for scheduling.
@@ -646,14 +644,14 @@ class Caller:
             item.cancel("The caller has been closed")
 
     async def _idle_worker_cleanup(self) -> None:
-        """Periodically checks the worker pool and shutsdown redundant workers."""
+        """Periodically check the worker pool and stop workers when their idle duration is reached."""
         while (t := self.IDLE_WORKER_SHUTDOWN_DURATION) and self._worker_pool:
             await anyio.sleep(t)
             for worker in self._worker_pool.copy():
                 if (time.monotonic() - worker._idle_time) > t:
                     worker.stop(force=True)
 
-    def _start_guest(self, backend: Backend, queue: SingleAsyncQueue) -> None:
+    def _start_guest(self, backend: Backend, queue: SingleAsyncQueue[tuple[Callable, tuple, dict] | Pending]) -> None:
         """Start a guest backend."""
         assert self.get_existing() is self
         # Thread: caller
@@ -847,7 +845,7 @@ class Caller:
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Pending[T]:
-        """Schedule `func` to be called in caller's backend event loop using a copy of the current context.
+        """Schedule `func` to be called in the caller's backend event loop using a copy of the current context.
 
         Args:
             func: The function.
