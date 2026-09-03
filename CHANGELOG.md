@@ -5,9 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.4] - 2026-09-03
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Pending refactoring (simplification) and docstrings. [#590](https://github.com/fleming79/async-kernel/pull/590)
+
+- Bump uv from 0.12.5 to 0.12.7 [#587](https://github.com/fleming79/async-kernel/pull/587)
+
+- Caller refactoring, bugfixes and update docstrings. [#589](https://github.com/fleming79/async-kernel/pull/589)
+
+- Ipython compatibility fix. [#588](https://github.com/fleming79/async-kernel/pull/588)
+
 ## [0.22.3] - 2026-08-26
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.22.3 [#585](https://github.com/fleming79/async-kernel/pull/585)
 
 - Bump uv from 0.12.4 to 0.12.5 [#582](https://github.com/fleming79/async-kernel/pull/582)
 
@@ -1575,6 +1589,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.22.4]: https://github.com/fleming79/async-kernel/compare/v0.22.3..v0.22.4
 [0.22.3]: https://github.com/fleming79/async-kernel/compare/v0.22.2..v0.22.3
 [0.22.2]: https://github.com/fleming79/async-kernel/compare/v0.22.1..v0.22.2
 [0.22.1]: https://github.com/fleming79/async-kernel/compare/v0.22.0..v0.22.1
