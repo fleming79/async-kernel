@@ -14,7 +14,7 @@ import anyio.to_thread
 import pytest
 import trio
 from aiologic import CountdownEvent, Event, Latch
-from aiologic.lowlevel import create_async_event, create_async_waiter, current_async_library
+from aiologic.lowlevel import async_sleep_forever, create_async_event, create_async_waiter, current_async_library
 
 from async_kernel.caller import Caller, StartStopTask
 from async_kernel.pending import Pending, PendingCancelled
@@ -100,14 +100,6 @@ class TestCaller:
         assert caller.stopping.done()
         assert pen2.cancelled()
         await caller.stopped
-
-    async def test_start_after(self, anyio_backend: Backend):
-        caller = Caller()
-        assert not caller.running
-        pen = caller.call_soon(lambda: 2 + 3)
-        async with caller:
-            assert caller.running
-            assert await pen == 5
 
     async def test_get_non_main_thread(self, anyio_backend: Backend):
         async def get_caller():
@@ -217,7 +209,6 @@ class TestCaller:
     async def test_anyio_to_thread(self, anyio_backend: Backend):
         # Test the call works from an anyio thread
         async with Caller() as caller:
-            assert caller.running
             assert caller in Caller.all_callers()
 
             def _in_thread():
@@ -416,7 +407,6 @@ class TestCaller:
     async def test_call_early(self, anyio_backend: Backend) -> None:
         caller = Caller()
         pen = caller.call_soon(lambda: 3 + 3)
-        assert not caller.running
         assert not pen.done()
         assert await pen == 6
 
@@ -785,13 +775,24 @@ class TestCaller:
         for pen in pending:
             assert pen.result() == opposite
 
-    async def test_call_soon_with_backend_cancel(self, anyio_backend):
+    async def test_call_using_backend_cancel(self, anyio_backend):
         async with Caller() as caller:
             opposite = next(b for b in Backend if b is not caller.backend)
             assert await caller.call_using_backend(opposite, lambda: 1 + 1) == 2
             pen = caller.call_using_backend(opposite, lambda: 1 + 1)
             caller.stop()
         assert pen.cancelled()
+
+    async def test_call_using_backend_pending_cancel(self, caller: Caller):
+        async def f():
+            ready.wake()
+            assert current_async_library() == opposite
+            await async_sleep_forever()
+
+        opposite = next(b for b in Backend if b is not caller.backend)
+        pen = caller.call_using_backend(opposite, f)
+        await (ready := create_async_waiter())
+        await pen.cancel_wait()
 
     async def test_caller_with_host(self, anyio_backend: Backend):
 
