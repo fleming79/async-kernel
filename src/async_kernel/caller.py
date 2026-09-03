@@ -989,9 +989,10 @@ class Caller:
                                     if iscoroutinelike(result):
                                         await result
                                     del result
+                                except anyio.get_cancelled_exc_class():
+                                    self.log.debug("queue_call task cancelled: %s args:%s kwargs:%s", *item)
+                                    raise
                                 except (anyio.get_cancelled_exc_class(), Exception) as e:
-                                    if pen.cancelled():
-                                        raise
                                     self.log.exception("Execution of %s failed! args:%s kwargs:%s", *item, exc_info=e)
                                 finally:
                                     del item
