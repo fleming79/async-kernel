@@ -89,7 +89,7 @@ dev = [
   "ipykernel; implementation_name == 'cpython'",
   "pip; implementation_name == 'cpython'",
   "jupyter-client",
-  "uv==0.12.7",
+  "uv==0.12.9",
   { include-group = "uvloop" },
   { include-group = "test" },
 ]

@@ -11,6 +11,7 @@ from collections.abc import AsyncGenerator, Awaitable, Callable, Generator
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, final, overload
 
 import anyio
+from aiologic import BinarySemaphore
 from aiologic.lowlevel import create_async_event, create_async_waiter, create_green_event
 from typing_extensions import override
 
@@ -40,12 +41,23 @@ class PendingNotDone(RuntimeError):
 
 
 class PendingTracker:
-    """The base class for tracking [Pending][async_kernel.pending.Pending]."""
+    """The base class for tracking [Pending][async_kernel.pending.Pending].
+
+    Notes:
+        - It must be subclassed.
+        - Each subclass is assigned one context variable.
+            - This means that only one instance of the subclass can be active
+                in a specific context at any time.
+        - It is linearly proportionally expensive per subclass of PendingTracker
+            so it is recommended to use [aiologic.lowlevel.once][] or lazy imports
+            to limit subclassing until the subclass is actually required.
+    """
 
     _subclasses: ClassVar[tuple[type[Self], ...]] = ()
     _instances: ClassVar[weakref.WeakValueDictionary[str, Self]] = weakref.WeakValueDictionary()
     _id_contextvar: ClassVar[contextvars.ContextVar[str | None]]
     _pending: Fixed[Self, set[Pending[Any]]] = Fixed(set)
+    _subclass_lock = BinarySemaphore()
 
     id: Fixed[Self, str] = Fixed(lambda _: str(uuid.uuid4()))
     """The unique id of the pending tracker instance."""
@@ -57,7 +69,8 @@ class PendingTracker:
 
     def __init_subclass__(cls) -> None:
         if cls.__name__ != "PendingManager":
-            PendingTracker._subclasses = (*cls._subclasses, cls)
+            with cls._subclass_lock:
+                PendingTracker._subclasses = (*cls._subclasses, cls)
             # Each subclass is assigned a new context variable.
             cls._id_contextvar = contextvars.ContextVar(f"{cls.__module__}.{cls.__name__}", default=None)
         return super().__init_subclass__()
@@ -109,13 +122,6 @@ class PendingManager(PendingTracker):
     For each subclass there is zero or one active trackers at a time. Activating a manager will 'replace' a
     previously active pending manager.
 
-    Notes:
-        - It must be subclassed.
-        - Each subclass is assigned one context variable.
-            - This means that only one instance of the subclass can be active in a specific context at any time.
-        - It is linearly proportionally expensive to subclass PendingManager so it's usage should
-            be limited to cases where it is necessary where the exact functionality is required.
-
     Usage:
 
         ```python
@@ -147,7 +153,7 @@ class PendingManager(PendingTracker):
     """
 
     def activate(self) -> contextvars.Token[str | None]:
-        """Start tracking [Pending][async_kernel.pending.Pending] in the  current context."""
+        """Start tracking [Pending][async_kernel.pending.Pending] in the current context."""
         return self._activate()
 
     def deactivate(self, token: contextvars.Token[str | None]) -> None:
@@ -159,8 +165,8 @@ class PendingManager(PendingTracker):
         self._deactivate(token)
 
     def remove(self, pen: Pending) -> None:
-        """Remove a pending from the manager."""
-        self._pending.remove(pen)
+        """Remove `pen` from the pending set."""
+        self._pending.discard(pen)
 
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:
@@ -312,7 +318,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
 class Pending(Awaitable[T]):
     """Pending is an internally synchronised, cancellable, waitable/awaitable representation of a pending result.
 
-    It can be thought of as a hybrid mixture of [asyncio.Future][] and [concurrent.futures.Future][].
+    It can be thought of as a hybrid between of [asyncio.Future][] and [concurrent.futures.Future][].
 
     **Features**
 
@@ -466,18 +472,22 @@ class Pending(Awaitable[T]):
         result: bool = True,
         shield: bool = False,
     ) -> T | None:
-        """Wait for `result` or `exception` to be set (internally synchronised) returning the result if specified.
+        """Wait for the pending to be done (internally synchronised).
 
         Args:
             timeout: Timeout in seconds.
-            protect: Protect the pending from a `TimeoutError` or external cancellation.
-            result: If `result` should be returned.
+            protect: Protect the pending from a [TimeoutError][] or external cancellation.
+            result: If the result should be returned.
             shield: Shield from external cancellation.
+
+        Returns:
+            T: If `result` is `True`.
+            None: If `result` is 'False`.
 
         Raises:
             TimeoutError: When the timeout expires and a result or exception has not been set.
-            PendingCancelled: If `result=True` and the pending has been cancelled.
-            Exception: If `result=True` and an exception was set on the pending.
+            PendingCancelled: If `result` is `True` and the pending has been cancelled.
+            Exception: If `result` is `True` and an exception was set on the pending.
 
         Tip:
             To wait for a cancelled pending to complete use `await pen.wait(result=False)`.
@@ -530,7 +540,7 @@ class Pending(Awaitable[T]):
         result: bool = True,
         shield: bool = False,
     ) -> T | None:
-        """Wait synchronously for `result` or `exception` (internally synchronised) returning the result if specified.
+        """Wait synchronously for the pending to be done (internally synchronised) returning the result if specified.
 
         Args:
             timeout: Timeout in seconds.
@@ -586,7 +596,9 @@ class Pending(Awaitable[T]):
             raise e from None
 
     def set_result(self, value: T) -> None:
-        """Set the result if the pending is not already done (low-level internally synchronised).
+        """Set the result (low-level internally synchronised).
+
+        This is noop if already done.
 
         Args:
             value: The result to set.
@@ -594,7 +606,9 @@ class Pending(Awaitable[T]):
         self._set_done(True, value)
 
     def set_exception(self, exception: BaseException) -> None:
-        """Set the exception if the pending is not already done (low-level internally synchronised).
+        """Set the exception (low-level internally synchronised).
+
+        This is noop if already done.
 
         Args:
             exception: The value to set as the exception.
@@ -602,13 +616,15 @@ class Pending(Awaitable[T]):
         self._set_done(False, exception)
 
     def cancel(self, msg: str | None = None) -> bool:
-        """Cancel the pending if it is not already done.
+        """Cancel the pending.
+
+        This is noop if already done.
 
         Args:
             msg: The cancellation message.
 
         Returns:
-            If the pending is marked as cancelled.
+            bool: If the pending is marked as cancelled.
 
         Notes:
             - Cancellation cannot be undone.
@@ -644,7 +660,8 @@ class Pending(Awaitable[T]):
 
         Notes:
             - This can return `True` before a pending is done.
-            - To wait for a pending to complete use `await pen.cancel_wait()`, `await pen.wait(result=False)` or `pen.wait_sync(result=False)`.
+            - To wait for a pending to complete use `await pen.cancel_wait()`,
+                `await pen.wait(result=False)` or `pen.wait_sync(result=False)`.
         """
         return self._cancelled is not None
 
@@ -663,11 +680,11 @@ class Pending(Awaitable[T]):
             self._canceller = canceller
 
     def done(self) -> bool:
-        """Returns `True` if a result or exception has been set."""
+        """Returns `True` if a result or exception has been set, or when cancelled without a defined canceller."""
         return self._done
 
     def add_done_callback(self, fn: Callable[[Self], Any], /) -> None:
-        """Add a callback for when the pending is done (low-level).
+        """Add a callback that is called when the pending is done (low-level).
 
         Notes:
             - If the pending is:
@@ -676,9 +693,9 @@ class Pending(Awaitable[T]):
             - Callbacks are called FIFO in the thread where the pending is set done (potentially any thread).
             - The callback should be light weight and provide its own thread safety.
         """
-        if not self._done and (callbacks := getattr(self, "_done_callbacks", None)) is not None:
-            callbacks.append(fn)
-        else:
+        try:
+            self._done_callbacks.append(fn)
+        except AttributeError:
             fn(self)
 
     def remove_done_callback(self, fn: Callable[[Self], object], /) -> int:
