@@ -119,35 +119,39 @@ async def task_factory() -> AsyncGenerator[Callable[[contextvars.Context | None,
 
 @final
 class Caller:
-    """A thread-local class that facilitates inter-thread function and coroutine scheduling in asynchronous backends (asyncio or trio).
+    """A flexible interface for scheduling work across threads and asynchronous backends.
 
-    - CPython: there is only one caller instance per thread.
-    - Pyodide: Pyodide does not support threads, It is a context-varible local class instead.
+    Each caller is associated with an asyncio or trio event loop and can dispatch functions
+    or from any thread. When a [async_kernel.pending.Pending][] is returned, the result can
+    be awaited or cancelled from anywhere.
 
-    Multi-eventloop management is supported including:
+    - CPython: There is one caller per thread.
+    - Pyodide: Pyodide does not currently implement threads and trio is not supported.
+        A context variable is used to provide the `caller_id` enabling multiple caller support.
 
-    - zero or one host gui event loop.
-    - one or two backends.
+    In CPython multi-eventloop management is supported including:
 
-    Code execution is always done within the context of an asynchronous backend.
+    - host: zero or one host gui event loop.
+    - backend: One backend (asyncio or trio) that can run as a guest in the host if a host is in use.
+    - guest backend: The opposite of the backend that runs as a guest of the host or backend
+        when there is no host.
 
-    Caller can run in any thread where a backend ('asyncio' or 'trio') is running.  But
-    in-order to start, it must be Created inside that thread. After which, methods can
-    be called from any thread.
+    A `Caller` instance can be created in any thread where a backend ('asyncio' or 'trio')
+    is already running. However the `Caller` instance must be created from a function call
+    made inside the thread (using `Caller()`).
+
+    A new caller can be created using one of:
+
+    1. `caller.get`: As a child of an existing caller. The child will stop when the parent
+        is stopped furthermore, the same child can be accessed by passing the string argument
+        `name`.
+    2. `Caller("NewThread")`: A new caller instance. Note that it should be stopped when
+        it is no longer required.
 
     An async context is provided for lifecycle management. The async-context of a caller
     can be entered multiple times from any thread.  Once entered, the caller is marked as
-    'protected' and a count of re-entry is maintained. When the first entered context exits
-    it will wait until all other contexts have exited. When the count returns to zero the
-    caller will stop, after which, the caller can not be restarted.
-
-    If the first entry of the async context is obtained inside a pending (a coroutine manage
-    by the caller), the caller will also be force stopped.
-
-
-    Children callers (obtained using `caller.get(...)`) are always force stopped when the
-    parent caller is stopped.
-
+    'protected'. The first entered context will wait for all other contexts to exit and then
+    stop itself, only leaving the context once it has stopped.
 
     **High level methods**
 
@@ -178,11 +182,10 @@ class Caller:
     """
 
     MAX_IDLE_POOL_INSTANCES = 10
-    "The number of `pool` instances to leave idle (See also [to_thread][async_kernel.caller.Caller.to_thread])."
+    "The number of child workers to keep in the pool (See also [to_thread][async_kernel.caller.Caller.to_thread])."
 
     IDLE_WORKER_SHUTDOWN_DURATION = 0 if "pytest" in sys.modules else 60
-    """
-    The minimum duration in seconds for a worker to remain in the worker pool before it is shutdown.
+    """The duration in seconds for a worker to remain in the pool before it is shutdown.
     
     Set to 0 to disable (default when running tests).
     """
@@ -229,13 +232,13 @@ class Caller:
     _pen_stop: list[Pending]
 
     started = Fixed(ProtectedPending)
-    """A pending that is set once the caller has started."""
+    """A `ProtectedPending` that is set once the caller has started."""
 
     stopping = Fixed(ProtectedPending)
-    """A pending that is set done the first time stop is called."""
+    """A `ProtectedPending` that is set done when it is stopping."""
 
     stopped = Fixed(ProtectedPending)
-    """A pending that is done when the caller is stopped."""
+    """A `ProtectedPending` that is set done when the caller is stopped."""
 
     _pending_var: contextvars.ContextVar[Pending | None] = contextvars.ContextVar("_pending_var", default=None)
 
@@ -243,12 +246,12 @@ class Caller:
 
     @property
     def name(self) -> str:
-        """The name of the thread when the caller was created."""
+        """The name of the caller."""
         return self._name
 
     @property
     def id(self) -> int:
-        """The id for the caller."""
+        """The id of the caller, which is the thread's ident where threading is being used otherwise it is a unique value."""
         return self._caller_id
 
     @property
@@ -263,17 +266,20 @@ class Caller:
 
     @property
     def host(self) -> Hosts | None:
-        """The [name][async_kernel.typing.Hosts] of the gui event loop if there is one."""
+        """The [name][async_kernel.typing.Hosts] of the host if one is in use."""
         return self._host
 
     @property
     def host_options(self) -> dict | None:
-        """Options used to create the gui event loop."""
+        """Options used to create the host."""
         return self._host_options
 
     @property
     def protected(self) -> bool:
-        """Returns `True` if the caller is protected from stopping."""
+        """Returns `True` if the caller is protected from stopping.
+
+        This can be set to `True` at any time.
+        """
         return self._protected
 
     @protected.setter
@@ -282,17 +288,12 @@ class Caller:
         self._protected = True
 
     @property
-    def running(self) -> bool:
-        """Returns `True` when the caller is available to run requests."""
-        return self._state is CallerState.running
-
-    @property
     def children(self) -> set[Self]:
-        """A frozenset copy of the instances that were created by the caller.
+        """The caller's children that are not stopping.
 
         Notes:
             - When the parent is stopped, all children are stopped.
-            - All children are stopped prior to the parent changing state to stopped.
+            - All children are stopped before the parent's stopped `ProtectedPending` is set as done.
         """
         return {c for c in self._children.copy() if not c.stopping.done()}
 
@@ -303,7 +304,7 @@ class Caller:
 
     @property
     def parent(self) -> Self | None:
-        """The parent caller if it exists."""
+        """The caller's parent if it has one."""
         return self._parent_ref()
 
     def _parent_ref(self) -> Self | None:
@@ -352,8 +353,6 @@ class Caller:
                 - name: The name to use.
                 - backend: The async backend to use.
                 - backend_options: Options for the backend.
-                - protected: Whether the Caller is protected.
-                - log: Logger instance.
 
         Returns:
             Self: The created or retrieved Caller instance.
@@ -411,9 +410,8 @@ class Caller:
             inst._host_options = kwargs.get("host_options")
             inst.log = logging.LoggerAdapter(logging.getLogger())
 
-            # Set the scheduler to start in either the current thread or a new thread.
-            # It is not possible to wait for it to start without using microthreads like greenlets.
-            inst._start_sync(caller_id, thread, kwargs.get("no_debug", False))
+            # Start the instance.
+            inst._start((caller_id, thread) if caller_id and thread else None, kwargs.get("no_debug", False))
             assert inst._caller_id is not None
             assert inst._caller_id not in cls._instances
             cls._instances[inst._caller_id] = inst
@@ -465,14 +463,8 @@ class Caller:
                 await self.stopped.wait(shield=True)
         return False
 
-    def _start_sync(self, caller_id: int | None, thread: threading.Thread | None, no_debug: bool = False) -> None:
-        """Start synchronously.
-
-        Args:
-            caller_id: The id to use for the caller, which should match the thread in CPython.
-            thread: The thread where the caller is running.
-            no_debug: If debugpy should be disabled in the thread.
-        """
+    def _start(self, caller_id_thread: tuple[int, threading.Thread] | None, no_debug: bool = False) -> None:
+        """Start the scheduler."""
         self._set_state(CallerState.start_sync)
 
         async def run_scheduler() -> None:
@@ -502,9 +494,8 @@ class Caller:
                 self._set_state(CallerState.stopping)
                 self._set_state(CallerState.stopped)
 
-        if caller_id and thread:
-            assert thread is threading.current_thread()
-            self._thread, self._caller_id = thread, caller_id
+        if caller_id_thread:
+            self._caller_id, self._thread = caller_id_thread
 
             if self.backend == Backend.asyncio:
                 self._tasks.add(asyncio.create_task(run_scheduler()))
@@ -574,12 +565,15 @@ class Caller:
         return old_state
 
     async def _scheduler(self, queue: SingleAsyncQueue) -> None:
-        """A function that async iterates the queue and executes items as they arrive.
+        """A function that async iterates the queue.
+
+        As items arrive they are executed or started in task or ignored in the case of pre-cancelled pending.
 
         It handles two types of items:
             - tuple: A tuple of `func`, `args`, `kwargs` is called directly in the scheduler.
-            - Pending: A pending is started as an 'task'. The pending provides `func`, `args` and `kwargs`
-                in it's metadata. The pending is set as `active_pending`in the context for the duration of execution.
+            - Pending: A pending is started as a task. The pending is expected to include
+                `func`, `args`, `kwargs` and `context` in it's metadata. The pending is set
+                as the `active_pending` of the `context`.
 
         Args:
             queue: The queue to access the items for scheduling.
@@ -651,7 +645,7 @@ class Caller:
             item.cancel("The caller has been closed")
 
     async def _idle_worker_cleanup(self) -> None:
-        """Shutsdown idle thread workers."""
+        """Periodically checks the worker pool and shutsdown redundant workers."""
         while (t := self.IDLE_WORKER_SHUTDOWN_DURATION) and self._worker_pool:
             await anyio.sleep(t)
             for worker in self._worker_pool.copy():
@@ -659,7 +653,7 @@ class Caller:
                     worker.stop(force=True)
 
     def _start_guest(self, backend: Backend, queue: SingleAsyncQueue) -> None:
-        """Start a guest event loop."""
+        """Start a guest backend."""
         assert self.get_existing() is self
         # Thread: caller
 
@@ -686,58 +680,61 @@ class Caller:
 
     @classmethod
     def id_current(cls) -> int:
-        """The immutable id of a caller for the current thread in CPython or context in Pyodide."""
+        """The id of a caller given the current thread in CPython or context in Pyodide.
+
+        Note:
+            This does not mean a caller actually exists.
+        """
         return cls._caller_token.get() if sys.platform == "emscripten" else threading.get_ident()
 
     @classmethod
     def get_existing(cls, caller_id: int | None = None, /) -> Self | None:
-        """A [classmethod][] to get the caller instance from the corresponding thread if it exists.
+        """A [classmethod][] to get the caller instance if it exists.
 
         Args:
-            caller_id: The id of the caller which in CPython is also the the id of the thread in which it is running.
+            caller_id: The id of the caller.
         """
-        caller_id = cls.id_current() if caller_id is None else caller_id
         with cls._lock:
-            return cls._instances.get(caller_id)
+            return cls._instances.get(caller_id or cls.id_current())
 
     @classmethod
     def current_pending(cls) -> Pending[Any] | None:
-        """A [classmethod][] that returns the current pending when called from inside a function scheduled by Caller."""
+        """A [classmethod][] that returns the pending for the current context."""
         return cls._pending_var.get()
 
     @classmethod
-    def all_callers(cls, running_only: bool = True) -> list[Caller]:
-        """A [classmethod][] to get a list of the callers.
+    def all_callers(cls) -> list[Caller]:
+        """A [classmethod][] to get a list of all callers."""
+        return list(Caller._instances.values())
+
+    def stop(self, *, force: bool = False) -> ProtectedPending | None:
+        """Stop the caller.
 
         Args:
-            running_only: Restrict the list to callers that are active (running in an async context).
-        """
-        return [caller for caller in Caller._instances.values() if caller.running or not running_only]
-
-    def stop(self, *, force: bool = False) -> None:
-        """Stop the caller cancelling all incomplete tasks.
-
-        Args:
-            force: If the caller is protected the call is a no-op unless force=True.
+            force: If the caller is protected the call is a no-op unless `force=True`.
         """
         if self._protected and not force:
             self.log.debug("Non-force stop ignored for  %s", self)
-            return
+            return None
         self.stopping.set_result(None)
         if (parent := self.parent) and self in parent._worker_pool:
             with contextlib.suppress(IndexError):
                 parent._worker_pool.remove(self)
         if (old_state := self._set_state(CallerState.stopping)) and old_state.value < CallerState.starting.value:
             self._set_state(CallerState.stopped)
+        return self.stopped
 
     def get(self, **kwargs: Unpack[CallerCreateOptions]) -> Self:
-        """Retrieves an existing child caller by `name` and `backend`, or creates a new one if not found.
+        """Get an existing caller by name or create a new one.
+
+        If 'name' is provided and a child with that name exists, the child will be returned. If 'name'
+        is not specified, a new caller is created.
 
         Args:
             **kwargs: Options for creating or retrieving a caller.
 
         Returns:
-            Self: The retrieved or newly created caller.
+            Self: The child caller.
 
         Raises:
             RuntimeError: If a caller with the specified name exists but the backend does not match.
@@ -780,7 +777,7 @@ class Caller:
         /,
         **metadata: Any,
     ) -> Pending[T]:
-        """A low-level function to schedule execution of `func`in a task running in the caller's thread.
+        """A low-level function to dispatch `func` as a task running in the caller's backend event loop.
 
         Args:
             func: The function to be called.
@@ -822,7 +819,7 @@ class Caller:
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Pending[T]:
-        """Schedule func to be called in caller's event loop copying the current context.
+        """Schedule `func` to be called in the caller's backend event loop with a delay using a copy of the current context.
 
         Args:
             func: The function.
@@ -852,7 +849,7 @@ class Caller:
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Pending[T]:
-        """Schedule func to be executed.
+        """Schedule `func` to be called in caller's backend event loop using a copy of the current context.
 
         Args:
             func: The function.
@@ -869,16 +866,12 @@ class Caller:
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Pending[T]:
-        """Schedule func to be executed using the specified `backend`.
+        """Schedule `func` to be executed using the specified `backend` event loop using a copy of the current context.
 
-        This methods enables coroutines written for a specific function to be run irresective
-        of the callers backend.
-
-        - `backend == caller.backend` - `func` is executed via [Caller.call_soon][].
-        - `backend != caller.backend` - `func` is executed with a backend running as a guest.
+        A guest backend is used when the `backend` is different to the caller's backend.
 
         Args:
-            backend: The backend in which `func` must be executed.
+            backend: The backend to use for execution.
             func: The function.
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
@@ -895,9 +888,7 @@ class Caller:
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> None:
-        """A low-level function to schedule execution of `func` in caller's scheduler.
-
-        Use this for short-running function calls only.
+        """A low-level function to call `func` directly in caller's backend scheduler.
 
         Args:
             func: The function.
@@ -905,7 +896,8 @@ class Caller:
             **kwargs: Keyword arguments to use with `func`.
 
         Warning:
-            **Use this method for lightweight calls only!**
+            **Even though coroutine functions are accepted, only non-blocking calls (sync or async) should
+            be made to avoid blocking the scheduler.**
         """
         self._scheduler_queue.append((func, args, kwargs))
 
@@ -916,12 +908,12 @@ class Caller:
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Pending[T]:
-        """Call `func` in a worker thread using the same backend as the caller.
+        """Call `func` in a child 'worker' that the same type of backend as the caller (parent).
 
         Args:
             func: The function.
-            *args: Arguments to use with func.
-            **kwargs: Keyword arguments to use with func.
+            *args: Arguments to use with `func`.
+            **kwargs: Keyword arguments to use with `func`.
 
         Notes:
             - A pool of workers are maintained.
@@ -955,7 +947,7 @@ class Caller:
         return pen
 
     def queue_get(self, func: Callable) -> Pending[None] | None:
-        """Returns the pending associated with the `queue_call` for func.
+        """Returns the pending where with the `queue_call` is running.
 
         Notes:
             - `queue_close` is the preferred means to shutdown the queue.
@@ -1026,7 +1018,6 @@ class Caller:
         """
         if pen := self._queue_map.pop(func if isinstance(func, int) else hash(func), None):
             pen.metadata["queue"].stop()
-            pen.cancel()
 
     def create_start_stop_task(
         self,
@@ -1035,16 +1026,13 @@ class Caller:
     ) -> StartStopTask[P, T]:
         """Wrap the coroutine function `func` with a `StartStopTask`.
 
-        The returned `StartStopTask` will only be schedule after `start` method is called,
-        and can only be started once, though it is safe to call `start` multiple times;
-        subsequent calls are `noop`.
+        The method [StartStopTask.start][] must be called to start the task. Args and Kwargs
+        can be passed in the function call. Subsequent calls are noop.
 
-        When used as an async context, the method 'stop' will be called when the context
-        exits and will wait for the protected task to  complete prior to stopping. `func`
-        is expected to accept two positional arguments:
+        `func` must accept two position only arguments:
+
         1. started: A callable to indicate the task is started.
-        2. stop: A protected pending, that should be awaited, or otherwise used to shutdown
-            the task.
+        2. stop: A `ProtectedPending` that should be used as an 'event' to stop func.
 
         Usage:
             ```python
@@ -1069,9 +1057,7 @@ class Caller:
         max_concurrent: NoValue | int = NoValue,
         cancel_unfinished: bool = True,
     ) -> AsyncGenerator[Pending[T], Any]:
-        """An async iterator to yield a pending for each awaitable in items as they complete (are done).
-
-        How the pending was marked as done does not affect the iterator.
+        """An async iterator which yields a pending for each awaitable in `items` as they complete.
 
         Args:
             items: A container or a generator that yields awaitables.
@@ -1163,7 +1149,7 @@ class Caller:
             done, pending = await asyncio.wait(items)
             ```
         Info:
-            - This does not raise a TimeoutError!
+            - This does NOT raise a [TimeoutError]!
             - Pendings that aren't done when the timeout occurs are returned in the second set.
         """
         pending: set[Pending[T]] = set()
@@ -1202,8 +1188,9 @@ class Caller:
     ) -> PendingGroup:
         """Create a new [PendingGroup][async_kernel.pending.PendingGroup].
 
-        [Pending][async_kernel.pending.Pending] created in the context that opt-in by including `PendingTracker`
-        as a 'tracker', including all methods on [Caller][] that return pending are automatically registered.
+        This automatically tracks [Pending][async_kernel.pending.Pending] created in the context
+        that have opt-in (by including the class `PendingTracker` as a 'tracker'). This includes
+        all [Caller][] methods that return a pending.
 
         The context will not exit until all registered pending are complete. The exit and cancellation behaviour
         is determined by the `mode`.
@@ -1234,22 +1221,26 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
 
     1. set_task_function: Set the task function and caller to associate it with.
     2. start: Start the task.
-    3. started: The task indicates it is started at a position where it is considered to be running.
+    3. started: `func` indicates it has started.
     4. stopping: `stop` has been called which signals to the task that it should commence it's shutdown.
     5. stopped: The task is finished.
 
     For convenience, this class is awaitable and provides an async context manager.
     Both of which are only available after `start` has been called. The async context can only
-    be entered once, and will initiate stop the protected task when the context exits.
+    be entered once, and will initiate stop when the context begins to exit. The conxext will
+    return once the task has stopped.
 
     Usage:
         ```python
-        async def func(started, stopped):
+        async def func(started, stop, /, msg: str):
             started()
-            await stopped
+            print(msg)
+            print("Waiting for stop")
+            await stop
+            print("stopped")
 
 
-        task = StartStopTask().set_task_function(func).start()
+        task = StartStopTask().set_task_function(func).start("Hello world")
         await task.stop()
         # or
         async with StartStopTask().set_task_function(func).start():
@@ -1259,18 +1250,17 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
     """
 
     started: Fixed[Self, ProtectedPending[None]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
-    """A `ProtectedPending` that is set once `func` indicates it is started."""
+    """A `ProtectedPending` that is set once `func` indicates it has started."""
 
     stopping: Fixed[Self, ProtectedPending[None]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
     """A `ProtectedPending` that is set when the method `stop` is called."""
 
     stopped: Fixed[Self, ProtectedPending[T]] = Fixed(lambda c: ProtectedPending(info=c["owner"]._info(c["name"])))
-    """A `ProtectedPending` that is set when the shielded call of `func` is finished."""
+    """A `ProtectedPending` that is set when the task has stopped."""
 
     @property
     def caller(self) -> Caller:
         """The caller where the task is running."""
-        # requires `self.set_function`.
         try:
             return self._caller_ref()  # pyright: ignore[reportReturnType]
         except AttributeError:
@@ -1284,7 +1274,9 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         *,
         caller: Caller | None = None,
     ) -> Self:
-        """Set the task function for this instance.
+        """Set the task function.
+
+        This should only be called once.
 
         Args:
             func: The coroutine function to run as a task.
@@ -1345,11 +1337,11 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         """Start the task function.
 
         Args:
-            *args: Arguments to pass to the task coroutine function.
-            **kwargs: Keyword arguments to pass to the task coroutine function.
+            *args: Arguments to use with the function set in [StartStopTask.set_task_function][].
+            **kwargs: Keyword arguments to use with the [StartStopTask.set_task_function][].
 
         Returns:
-            Self: Returns the instance to make it convenient to chain function calls.
+            Self: Making it convenient to chain the call in an async context or await.
         """
         if not hasattr(self, "_func"):
             msg = "The task function has not been set. Tip: Use the method `set_task_function`."
@@ -1390,10 +1382,12 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         return self
 
     def stop(self, _=None) -> ProtectedPending[T]:
-        """Stop the Task.
+        """Stop the task.
+
+        This sets the `stopping` `ProtectedPending`. The task function should respond to the change and exit normally.
 
         Returns:
-            ProtectedPending: Resolves with the result of the function.
+            ProtectedPending: Resolves with the result of the function set using [StartStopTask.set_task_function][].
         """
         self.started.cancel("Stopped early!")
         self.stopping.set_result(None)

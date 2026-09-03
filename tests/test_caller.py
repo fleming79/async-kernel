@@ -101,14 +101,6 @@ class TestCaller:
         assert pen2.cancelled()
         await caller.stopped
 
-    async def test_start_after(self, anyio_backend: Backend):
-        caller = Caller()
-        assert not caller.running
-        pen = caller.call_soon(lambda: 2 + 3)
-        async with caller:
-            assert caller.running
-            assert await pen == 5
-
     async def test_get_non_main_thread(self, anyio_backend: Backend):
         async def get_caller():
             thread = threading.current_thread()
@@ -217,7 +209,6 @@ class TestCaller:
     async def test_anyio_to_thread(self, anyio_backend: Backend):
         # Test the call works from an anyio thread
         async with Caller() as caller:
-            assert caller.running
             assert caller in Caller.all_callers()
 
             def _in_thread():
@@ -416,7 +407,6 @@ class TestCaller:
     async def test_call_early(self, anyio_backend: Backend) -> None:
         caller = Caller()
         pen = caller.call_soon(lambda: 3 + 3)
-        assert not caller.running
         assert not pen.done()
         assert await pen == 6
 
