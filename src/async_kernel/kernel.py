@@ -328,12 +328,12 @@ class Kernel(
                     content = await handler(job)
                 except Exception as e:
                     # 4a. Send a reply that the request failed.
-                    job["owner"]().send_reply(job, utils.error_to_content(e))
+                    job["owner"].send_reply(job, utils.error_to_content(e))
                     self.log.exception("Exception in message handler:", exc_info=e)
                 else:
                     # 4b. Send a reply if the content is not None.
                     if content is not None:
-                        job["owner"]().send_reply(job, content)
+                        job["owner"].send_reply(job, content)
                         del content
                 finally:
                     # 5. Publish idle status.

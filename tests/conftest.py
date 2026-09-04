@@ -92,7 +92,8 @@ def job() -> Job:
     )
     header = MsgHeader(msg_id="", session="", username="", date="", msg_type=MsgType.execute_request, version="1")
     msg = Message(header=header, parent_header=header, metadata={}, buffers=[], content=content, channel=Channel.shell)
-    return Job(msg=msg, ident=[b""], received_time=0.0, owner=MessageProtocol)
+    owner: MessageProtocol = object()  # pyright: ignore[reportAssignmentType]
+    return Job(msg=msg, ident=[b""], received_time=0.0, owner=owner)
 
 
 @pytest.fixture

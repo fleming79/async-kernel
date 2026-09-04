@@ -470,7 +470,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
         if not job["msg"].get("content", {}).get("allow_stdin", False):
             msg = "Stdin is not allowed in this context!"
             raise RuntimeError(msg)
-        connection = job["owner"]()
+        connection = job["owner"]
         msg = connection.msg(
             MsgType.input_request, Content(prompt=prompt, password=password), Channel.stdin, parent=job["msg"]
         )

@@ -523,8 +523,8 @@ class Job(TypedDict, Generic[T]):
     ident: list[bytes]
     """The ident associated with the message and its origin."""
 
-    owner: Callable[[], MessageProtocol]
-    """A callable that returns the object from which a message originated."""
+    owner: MessageProtocol
+    """The local object which received message request."""
 
     received_time: float
     """The time the message was received."""

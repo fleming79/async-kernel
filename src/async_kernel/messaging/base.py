@@ -104,11 +104,6 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
             self.log.debug("Received %s %r", msg["header"]["msg_type"], msg)
             f.set_result(msg)
 
-    @property
-    def as_owner(self) -> Callable[[], Self]:
-        """Provides a callable with reference to self."""
-        return lambda: self
-
     @override
     def msg(
         self,
@@ -208,9 +203,7 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
         if msg["header"]["msg_type"].endswith("_reply"):
             self.handle_reply(msg)
         else:
-            self.parent.kernel.handle_request(
-                Job(msg=msg, ident=ident, received_time=time.monotonic(), owner=self.as_owner)
-            )
+            self.parent.kernel.handle_request(Job(msg=msg, ident=ident, received_time=time.monotonic(), owner=self))
 
     def connection_info(self) -> str:
         return ""
@@ -261,7 +254,7 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         elif msg["header"]["msg_type"].endswith("_reply"):
             self.handle_reply(msg)
         else:
-            self._handle_request(Job(owner=self.as_owner, msg=msg, ident=ident, received_time=time.monotonic()))
+            self._handle_request(Job(owner=self, msg=msg, ident=ident, received_time=time.monotonic()))
 
     def _handle_request(self, job: Job) -> None:
         # Thread: undefined
