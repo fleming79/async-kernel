@@ -49,15 +49,16 @@ class TestZMQConnection:
                 reply = await client.kernel_info()
                 assert reply
 
-    async def test_iopub(self, kernel):
+    async def test_iopub(self, kernel, mocker):
         async with ZMQConnection().start() as connection:
             client = ZMQClient()
             client.load_connection_info(connection.get_connection_info())
             async with client.start():
                 async with client.iopub_subscribe():
                     pass
+                mocker.patch.object(connection.session, "send")
                 with pytest.raises(TimeoutError, match="Welcome message not received"):
-                    async with client.iopub_subscribe(timeout=0.0):
+                    async with client.iopub_subscribe(timeout=0.001):
                         pass
 
     async def test_too_late(self, kernel):
