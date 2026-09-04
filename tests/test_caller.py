@@ -948,5 +948,5 @@ class TestStartStopTask:
         await caller.to_thread(check_non_caller)
 
     def test_no_func(self):
-        with pytest.raises(RuntimeError, match="task function has not been set"):
+        with pytest.raises(RuntimeError, match="The `func` has not been set"):
             StartStopTask().start()

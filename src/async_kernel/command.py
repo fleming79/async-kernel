@@ -67,10 +67,10 @@ def to_flags_and_settings(args: list[str]) -> tuple[list[str], dict[str, Any]]:
 
 
 def command_line() -> None:
-    """Parses command-line arguments to manage kernel specs and start kernels.
+    """Parses command-line arguments to manage kernel specs and start a kernel interface.
 
-    This function uses `argparse` to handle command-line arguments for
-    various kernel operations, including:
+    This function uses [argparse.ArgumentParser][] to handle command-line
+    arguments for various kernel operations, including:
 
     - Starting a kernel with a specified connection file.
     - Adding a new kernel specification.

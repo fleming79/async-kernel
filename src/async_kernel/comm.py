@@ -21,7 +21,7 @@ __all__ = ["Comm"]
 
 
 class Comm(HasInterface, BaseComm):
-    """An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/))."""
+    """An implementation of `comm.BaseComms` for async-kernel ([on pypi](https://pypi.org/project/comm/))."""
 
     @override
     def publish_msg(  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -32,7 +32,7 @@ class Comm(HasInterface, BaseComm):
         buffers: BuffersType | None = None,
         **keys,
     ) -> None:
-        """Helper for sending a comm message on IOPub."""
+        """Send an iopub message."""
         content = {"data": {} if data is None else data, "comm_id": self.comm_id} | keys
         if parent := self.parent:
             parent.iopub_send(
@@ -54,8 +54,8 @@ class Comm(HasInterface, BaseComm):
 class CommManager(HasInterface, comm.base_comm.CommManager):
     """The comm manager for all Comm instances.
 
-    Not to be called directly; use `comm.get_comm_manager` (from the `comm` module not `async_kernel.comm`)
-    to obtain the comm manager.
+    Use `comm.get_comm_manager` (from the `comm` module not `async_kernel.comm`)
+    to obtain the comm manager. Or better still, access it [directly on the interface][async_kernel.interface.Interface.comm_manager].
     """
 
     comms: dict[str, BaseComm]
