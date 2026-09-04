@@ -268,6 +268,3 @@ reportUnknownLambdaType = false
 
 [tool.uv]
 required-version = ">=0.11.32"
-
-[tool.uv.sources]
-jupyter-client = { git = "https://github.com/jupyter/jupyter_client.git" }
