@@ -10355,10 +10355,10 @@ viewing the latest version.
   
       instance-attribute
    (async_kernel.typing.Job.owner)" href="#async_kernel.typing.Job.owner">owner</a></code></b>
-              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[], <span title="async_kernel.typing.MessageProtocol">MessageProtocol</span>]</code>)
+              (<code><span title="async_kernel.typing.MessageProtocol">MessageProtocol</span></code>)
           –
           <div class="doc-md-description">
-            <p>A callable that returns the object from which a message originated.</p>
+            <p>The local object which received message request.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -10400,8 +10400,8 @@ viewing the latest version.
     <span class="n">ident</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span>
 <span class="w">    </span><span class="sd">"""The ident associated with the message and its origin."""</span>
 
-    <span class="n">owner</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">MessageProtocol</span><span class="p">]</span>
-<span class="w">    </span><span class="sd">"""A callable that returns the object from which a message originated."""</span>
+    <span class="n">owner</span><span class="p">:</span> <span class="n">MessageProtocol</span>
+<span class="w">    </span><span class="sd">"""The local object which received message request."""</span>
 
     <span class="n">received_time</span><span class="p">:</span> <span class="nb">float</span>
 <span class="w">    </span><span class="sd">"""The time the message was received."""</span>
@@ -10481,12 +10481,12 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.typing.Job.owner" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">owner</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[],</span> <span class="n"><span title="async_kernel.typing.MessageProtocol">MessageProtocol</span></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">owner</span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.MessageProtocol">MessageProtocol</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>A callable that returns the object from which a message originated.</p>
+        <p>The local object which received message request.</p>
 
           
     </div>
