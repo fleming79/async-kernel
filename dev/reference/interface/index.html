@@ -3400,7 +3400,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title="            Interface (async_kernel.interface.Interface)" href="#async_kernel.interface.Interface">Interface</a></code></b>
           –
           <div class="doc-md-description">
-            <p>The base class for kernel interface (singleton).</p>
+            <p>The base kernel interface (singleton).</p>
           </div>
         </li>
     </ul>
@@ -3481,27 +3481,6 @@ instances using this mixin.</p>
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
-      <a href="../messaging/#messaging">Messaging</a>
-  </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../messaging/#async_kernel.messaging.base.Connection"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Connection</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../messaging/#async_kernel.messaging.base.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
-  </span>
-
-      </li>
-  </ul>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
       <a href="../comm/#">comm</a>
   </span>
 
@@ -3572,6 +3551,27 @@ instances using this mixin.</p>
             <span class="doc doc-backlink-crumb last">
       <a href="../kernel/#async_kernel.kernel.Kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Kernel</a>
   </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../messaging/#">messaging</a>
+  </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../messaging/#async_kernel.messaging.base.Connection"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Connection</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../messaging/#async_kernel.messaging.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
+  </span>
+
+      </li>
+  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -3843,7 +3843,7 @@ instances using this mixin.</p>
 
 
 
-        <p>The base class for kernel interface (singleton).</p>
+        <p>The base kernel interface (singleton).</p>
 <p>The interface creates the kernel and provides external communication. It is also
 the parent object for all objects that subclass from <code>HasInterface</code>. Configurable
 objects that subclass from <code>HasInterface</code> inherit their configuration from the
@@ -4831,7 +4831,7 @@ interface (Application).</p>
 <span class="normal">504</span>
 <span class="normal">505</span>
 <span class="normal">506</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Interface</span><span class="p">(</span><span class="n">StartStopTask</span><span class="p">,</span> <span class="n">Application</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">"""The base class for kernel interface (singleton).</span>
+<span class="w">    </span><span class="sd">"""The base kernel interface (singleton).</span>
 
 <span class="sd">    The interface creates the kernel and provides external communication. It is also</span>
 <span class="sd">    the parent object for all objects that subclass from `HasInterface`. Configurable</span>
@@ -6833,7 +6833,7 @@ including aliases and flags are accepted. <em>flags</em> should be passed as <co
           <b><code><a class="autorefs autorefs-internal" title="            Interface (async_kernel.interface.base.Interface)" href="#async_kernel.interface.base.Interface">Interface</a></code></b>
           –
           <div class="doc-md-description">
-            <p>The base class for kernel interface (singleton).</p>
+            <p>The base kernel interface (singleton).</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
@@ -6878,7 +6878,7 @@ including aliases and flags are accepted. <em>flags</em> should be passed as <co
 
 
 
-        <p>The base class for kernel interface (singleton).</p>
+        <p>The base kernel interface (singleton).</p>
 <p>The interface creates the kernel and provides external communication. It is also
 the parent object for all objects that subclass from <code>HasInterface</code>. Configurable
 objects that subclass from <code>HasInterface</code> inherit their configuration from the
@@ -7866,7 +7866,7 @@ interface (Application).</p>
 <span class="normal">504</span>
 <span class="normal">505</span>
 <span class="normal">506</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Interface</span><span class="p">(</span><span class="n">StartStopTask</span><span class="p">,</span> <span class="n">Application</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_shell_co</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">"""The base class for kernel interface (singleton).</span>
+<span class="w">    </span><span class="sd">"""The base kernel interface (singleton).</span>
 
 <span class="sd">    The interface creates the kernel and provides external communication. It is also</span>
 <span class="sd">    the parent object for all objects that subclass from `HasInterface`. Configurable</span>
@@ -9657,27 +9657,6 @@ instances using this mixin.</p>
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
-      <a href="../messaging/#messaging">Messaging</a>
-  </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../messaging/#async_kernel.messaging.base.Connection"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Connection</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="../messaging/#async_kernel.messaging.base.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
-  </span>
-
-      </li>
-  </ul>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
       <a href="../comm/#">comm</a>
   </span>
 
@@ -9748,6 +9727,27 @@ instances using this mixin.</p>
             <span class="doc doc-backlink-crumb last">
       <a href="../kernel/#async_kernel.kernel.Kernel"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Kernel</a>
   </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../messaging/#">messaging</a>
+  </span>
+
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../messaging/#async_kernel.messaging.base.Connection"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Connection</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="../messaging/#async_kernel.messaging.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
+  </span>
+
+      </li>
+  </ul>
 
       </li>
       <li class="doc doc-backlink">

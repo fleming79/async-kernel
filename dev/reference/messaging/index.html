@@ -90,7 +90,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#messaging" class="md-skip">
+        <a href="#async_kernel.messaging" class="md-skip">
           Skip to content
         </a>
       
@@ -974,8 +974,6 @@ viewing the latest version.
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
-        
-      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
@@ -1018,14 +1016,51 @@ viewing the latest version.
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#async_kernel.messaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;messaging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#async_kernel.messaging.LocalClient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" LocalClient">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.messaging.LocalClient.connection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#async_kernel.messaging.base" class="md-nav__link">
@@ -1265,34 +1300,6 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;shutdown
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#async_kernel.messaging.base.LocalClient" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" LocalClient">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.messaging.base.LocalClient.connection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection
       
     </span>
   </a>
@@ -1766,14 +1773,51 @@ viewing the latest version.
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#async_kernel.messaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;messaging
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#async_kernel.messaging.LocalClient" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" LocalClient">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#async_kernel.messaging.LocalClient.connection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#async_kernel.messaging.base" class="md-nav__link">
@@ -2025,34 +2069,6 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#async_kernel.messaging.base.LocalClient" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" LocalClient">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.messaging.base.LocalClient.connection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#async_kernel.messaging.zmq" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2192,9 +2208,240 @@ viewing the latest version.
   
 
 
-<h1 id="messaging">Messaging<a class="headerlink" href="#messaging" title="Permanent link">&para;</a></h1>
-<p>Provides objects to enable messaging for the kernel interface and clients.</p>
+  <h1>messaging</h1>
 
+<div class="doc doc-object doc-module">
+
+
+
+<a id="async_kernel.messaging"></a>
+    <div class="doc doc-contents first">
+
+          
+
+
+
+
+
+<p><span class="doc-section-title">Modules:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><a class="autorefs autorefs-internal" title="async_kernel.messaging.base" href="#async_kernel.messaging.base">base</a></code></b>
+          –
+          <div class="doc-md-description">
+            <p>Default Messaging object definitions for Messaging including <code>BaseMessage</code>, <code>Connection</code> and <code>Client</code>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><a class="autorefs autorefs-internal" title="async_kernel.messaging.zmq" href="#async_kernel.messaging.zmq">zmq</a></code></b>
+          –
+          <div class="doc-md-description">
+            <p>ZMQ messaging objects using zmq sockets.</p>
+          </div>
+        </li>
+    </ul>
+
+
+
+
+
+
+<p><span class="doc-section-title">Classes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><a class="autorefs autorefs-internal" title="            LocalClient (async_kernel.messaging.LocalClient)" href="#async_kernel.messaging.LocalClient">LocalClient</a></code></b>
+          –
+          <div class="doc-md-description">
+            <p>A client for an interface running in the current process.</p>
+          </div>
+        </li>
+    </ul>
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="async_kernel.messaging.LocalClient" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">LocalClient</span>
+
+
+<a href="#async_kernel.messaging.LocalClient" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            HasInterface (async_kernel.interface.HasInterface)" href="../interface/#async_kernel.interface.HasInterface">HasInterface</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code>, <code><a class="autorefs autorefs-internal" title="            BaseClient (async_kernel.messaging.base.BaseClient)" href="#async_kernel.messaging.base.BaseClient">BaseClient</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code></p>
+
+
+
+        <p>A client for an interface running in the current process.</p>
+
+          
+
+
+  <div class="doc doc-backlinks">
+        <b class="doc doc-backlink-type">Referenced by:</b>
+          <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <span>Reference</span>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#">messaging</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#async_kernel.messaging.base.Connection"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Connection</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.messaging.base.Connection.handle_incoming_msg"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;handle_incoming_msg</a>
+  </span>
+
+      </li>
+  </ul>
+
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><a class="autorefs autorefs-internal" title="            connection
+
+
+  
+      class-attribute
+      instance-attribute
+   (async_kernel.messaging.LocalClient.connection)" href="#async_kernel.messaging.LocalClient.connection">connection</a></code></b>
+              (<code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]]</code>)
+          –
+          <div class="doc-md-description">
+            <p>A local connection to the interface.</p>
+          </div>
+        </li>
+    </ul>
+
+              <details class="mkdocstrings-source">
+                <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LocalClient</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""A client for an interface running in the current process."""</span>
+
+    <span class="n">connection</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Connection</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">Connection</span><span class="p">(</span><span class="n">session_id</span><span class="o">=</span><span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">session_id</span><span class="p">))</span>
+<span class="w">    </span><span class="sd">"""A local connection to the interface."""</span>
+
+    <span class="nd">@override</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connection_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">started</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">],</span> <span class="n">stop</span><span class="p">:</span> <span class="n">ProtectedPending</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">started</span>
+        <span class="c1"># Cross-connect</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">transmit_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_incoming_msg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transmit_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">handle_incoming_msg</span>
+
+        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">start</span><span class="p">():</span>
+            <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connection_task</span><span class="p">(</span><span class="n">started</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="async_kernel.messaging.LocalClient.connection" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">connection</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
+      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
+  </span>
+
+<a href="#async_kernel.messaging.LocalClient.connection" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">connection</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T_interface_co">T_interface_co</span></span><span class="p">]]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a></span><span class="p">(</span><span class="n"><span title="async_kernel.messaging.base.Connection(session_id)">session_id</span></span><span class="o">=</span><span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="session_id">session_id</span></span><span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>A local connection to the interface.</p>
+
+          
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-module">
 
@@ -2236,13 +2483,6 @@ viewing the latest version.
           –
           <div class="doc-md-description">
             <p>Communicates with a single connection.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            LocalClient (async_kernel.messaging.base.LocalClient)" href="#async_kernel.messaging.base.LocalClient">LocalClient</a></code></b>
-          –
-          <div class="doc-md-description">
-            <p>A client for an interface running in the current process.</p>
           </div>
         </li>
     </ul>
@@ -2294,7 +2534,7 @@ viewing the latest version.
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="#messaging">Messaging</a>
+      <a href="#">messaging</a>
   </span>
 
             <ul class="doc doc-backlink-list">
@@ -2842,20 +3082,6 @@ viewing the latest version.
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
-      <a href="#messaging">Messaging</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.messaging.base.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.messaging.base.LocalClient.connection"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
       <a href="../interface/#">interface</a>
   </span>
 
@@ -2883,6 +3109,20 @@ viewing the latest version.
   </ul>
 
       </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="#">messaging</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#async_kernel.messaging.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.messaging.LocalClient.connection"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection</a>
+  </span>
+
+      </li>
   </ul>
 
       </li>
@@ -2896,7 +3136,7 @@ viewing the latest version.
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="#messaging">Messaging</a>
+      <a href="#">messaging</a>
   </span>
 
             <span class="doc doc-backlink-crumb last">
@@ -2914,20 +3154,6 @@ viewing the latest version.
   </span>
 
             <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="#messaging">Messaging</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.messaging.base.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.messaging.base.LocalClient.connection"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection</a>
-  </span>
-
-      </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
       <a href="../interface/#">interface</a>
@@ -2955,6 +3181,20 @@ viewing the latest version.
 
       </li>
   </ul>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="#">messaging</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#async_kernel.messaging.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.messaging.LocalClient.connection"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection</a>
+  </span>
 
       </li>
   </ul>
@@ -3200,7 +3440,7 @@ viewing the latest version.
           –
           <div class="doc-md-description">
             <p>A list of bytes to route a reply message back to the origin. This can
-be an empty list when there is only one connection, such as <a class="autorefs autorefs-internal" title="            LocalClient" href="#async_kernel.messaging.base.LocalClient">LocalClient</a>.</p>
+be an empty list when there is only one connection, such as <a class="autorefs autorefs-internal" title="            LocalClient" href="#async_kernel.messaging.LocalClient">LocalClient</a>.</p>
           </div>
         </li>
     </ul>
@@ -3372,13 +3612,13 @@ be an empty list when there is only one connection, such as <a class="autorefs a
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="#messaging">Messaging</a>
+      <a href="#">messaging</a>
   </span>
 
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.messaging.base.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
+      <a href="#async_kernel.messaging.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
   </span>
 
       </li>
@@ -4880,158 +5120,6 @@ it's still alive.</p>
 
 </div>
 
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="async_kernel.messaging.base.LocalClient" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">LocalClient</span>
-
-
-<a href="#async_kernel.messaging.base.LocalClient" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            HasInterface (async_kernel.interface.HasInterface)" href="../interface/#async_kernel.interface.HasInterface">HasInterface</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code>, <code><a class="autorefs autorefs-internal" title="            BaseClient (async_kernel.messaging.base.BaseClient)" href="#async_kernel.messaging.base.BaseClient">BaseClient</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code></p>
-
-
-
-        <p>A client for an interface running in the current process.</p>
-
-          
-
-
-  <div class="doc doc-backlinks">
-        <b class="doc doc-backlink-type">Referenced by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="#messaging">Messaging</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.messaging.base.Connection"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Connection</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.messaging.base.Connection.handle_incoming_msg"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;handle_incoming_msg</a>
-  </span>
-
-      </li>
-  </ul>
-
-  </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            connection
-
-
-  
-      class-attribute
-      instance-attribute
-   (async_kernel.messaging.base.LocalClient.connection)" href="#async_kernel.messaging.base.LocalClient.connection">connection</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]]</code>)
-          –
-          <div class="doc-md-description">
-            <p>A local connection to the interface.</p>
-          </div>
-        </li>
-    </ul>
-
-              <details class="mkdocstrings-source">
-                <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">439</span>
-<span class="normal">440</span>
-<span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LocalClient</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">"""A client for an interface running in the current process."""</span>
-
-    <span class="n">connection</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Connection</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">Connection</span><span class="p">(</span><span class="n">session_id</span><span class="o">=</span><span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">session_id</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">"""A local connection to the interface."""</span>
-
-    <span class="nd">@override</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connection_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">started</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">],</span> <span class="n">stop</span><span class="p">:</span> <span class="n">ProtectedPending</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">started</span>
-        <span class="c1"># Cross-connect</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">transmit_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_incoming_msg</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">transmit_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">handle_incoming_msg</span>
-
-        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">start</span><span class="p">():</span>
-            <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connection_task</span><span class="p">(</span><span class="n">started</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-              </details>
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="async_kernel.messaging.base.LocalClient.connection" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">connection</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.messaging.base.LocalClient.connection" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">connection</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T_interface_co">T_interface_co</span></span><span class="p">]]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a></span><span class="p">(</span><span class="n"><span title="async_kernel.messaging.base.Connection(session_id)">session_id</span></span><span class="o">=</span><span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="session_id">session_id</span></span><span class="p">)</span>
-<span class="p">)</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>A local connection to the interface.</p>
-
-          
-    </div>
-
-</div>
-
-
-
 
 
 
@@ -5040,17 +5128,6 @@ it's still alive.</p>
     </div>
 
 </div>
-
-
-
-
-  </div>
-
-    </div>
-
-</div><p>options:
-show_root_heading: true</p>
-
 
 <div class="doc doc-object doc-module">
 
@@ -5136,7 +5213,7 @@ show_root_heading: true</p>
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="#messaging">Messaging</a>
+      <a href="#">messaging</a>
   </span>
 
             <ul class="doc doc-backlink-list">
@@ -5697,7 +5774,7 @@ show_root_heading: true</p>
 <span class="sd">    """</span>
 
     <span class="n">encryption</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Enum</span><span class="p">([</span><span class="s2">"curve"</span><span class="p">],</span> <span class="n">default_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">"The type of encryption to use."</span>
+<span class="w">    </span><span class="sd">"""The type of encryption to use."""</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">write_connection_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -6103,8 +6180,7 @@ passing <code>connect_timeout=0</code> will skip establishing a connection.</p>
 
     </div>
 
-</div><p>options:
-show_root_heading: true</p>
+</div>
 
 
 
@@ -6127,7 +6203,7 @@ show_root_heading: true</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 4, 2026 11:42:53 UTC"><span class="timeago" datetime="2026-09-04T11:42:53+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 4, 2026 11:42:53 UTC">2026-09-04</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 4, 2026 13:20:52 UTC"><span class="timeago" datetime="2026-09-04T13:20:52+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 4, 2026 13:20:52 UTC">2026-09-04</span>
   </span>
 
     

@@ -2846,20 +2846,6 @@ stop itself, only leaving the context once it has stopped.</p>
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
-      <a href="../messaging/#messaging">Messaging</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="../messaging/#async_kernel.messaging.base.BaseMessage"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseMessage</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="../messaging/#async_kernel.messaging.base.BaseMessage.__init__"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__init__</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
       <a href="#">caller</a>
   </span>
 
@@ -2869,6 +2855,20 @@ stop itself, only leaving the context once it has stopped.</p>
 
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.StartStopTask.set_task_function"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;set_task_function</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../messaging/#">messaging</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="../messaging/#async_kernel.messaging.base.BaseMessage"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseMessage</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../messaging/#async_kernel.messaging.base.BaseMessage.__init__"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__init__</a>
   </span>
 
       </li>
@@ -4980,8 +4980,8 @@ stop itself, only leaving the context once it has stopped.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Unpack</span><span class="p">[</span><span class="n">CallerCreateOptions</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Get an existing caller by name or create a new one.</span>
 
-<span class="sd">        If 'name' is provided and a child with that name exists, the child will be returned,</span>
-<span class="sd">        otherwise a new caller is created.</span>
+<span class="sd">        If `name` is provided and a child with that name exists, the child will be returned,</span>
+<span class="sd">        otherwise a new caller is returned.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            **kwargs: Options for creating or retrieving a caller.</span>
@@ -6507,8 +6507,8 @@ stop itself, only leaving the context once it has stopped.</p>
     <div class="doc doc-contents ">
 
         <p>Get an existing caller by name or create a new one.</p>
-<p>If 'name' is provided and a child with that name exists, the child will be returned,
-otherwise a new caller is created.</p>
+<p>If <code>name</code> is provided and a child with that name exists, the child will be returned,
+otherwise a new caller is returned.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -6642,8 +6642,8 @@ otherwise a new caller is created.</p>
 <span class="normal">766</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Unpack</span><span class="p">[</span><span class="n">CallerCreateOptions</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Get an existing caller by name or create a new one.</span>
 
-<span class="sd">    If 'name' is provided and a child with that name exists, the child will be returned,</span>
-<span class="sd">    otherwise a new caller is created.</span>
+<span class="sd">    If `name` is provided and a child with that name exists, the child will be returned,</span>
+<span class="sd">    otherwise a new caller is returned.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        **kwargs: Options for creating or retrieving a caller.</span>
@@ -7173,8 +7173,12 @@ otherwise a new caller is created.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.task"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;task</a>
   </span>
 
       </li>
@@ -7589,24 +7593,9 @@ be made to avoid blocking the scheduler.</strong></p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
+            <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.MAX_IDLE_POOL_INSTANCES"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;MAX_IDLE_POOL_INSTANCES</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.__new__"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;__new__</a>
-  </span>
-
-      </li>
-  </ul>
 
       </li>
       <li class="doc doc-backlink">
@@ -7614,8 +7603,12 @@ be made to avoid blocking the scheduler.</strong></p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
   </span>
 
       </li>
@@ -7866,12 +7859,8 @@ be made to avoid blocking the scheduler.</strong></p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.caller.Caller.queue_close"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;queue_close</a>
+      <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
       </li>
@@ -7908,8 +7897,12 @@ be made to avoid blocking the scheduler.</strong></p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.queue"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;queue</a>
   </span>
 
       </li>
@@ -8097,8 +8090,12 @@ be made to avoid blocking the scheduler.</strong></p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.queue_call"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;queue_call</a>
   </span>
 
       </li>
@@ -9038,16 +9035,6 @@ return once the task has stopped.</p>
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
-      <a href="../messaging/#messaging">Messaging</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="../messaging/#async_kernel.messaging.base.BaseMessage"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseMessage</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
       <a href="../interface/#">interface</a>
   </span>
 
@@ -9065,6 +9052,16 @@ return once the task has stopped.</p>
 
       </li>
   </ul>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="../messaging/#">messaging</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../messaging/#async_kernel.messaging.base.BaseMessage"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseMessage</a>
+  </span>
 
       </li>
   </ul>

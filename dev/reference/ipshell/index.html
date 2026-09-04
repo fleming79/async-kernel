@@ -1506,39 +1506,6 @@ viewing the latest version.
 </li>
         
           <li class="md-nav__item">
-  <a href="#async_kernel.shell.ipshell.IPShell.is_complete" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_complete
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.ipshell.IPShell.do_inspect" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_inspect
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.ipshell.IPShell.do_history" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_history
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#async_kernel.shell.ipshell.IPShell.init_magics" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2326,39 +2293,6 @@ viewing the latest version.
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_complete
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.ipshell.IPShell.is_complete" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_complete
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.ipshell.IPShell.do_inspect" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_inspect
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.ipshell.IPShell.do_history" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_history
       
     </span>
   </a>
@@ -3961,42 +3895,6 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            is_complete
-
-
-  
-      async
-   (async_kernel.shell.ipshell.IPShell.is_complete)" href="#async_kernel.shell.ipshell.IPShell.is_complete">is_complete</a></code></b>
-            –
-            <div class="doc-md-description">
-              
-            </div>
-          </li>
-          <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            do_inspect
-
-
-  
-      async
-   (async_kernel.shell.ipshell.IPShell.do_inspect)" href="#async_kernel.shell.ipshell.IPShell.do_inspect">do_inspect</a></code></b>
-            –
-            <div class="doc-md-description">
-              
-            </div>
-          </li>
-          <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            do_history
-
-
-  
-      async
-   (async_kernel.shell.ipshell.IPShell.do_history)" href="#async_kernel.shell.ipshell.IPShell.do_history">do_history</a></code></b>
-            –
-            <div class="doc-md-description">
-              
-            </div>
-          </li>
-          <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            init_magics (async_kernel.shell.ipshell.IPShell.init_magics)" href="#async_kernel.shell.ipshell.IPShell.init_magics">init_magics</a></code></b>
             –
             <div class="doc-md-description">
@@ -4840,81 +4738,66 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 <span class="normal">891</span>
 <span class="normal">892</span>
 <span class="normal">893</span>
-<span class="normal">894</span>
-<span class="normal">895</span>
-<span class="normal">896</span>
-<span class="normal">897</span>
-<span class="normal">898</span>
-<span class="normal">899</span>
-<span class="normal">900</span>
-<span class="normal">901</span>
-<span class="normal">902</span>
-<span class="normal">903</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">IPShell</span><span class="p">(</span><span class="n">BaseShell</span><span class="p">,</span> <span class="n">InteractiveShell</span><span class="p">):</span>  <span class="c1"># pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride, reportIncompatibleMethodOverride]</span>
+<span class="normal">894</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">IPShell</span><span class="p">(</span><span class="n">BaseShell</span><span class="p">,</span> <span class="n">InteractiveShell</span><span class="p">):</span>  <span class="c1"># pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride, reportIncompatibleMethodOverride]</span>
 <span class="w">    </span><span class="sd">"""An IPython InteractiveShell implementation."""</span>
 
     <span class="n">timeout</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">CFloat</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">"A timeout in seconds to complete execute requests."</span>
+<span class="w">    </span><span class="sd">"""A timeout in seconds to complete execute requests."""</span>
 
     <span class="n">stop_on_error_time_offset</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Float</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">"An offset to add to the cancellation time to catch late arriving execute requests."</span>
+<span class="w">    </span><span class="sd">"""An offset to add to the cancellation time to catch late arriving execute requests."""</span>
 
     <span class="n">default_matplotlib_backends</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">List</span><span class="p">([</span><span class="s2">"inline"</span><span class="p">,</span> <span class="s2">"ipympl"</span><span class="p">])</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">""</span>
+<span class="w">    </span><span class="sd">""""""</span>
     <span class="n">compiler_class</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Type</span><span class="p">(</span><span class="n">XCachingCompiler</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">""</span>
+<span class="w">    </span><span class="sd">""""""</span>
     <span class="n">prefilter_manager_class</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Type</span><span class="p">(</span><span class="n">IPPrefilterManager</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">""</span>
+<span class="w">    </span><span class="sd">""""""</span>
     <span class="n">displayhook_class</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Type</span><span class="p">(</span><span class="n">IPDisplayHook</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">""</span>
+<span class="w">    </span><span class="sd">""""""</span>
     <span class="n">display_pub_class</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Type</span><span class="p">(</span><span class="n">IPDisplayPublisher</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">""</span>
+<span class="w">    </span><span class="sd">""""""</span>
     <span class="n">display_formatter_class</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Type</span><span class="p">(</span><span class="n">IPDisplayFormatter</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">""</span>
+<span class="w">    </span><span class="sd">""""""</span>
 
     <span class="n">configurables</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-    <span class="s2">"Not used. Provided for compatibility."</span>
+<span class="w">    </span><span class="sd">"""Not used. Provided for compatibility."""</span>
 
     <span class="nb">compile</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">XCachingCompiler</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">compiler_class</span><span class="p">())</span>
-    <span class="s2">"The compiler: provides a filename for a selection of code (cell)."</span>
+<span class="w">    </span><span class="sd">"""The compiler: provides a filename for a selection of code (cell)."""</span>
 
     <span class="n">prefilter_manager</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">IPPrefilterManager</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span>
         <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">prefilter_manager_class</span><span class="p">(</span><span class="n">shell</span><span class="o">=</span><span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">])</span>
     <span class="p">)</span>
-    <span class="s2">""</span>
+<span class="w">    </span><span class="sd">""""""</span>
     <span class="n">extension_manager</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">IPExtensionManager</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">IPExtensionManager</span><span class="p">(</span><span class="n">shell</span><span class="o">=</span><span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]))</span>
-    <span class="s2">"A manager for loading extensions."</span>
+<span class="w">    </span><span class="sd">"""A manager for loading extensions."""</span>
 
     <span class="n">builtin_trap</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">NullContext</span><span class="p">)</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    A nullcontext. </span>
+<span class="w">    </span><span class="sd">"""A nullcontext. </span>
 
 <span class="sd">    Builtins are not dynamically modified.</span>
 <span class="sd">    """</span>
 
     <span class="n">displayhook</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">IPDisplayHook</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">displayhook_class</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]))</span>  <span class="c1"># pyright: ignore[reportIncompatibleMethodOverride]</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    An implementation of [sys.displayhook][]. </span>
+<span class="w">    </span><span class="sd">"""An implementation of [sys.displayhook][]. </span>
 
 <span class="sd">    [async_kernel.kernel.Kernel.displayhook][] patches [sys.displayhook][] routing execution results to </span>
 <span class="sd">    the shell whose context the execution result occurred.</span>
 <span class="sd">    """</span>
 
     <span class="n">display_pub</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">IPDisplayPublisher</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">display_pub_class</span><span class="p">())</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Used for publishing output generated by calls made to [IPython.display.display][] which calls [IPython.display.publish_display_data][].</span>
-<span class="sd">    """</span>
+<span class="w">    </span><span class="sd">"""Used for publishing output generated by calls made to [IPython.display.display][] which calls [IPython.display.publish_display_data][]."""</span>
 
     <span class="n">display_formatter</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">IPDisplayFormatter</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">display_formatter_class</span><span class="p">())</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    An object capable of transforming python objects to MIME content.</span>
+<span class="w">    </span><span class="sd">"""An object capable of transforming python objects to MIME content.</span>
 
 <span class="sd">    Notes:</span>
 <span class="sd">        - Primarily used in [IPython.core.interactiveshell.InteractiveShell.user_expressions][].</span>
 <span class="sd">        - [Ipython docs](https://ipython.readthedocs.io/en/stable/config/shell_mimerenderer.html).</span>
 <span class="sd">    """</span>
-
     <span class="n">history_manager</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">IPHistoryManager</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">IPHistoryManager</span><span class="p">(</span><span class="n">shell</span><span class="o">=</span><span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
-    <span class="s2">""</span>
+<span class="w">    </span><span class="sd">""""""</span>
 
     <span class="n">meta</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">Struct</span><span class="p">)</span>
     <span class="n">tempfiles</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
@@ -5043,7 +4926,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
     <span class="nd">@traitlets</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="s2">"exit_now"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_update_exit_now</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Stop eventloop when `exit_now` fires."""</span>
+<span class="w">        </span><span class="sd">"""Stop the kernel interface when `exit_now` fires."""</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_now</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
@@ -5322,7 +5205,6 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
     <span class="nd">@override</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-        <span class="s2">""</span>
         <span class="n">status</span><span class="p">,</span> <span class="n">indent_spaces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_transformer_manager</span><span class="o">.</span><span class="n">check_complete</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
         <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="n">status</span><span class="p">}</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indent_spaces</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
@@ -5331,7 +5213,6 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
     <span class="nd">@override</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-        <span class="s2">""</span>
         <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">"metadata"</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">"found"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">oname</span> <span class="o">=</span> <span class="n">token_at_cursor</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">)</span>
@@ -5357,7 +5238,6 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
         <span class="n">include_latest</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-        <span class="s2">""</span>
         <span class="n">history_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history_manager</span>
         <span class="k">assert</span> <span class="n">history_manager</span>
         <span class="k">match</span> <span class="n">hist_access_type</span><span class="p">:</span>
@@ -5934,20 +5814,20 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">452</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
 <span class="normal">453</span>
 <span class="normal">454</span>
 <span class="normal">455</span>
 <span class="normal">456</span>
 <span class="normal">457</span>
 <span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span>
-<span class="normal">462</span>
-<span class="normal">463</span>
-<span class="normal">464</span>
-<span class="normal">465</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">459</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_patches</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Apply patches returning a callable to reverse the patches."""</span>
     <span class="n">original</span> <span class="o">=</span> <span class="n">InteractiveShell</span><span class="o">.</span><span class="n">initialized</span><span class="p">,</span> <span class="n">InteractiveShell</span><span class="o">.</span><span class="n">instance</span>
@@ -5986,19 +5866,19 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">511</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
 <span class="normal">512</span>
 <span class="normal">513</span>
 <span class="normal">514</span>
 <span class="normal">515</span>
 <span class="normal">516</span>
-<span class="normal">517</span>
-<span class="normal">518</span>
-<span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">517</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_hooks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Initialize hooks."""</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_hooks</span><span class="p">()</span>
@@ -6040,14 +5920,14 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">546</span>
-<span class="normal">547</span>
-<span class="normal">548</span>
-<span class="normal">549</span>
-<span class="normal">550</span>
-<span class="normal">551</span>
-<span class="normal">552</span>
-<span class="normal">553</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_line_magic_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magic_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_stack_depth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_line_magic_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magic_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_stack_depth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Call and awaits [run_line_magic][IPython.core.interactiveshell.InteractiveShell.run_line_magic]."""</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">create_pending_group</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_line_magic</span><span class="p">(</span><span class="n">magic_name</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">_stack_depth</span><span class="p">)</span>
@@ -6084,14 +5964,14 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">555</span>
-<span class="normal">556</span>
-<span class="normal">557</span>
-<span class="normal">558</span>
-<span class="normal">559</span>
-<span class="normal">560</span>
-<span class="normal">561</span>
-<span class="normal">562</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_cell_magic_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magic_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_cell_magic_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magic_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Call and awaits [run_cell_magic][IPython.core.interactiveshell.InteractiveShell.run_cell_magic]."""</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">create_pending_group</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_cell_magic</span><span class="p">(</span><span class="n">magic_name</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span>
@@ -6167,7 +6047,13 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">564</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
 <span class="normal">565</span>
 <span class="normal">566</span>
 <span class="normal">567</span>
@@ -6185,13 +6071,7 @@ the shell whose context the execution result occurred.</p>
 <span class="normal">579</span>
 <span class="normal">580</span>
 <span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span>
-<span class="normal">585</span>
-<span class="normal">586</span>
-<span class="normal">587</span>
-<span class="normal">588</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">582</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stderr_to_stdout</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Make a system call in a separate thread.</span>
 
@@ -6300,7 +6180,13 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">590</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
 <span class="normal">591</span>
 <span class="normal">592</span>
 <span class="normal">593</span>
@@ -6327,13 +6213,7 @@ the shell whose context the execution result occurred.</p>
 <span class="normal">614</span>
 <span class="normal">615</span>
 <span class="normal">616</span>
-<span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span>
-<span class="normal">620</span>
-<span class="normal">621</span>
-<span class="normal">622</span>
-<span class="normal">623</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">617</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_code</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">code_obj</span><span class="p">:</span> <span class="n">CodeType</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">ExecutionResult</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">async_</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -6392,14 +6272,14 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">625</span>
-<span class="normal">626</span>
-<span class="normal">627</span>
-<span class="normal">628</span>
-<span class="normal">629</span>
-<span class="normal">630</span>
-<span class="normal">631</span>
-<span class="normal">632</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">transform_cell_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">transform_cell_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Transform the cell and substitute magic calls with an awaitable wrapper."""</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform_cell</span><span class="p">(</span><span class="n">raw_cell</span><span class="p">)</span>
@@ -6453,7 +6333,13 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">667</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">661</span>
+<span class="normal">662</span>
+<span class="normal">663</span>
+<span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
 <span class="normal">668</span>
 <span class="normal">669</span>
 <span class="normal">670</span>
@@ -6524,13 +6410,7 @@ the shell whose context the execution result occurred.</p>
 <span class="normal">735</span>
 <span class="normal">736</span>
 <span class="normal">737</span>
-<span class="normal">738</span>
-<span class="normal">739</span>
-<span class="normal">740</span>
-<span class="normal">741</span>
-<span class="normal">742</span>
-<span class="normal">743</span>
-<span class="normal">744</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">738</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_execute</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
@@ -6640,7 +6520,13 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">746</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span>
 <span class="normal">747</span>
 <span class="normal">748</span>
 <span class="normal">749</span>
@@ -6660,13 +6546,7 @@ the shell whose context the execution result occurred.</p>
 <span class="normal">763</span>
 <span class="normal">764</span>
 <span class="normal">765</span>
-<span class="normal">766</span>
-<span class="normal">767</span>
-<span class="normal">768</span>
-<span class="normal">769</span>
-<span class="normal">770</span>
-<span class="normal">771</span>
-<span class="normal">772</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">766</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
     <span class="s2">""</span>
 
@@ -6702,208 +6582,6 @@ the shell whose context the execution result occurred.</p>
 <div class="doc doc-object doc-function">
 
 
-<h3 id="async_kernel.shell.ipshell.IPShell.is_complete" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">is_complete</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
-  </span>
-
-<a href="#async_kernel.shell.ipshell.IPShell.is_complete" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_complete</span><span class="p">(</span><span class="n"><span title="async_kernel.shell.ipshell.IPShell.is_complete(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-          
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">774</span>
-<span class="normal">775</span>
-<span class="normal">776</span>
-<span class="normal">777</span>
-<span class="normal">778</span>
-<span class="normal">779</span>
-<span class="normal">780</span>
-<span class="normal">781</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-    <span class="s2">""</span>
-    <span class="n">status</span><span class="p">,</span> <span class="n">indent_spaces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_transformer_manager</span><span class="o">.</span><span class="n">check_complete</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="n">status</span><span class="p">}</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indent_spaces</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="n">content</span><span class="p">[</span><span class="s2">"indent"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">" "</span> <span class="o">*</span> <span class="n">indent_spaces</span>
-    <span class="k">return</span> <span class="n">content</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="async_kernel.shell.ipshell.IPShell.do_inspect" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">do_inspect</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
-  </span>
-
-<a href="#async_kernel.shell.ipshell.IPShell.do_inspect" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">do_inspect</span><span class="p">(</span><span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_inspect(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_inspect(cursor_pos)">cursor_pos</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_inspect(detail_level)">detail_level</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-          
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">783</span>
-<span class="normal">784</span>
-<span class="normal">785</span>
-<span class="normal">786</span>
-<span class="normal">787</span>
-<span class="normal">788</span>
-<span class="normal">789</span>
-<span class="normal">790</span>
-<span class="normal">791</span>
-<span class="normal">792</span>
-<span class="normal">793</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-    <span class="s2">""</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">"metadata"</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">"found"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">oname</span> <span class="o">=</span> <span class="n">token_at_cursor</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">)</span>
-        <span class="n">bundle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_inspect_mime</span><span class="p">(</span><span class="n">oname</span><span class="p">,</span> <span class="n">detail_level</span><span class="o">=</span><span class="n">detail_level</span><span class="p">)</span>
-        <span class="n">content</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span> <span class="o">=</span> <span class="n">bundle</span>
-    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-        <span class="n">content</span><span class="p">[</span><span class="s2">"found"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="k">return</span> <span class="n">content</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="async_kernel.shell.ipshell.IPShell.do_history" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">do_history</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
-  </span>
-
-<a href="#async_kernel.shell.ipshell.IPShell.do_history" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">do_history</span><span class="p">(</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_history(output)">output</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_history(raw)">raw</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_history(hist_access_type)">hist_access_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_history(session)">session</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_history(start)">start</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_history(stop)">stop</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_history(n)">n</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_history(pattern)">pattern</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">"*"</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_history(unique)">unique</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_history(include_latest)">include_latest</span></span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="o">**</span><span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_history(**_ignored)">_ignored</span></span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-          
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">795</span>
-<span class="normal">796</span>
-<span class="normal">797</span>
-<span class="normal">798</span>
-<span class="normal">799</span>
-<span class="normal">800</span>
-<span class="normal">801</span>
-<span class="normal">802</span>
-<span class="normal">803</span>
-<span class="normal">804</span>
-<span class="normal">805</span>
-<span class="normal">806</span>
-<span class="normal">807</span>
-<span class="normal">808</span>
-<span class="normal">809</span>
-<span class="normal">810</span>
-<span class="normal">811</span>
-<span class="normal">812</span>
-<span class="normal">813</span>
-<span class="normal">814</span>
-<span class="normal">815</span>
-<span class="normal">816</span>
-<span class="normal">817</span>
-<span class="normal">818</span>
-<span class="normal">819</span>
-<span class="normal">820</span>
-<span class="normal">821</span>
-<span class="normal">822</span>
-<span class="normal">823</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_history</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">raw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">hist_access_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">session</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">stop</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-    <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"*"</span><span class="p">,</span>
-    <span class="n">unique</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">include_latest</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-    <span class="s2">""</span>
-    <span class="n">history_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history_manager</span>
-    <span class="k">assert</span> <span class="n">history_manager</span>
-    <span class="k">match</span> <span class="n">hist_access_type</span><span class="p">:</span>
-        <span class="k">case</span> <span class="s2">"tail"</span><span class="p">:</span>
-            <span class="n">hist</span> <span class="o">=</span> <span class="n">history_manager</span><span class="o">.</span><span class="n">get_tail</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="n">raw</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">include_latest</span><span class="o">=</span><span class="n">include_latest</span><span class="p">)</span>
-        <span class="k">case</span> <span class="s2">"range"</span><span class="p">:</span>
-            <span class="n">hist</span> <span class="o">=</span> <span class="n">history_manager</span><span class="o">.</span><span class="n">get_range</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
-        <span class="k">case</span> <span class="s2">"search"</span><span class="p">:</span>
-            <span class="n">hist</span> <span class="o">=</span> <span class="n">history_manager</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="n">pattern</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="n">raw</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="n">unique</span><span class="p">)</span>
-        <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
-            <span class="n">hist</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">"history"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">hist</span><span class="p">),</span> <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">}</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
 <h3 id="async_kernel.shell.ipshell.IPShell.init_magics" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">init_magics</span>
 
@@ -6920,13 +6598,13 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">835</span>
-<span class="normal">836</span>
-<span class="normal">837</span>
-<span class="normal">838</span>
-<span class="normal">839</span>
-<span class="normal">840</span>
-<span class="normal">841</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">826</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_magics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Initialize magics."""</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_magics</span><span class="p">()</span>
@@ -6985,7 +6663,16 @@ display figures inline.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">849</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
 <span class="normal">850</span>
 <span class="normal">851</span>
 <span class="normal">852</span>
@@ -7014,16 +6701,7 @@ display figures inline.</p>
 <span class="normal">875</span>
 <span class="normal">876</span>
 <span class="normal">877</span>
-<span class="normal">878</span>
-<span class="normal">879</span>
-<span class="normal">880</span>
-<span class="normal">881</span>
-<span class="normal">882</span>
-<span class="normal">883</span>
-<span class="normal">884</span>
-<span class="normal">885</span>
-<span class="normal">886</span>
-<span class="normal">887</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">878</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">enable_matplotlib</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gui</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Any</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">    </span><span class="sd">"""Enable interactive matplotlib and inline figure support.</span>
 

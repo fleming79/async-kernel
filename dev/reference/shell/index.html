@@ -1228,50 +1228,6 @@ viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.base.BaseShell.do_complete" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_complete
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.base.BaseShell.is_complete" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_complete
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.base.BaseShell.do_inspect" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_inspect
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.base.BaseShell.do_history" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_history
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -1823,50 +1779,6 @@ viewing the latest version.
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.base.BaseShell.do_complete" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_complete
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.base.BaseShell.is_complete" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;is_complete
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.base.BaseShell.do_inspect" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_inspect
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.shell.base.BaseShell.do_history" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;do_history
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -2112,54 +2024,6 @@ viewing the latest version.
             –
             <div class="doc-md-description">
               <p>Execute code in the shell.</p>
-            </div>
-          </li>
-          <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            do_complete
-
-
-  
-      async
-   (async_kernel.shell.base.BaseShell.do_complete)" href="#async_kernel.shell.base.BaseShell.do_complete">do_complete</a></code></b>
-            –
-            <div class="doc-md-description">
-              
-            </div>
-          </li>
-          <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            is_complete
-
-
-  
-      async
-   (async_kernel.shell.base.BaseShell.is_complete)" href="#async_kernel.shell.base.BaseShell.is_complete">is_complete</a></code></b>
-            –
-            <div class="doc-md-description">
-              
-            </div>
-          </li>
-          <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            do_inspect
-
-
-  
-      async
-   (async_kernel.shell.base.BaseShell.do_inspect)" href="#async_kernel.shell.base.BaseShell.do_inspect">do_inspect</a></code></b>
-            –
-            <div class="doc-md-description">
-              
-            </div>
-          </li>
-          <li class="doc-section-item field-body">
-            <b><code><a class="autorefs autorefs-internal" title="            do_history
-
-
-  
-      async
-   (async_kernel.shell.base.BaseShell.do_history)" href="#async_kernel.shell.base.BaseShell.do_history">do_history</a></code></b>
-            –
-            <div class="doc-md-description">
-              
             </div>
           </li>
     </ul>
@@ -2488,45 +2352,39 @@ viewing the latest version.
 <span class="normal">237</span>
 <span class="normal">238</span>
 <span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseShell</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">LoggingConfigurable</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">240</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseShell</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">LoggingConfigurable</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""The base shell implementation.</span>
 
 <span class="sd">    This should be the left most inherited class to be used.</span>
 <span class="sd">    """</span>
 
     <span class="n">kernel</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Kernel</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">,</span> <span class="n">Self</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">kernel</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportAttributeAccessIssue]</span>
-    <span class="s2">""</span>
+<span class="w">    </span><span class="sd">""""""</span>
 
     <span class="n">pending_manager</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="n">ShellPendingManager</span><span class="p">)</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Provides the `subshell_id` for the shell which add all consenting pending created in</span>
+<span class="w">    </span><span class="sd">"""Provides the `subshell_id` for the shell which add all consenting pending created in</span>
 <span class="sd">    the context of the shell.</span>
 <span class="sd">    """</span>
 
     <span class="n">user_ns_hidden</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-    <span class="s2">""</span>
+<span class="w">    </span><span class="sd">""""""</span>
 
     <span class="n">timeout</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">CFloat</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">"A timeout in seconds to complete execute requests."</span>
+<span class="w">    </span><span class="sd">"""A timeout in seconds to complete execute requests."""</span>
 
     <span class="n">stop_on_error_time_offset</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Float</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">"An offset to add to the cancellation time to catch late arriving execute requests."</span>
+<span class="w">    </span><span class="sd">"""An offset to add to the cancellation time to catch late arriving execute requests."""</span>
 
     <span class="n">protected</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Bool</span><span class="p">(</span><span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">"Protect from accidental deletion."</span>
+<span class="w">    </span><span class="sd">"""Protect from accidental deletion."""</span>
 
     <span class="n">is_mainshell</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="s2">"Set by the mainshell to indicate it is the main shell."</span>
+<span class="w">    </span><span class="sd">"""Set by the mainshell to indicate it is the main shell."""</span>
 
     <span class="n">subshell_id</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span>
         <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">is_mainshell</span> <span class="k">else</span> <span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">pending_manager</span><span class="o">.</span><span class="n">id</span>
     <span class="p">)</span>
-    <span class="s2">"Used to identify the subshell."</span>
+<span class="w">    </span><span class="sd">"""Used to identify the subshell."""</span>
 
     <span class="n">_execution_count</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">_resetting</span> <span class="o">=</span> <span class="kc">False</span>
@@ -2680,15 +2538,12 @@ viewing the latest version.
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-        <span class="s2">""</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-        <span class="s2">""</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-        <span class="s2">""</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_history</span><span class="p">(</span>
@@ -2705,7 +2560,6 @@ viewing the latest version.
         <span class="n">unique</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-        <span class="s2">""</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </code></pre></div></td></tr></table></div>
               </details>
@@ -2993,7 +2847,8 @@ the context of the shell.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">153</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
+<span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
 <span class="normal">156</span>
@@ -3002,8 +2857,7 @@ the context of the shell.</p>
 <span class="normal">159</span>
 <span class="normal">160</span>
 <span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">162</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">force</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Stop the shell.</span>
 
 <span class="sd">    Args:</span>
@@ -3039,7 +2893,8 @@ the context of the shell.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">165</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">164</span>
+<span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
 <span class="normal">168</span>
@@ -3049,8 +2904,7 @@ the context of the shell.</p>
 <span class="normal">172</span>
 <span class="normal">173</span>
 <span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_session</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">aggressive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_session</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">aggressive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Reset the shell, cancelling all associated pending."""</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resetting</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_resetting</span> <span class="o">=</span> <span class="kc">True</span>
@@ -3087,9 +2941,9 @@ the context of the shell.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">178</span>
-<span class="normal">179</span>
-<span class="normal">180</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_ipython</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseShell</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_ipython</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseShell</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Return the shell for the current context."""</span>
     <span class="k">return</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_ipython</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
@@ -3117,11 +2971,11 @@ the context of the shell.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">182</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">181</span>
+<span class="normal">182</span>
 <span class="normal">183</span>
 <span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+<span class="normal">185</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">context</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""A context manager where the shell is active."""</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">pending_manager</span><span class="o">.</span><span class="n">context</span><span class="p">():</span>
@@ -3153,7 +3007,8 @@ activated by setting the variable sys.displayhook to it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">188</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">187</span>
+<span class="normal">188</span>
 <span class="normal">189</span>
 <span class="normal">190</span>
 <span class="normal">191</span>
@@ -3163,8 +3018,7 @@ activated by setting the variable sys.displayhook to it.</p>
 <span class="normal">195</span>
 <span class="normal">196</span>
 <span class="normal">197</span>
-<span class="normal">198</span>
-<span class="normal">199</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">displayhook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">displayhook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Publish execution results.</span>
 
 <span class="sd">    This is invoked every time the interpreter needs to print, and is</span>
@@ -3222,7 +3076,8 @@ activated by setting the variable sys.displayhook to it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">201</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
+<span class="normal">201</span>
 <span class="normal">202</span>
 <span class="normal">203</span>
 <span class="normal">204</span>
@@ -3236,8 +3091,7 @@ activated by setting the variable sys.displayhook to it.</p>
 <span class="normal">212</span>
 <span class="normal">213</span>
 <span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_execute</span><span class="p">(</span>
+<span class="normal">215</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_execute</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -3252,192 +3106,6 @@ activated by setting the variable sys.displayhook to it.</p>
     <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Execute code in the shell."""</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="async_kernel.shell.base.BaseShell.do_complete" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">do_complete</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
-  </span>
-
-<a href="#async_kernel.shell.base.BaseShell.do_complete" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">do_complete</span><span class="p">(</span><span class="n"><span title="async_kernel.shell.base.BaseShell.do_complete(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.base.BaseShell.do_complete(cursor_pos)">cursor_pos</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-          
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-    <span class="s2">""</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="async_kernel.shell.base.BaseShell.is_complete" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">is_complete</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
-  </span>
-
-<a href="#async_kernel.shell.base.BaseShell.is_complete" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_complete</span><span class="p">(</span><span class="n"><span title="async_kernel.shell.base.BaseShell.is_complete(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-          
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-    <span class="s2">""</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="async_kernel.shell.base.BaseShell.do_inspect" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">do_inspect</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
-  </span>
-
-<a href="#async_kernel.shell.base.BaseShell.do_inspect" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">do_inspect</span><span class="p">(</span><span class="n"><span title="async_kernel.shell.base.BaseShell.do_inspect(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.base.BaseShell.do_inspect(cursor_pos)">cursor_pos</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.base.BaseShell.do_inspect(detail_level)">detail_level</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-          
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-    <span class="s2">""</span>
-    <span class="k">raise</span> <span class="ne">NotImplementedError</span>
-</code></pre></div></td></tr></table></div>
-            </details>
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="async_kernel.shell.base.BaseShell.do_history" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">do_history</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-async"><code>async</code></small>
-  </span>
-
-<a href="#async_kernel.shell.base.BaseShell.do_history" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">do_history</span><span class="p">(</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(output)">output</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(raw)">raw</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(hist_access_type)">hist_access_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(session)">session</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(start)">start</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(stop)">stop</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(n)">n</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(pattern)">pattern</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">"*"</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(unique)">unique</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="o">**</span><span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(**_ignored)">_ignored</span></span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-          
-
-            <details class="mkdocstrings-source">
-              <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span>
-<span class="normal">243</span>
-<span class="normal">244</span>
-<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_history</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">raw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">hist_access_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">session</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-    <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="n">stop</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
-    <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"*"</span><span class="p">,</span>
-    <span class="n">unique</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-    <span class="s2">""</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </code></pre></div></td></tr></table></div>
             </details>
