@@ -411,12 +411,8 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
                 queue.append(msg)
 
         queue, ready, scope = SingleAsyncQueue(), create_async_event(), anyio.CancelScope()
-
-        def canceller():
-            scope.cancel("ZMQ poll eventloop is stopped!")  # pragma: no cover
-
         iopub = await self._connect_socket(Channel.iopub)
-        with iopub, self.zmq_poll.event_handler(iopub, forward_messages, canceller=canceller), scope:
+        with iopub, self.zmq_poll.event_handler(iopub, forward_messages, canceller=scope.cancel), scope:
             iopub.subscribe(topic)
             if timeout is not None:
                 self.log.debug("Waiting for welcome message.")

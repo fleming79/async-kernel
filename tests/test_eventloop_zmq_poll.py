@@ -229,7 +229,7 @@ class Test_zmq_Poll:
 
     async def test_catches_cancel(self, caller: Caller):
 
-        def bad_canceller():
+        def bad_canceller(msg):
             resume.wake()
             raise TypeError
 
@@ -251,7 +251,12 @@ class Test_zmq_Poll:
 
     async def test_socket_close(self, caller: Caller):
 
+        def canceller(msg):
+            resume.set()
+
+        resume = create_async_event()
         with ZMQPoll() as zmq_poll:
             sock = zmq_poll.socket(zmq.SocketType.REP)
-            with zmq_poll.event_handler(sock, lambda _, __: None, canceller=None):
+            with zmq_poll.event_handler(sock, lambda _, __: None, canceller=canceller):
                 sock.close()
+                await resume

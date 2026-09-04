@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import contextlib
 import logging
 import threading
 import weakref
@@ -99,9 +98,8 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
     ) -> MessageTracker | None:
         self.lock.acquire()
         try:
-            if self.closed:
-                return None
-            return super().send_multipart(msg_parts, flags, copy, track)
+            if not self.closed:
+                return super().send_multipart(msg_parts, flags, copy, track)
         finally:
             self.lock.release()
 
@@ -109,10 +107,6 @@ class ZMQPollSocket(zmq.sugar.Socket[bytes]):
     def close(self, linger=None) -> None:
         with self.lock:
             if not self.closed:
-                # Remove from `zmq_poll._handlers` before closing to avoid heap corruption (Windows).
-                for k in (k_ for k_ in list(self.zmq_poll._handlers.keys()) if k_[0] is self):  # pyright: ignore[reportPrivateUsage]
-                    self.zmq_poll._handlers.pop(k, None)  # pyright: ignore[reportPrivateUsage]
-                self.zmq_poll.sockets.discard(self)
                 self.zmq_poll.execute(super().close, linger)
 
     @override
@@ -194,7 +188,7 @@ class ZMQPoll:
         self._count: dict[T_key, tuple[int, Callable[[], Any]] | None] = {}
         self._execute: deque[Pending] = deque[Pending[Any]]()
         self.log = logging.LoggerAdapter(logging.getLogger())
-        self._cancellers = deque()
+        self._cancellers: dict[T_key, Callable[[str], Any] | None] = {}
         self._ctx_count = 0
         self._lock = BinarySemaphore()
 
@@ -233,7 +227,7 @@ class ZMQPoll:
             count: dict[T_key, tuple[int, Callable[[], Any]] | None] = self._count,
             execute=self._execute,
             zmq_poll_sockets: set[ZMQPollSocket] = self.sockets,
-            cancellers=self._cancellers,
+            cancellers: dict[T_key, Callable[[str], Any] | None] = self._cancellers,
             log=self.log,
         ) -> None:
             """Runs the 'event' loop."""
@@ -245,7 +239,7 @@ class ZMQPoll:
                 """On receipt of a wake event clear the sockets."""
                 nonlocal sockets
                 # Called on receipt of a message (b'') on the 'wake' socket.
-                sockets = None
+                sockets = []
                 sock.recv()
 
             def do_execute() -> None:
@@ -261,30 +255,37 @@ class ZMQPoll:
             send: ZMQPollSocket = context.socket(zmq.SocketType.PAIR)  # pyright: ignore[reportAssignmentType]
             wake: ZMQPollSocket = context.socket(zmq.SocketType.PAIR)  # pyright: ignore[reportAssignmentType]
             addr = "inproc://async_kernel_zmq_poller_wake"
-            sockets = None
+            sockets = []
             handlers[(wake, zmq.POLLIN)] = on_wake
 
             with context, wake, send, wake.bind(addr), send.connect(addr):
                 k: T_key
                 c: tuple[int, Callable] | None
                 started.set_result(send)
-                # The main loop polls the handler keys for events in a loop.
+                # The main loop polls handlers keys for events in a loop.
                 # It will block until an event occurs.
                 try:
                     while not stopped.done():
-                        if not sockets:
-                            sockets = list(handlers)
-                        if execute:
-                            do_execute()
-                            continue
                         try:
-                            for k in _zmq_poll(sockets, timeout=-1):  # pyright: ignore[reportAssignmentType]
+                            if execute:
+                                do_execute()
+                            if not sockets:
+                                for k, v in handlers.copy().items():
+                                    if k[0].closed:
+                                        log.debug("Closed socket detected %s -> %s", k[0], v)
+                                        if canceller := cancellers.pop(k, None):
+                                            canceller("The socket is closed")
+                                        handlers.pop(k, None)
+                                    else:
+                                        sockets.append(k)
+                            for k in _zmq_poll(sockets, timeout=-1):
                                 try:
-                                    handlers[k](*k)
+                                    handlers[k](*k)  # pyright: ignore[reportArgumentType]
                                 except KeyError:
-                                    sockets = None
+                                    sockets = []
                                 except SystemExit:
                                     stopped.set_result(None)
+                                    return
                                 except BaseException as e:
                                     self.log.exception("Ignoring exception in handler.", exc_info=e)
                                 if count and (c := count.get(k)) is not None:
@@ -292,23 +293,20 @@ class ZMQPoll:
                                     # Auto eject after 'n' events
                                     if c[0] == 0:
                                         handlers.pop(k, None)
-                                        count[k] = sockets = None
+                                        count[k] = None
+                                        sockets = []
                                         c[1]()
-                        except zmq.ZMQError:
-                            for k, v in handlers.copy().items():
-                                if k[0].closed:
-                                    handlers.pop(k, None)
-                                    log.debug("Closed sockets detected %s -> %s", k[0], v)
-                                sockets = None
                         except Exception as e:
+                            sockets = []
                             self.log.exception("Ignoring exception in zmq_poll_thread.", exc_info=e)
                 finally:
                     do_execute()
                     while cancellers:
                         try:
-                            cancellers.popleft()()
+                            if canceller := cancellers.popitem()[1]:
+                                canceller("ZMQPoll has stopped")
                         except Exception as e:
-                            self.log.exception("A canceller failed", exc_info=e)
+                            self.log.exception(msg="A canceller failed", exc_info=e)
                     handlers.clear()
                     while zmq_poll_sockets:
                         try:
@@ -386,7 +384,7 @@ class ZMQPoll:
         *,
         flags: Literal[zmq.PollEvent.POLLIN, zmq.PollEvent.POLLOUT] = zmq.PollEvent.POLLIN,
         count: tuple[int, Callable[[], Any]] | None = None,
-        canceller: Callable[[], Any] | NoValue | None = NoValue,
+        canceller: Callable[[str], Any] | NoValue | None = NoValue,
     ) -> Generator[None, Any, None]:
         """A context manager where `handler` is called in the 'zmq_poll' thread with the event number when it occurs for `sock`.
 
@@ -418,30 +416,24 @@ class ZMQPoll:
         assert not self.stopped.done()
         if canceller is NoValue:
             if not (pen := Caller.current_pending()):
-                msg = "This context is not cancellable!."
+                msg = "This context is not cancellable!"
                 raise RuntimeError(msg)
 
-            def default_handler(pen=pen) -> None:
-                pen.cancel("The ZMQPoll event loop has stopped!")
-
-            canceller = default_handler
+            canceller = pen.cancel
 
         self.validate_socket(sock)
         if count:
             assert count[0] > 0
             assert callable(count[1])
-        if canceller:
-            self._cancellers.append(canceller)
         if handler is not self._handlers.setdefault(k := (sock, int(flags)), handler):
             raise BusyResourceError
+        self._cancellers[k] = canceller
         self._count[k] = count
         self._wake()
         try:
             yield None
         finally:
-            if canceller:
-                with contextlib.suppress(ValueError):
-                    self._cancellers.remove(canceller)
+            self._cancellers.pop(k, None)
             self._handlers.pop(k, None)
             self._count.pop(k, None)
             self._wake()

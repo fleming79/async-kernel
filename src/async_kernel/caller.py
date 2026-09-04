@@ -1318,7 +1318,7 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         self._context_token = ""
 
         def stop(_):
-            caller.call_direct(scope.cancel, "The Task has stopped!")
+            caller.call_direct(scope.cancel, "The task has stopped!")
 
         async with self.caller as caller:
             try:
@@ -1327,7 +1327,7 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
                     await self.started.wait(result=False)
                     yield self
                 if scope.cancel_called and not self.stopping.done():
-                    msg = f"Task stopped early {self._func!r}"
+                    msg = f"The task stopped early {self._func!r}"
                     raise RuntimeError(msg)
             finally:
                 self.stopped.remove_done_callback(stop)
@@ -1366,7 +1366,7 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
                     self.caller._pen_stop.remove(pen)  # pyright: ignore[reportPrivateUsage]
 
                 if pen.cancelled():
-                    self.stopped.cancel(f"The Task {self._func} was cancelled!")
+                    self.stopped.cancel(f"The Task was cancelled! {pen}")
                 elif e := pen.exception():
                     self.stopped.set_exception(e)
                 else:
