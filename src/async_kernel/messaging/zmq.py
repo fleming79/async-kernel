@@ -62,16 +62,17 @@ class ZMQMessage(BaseMessage, ConnectionFileMixin):  # pyright: ignore[reportUns
     """
 
     session: Fixed[Self, Session] = Fixed(lambda c: Session(session=c["owner"].session_id))
-    "Provides messaging utilities."
+    """Provides messaging utilities."""
 
     transport: traitlets.CaselessStrEnum[str] = traitlets.CaselessStrEnum(
         ["tcp", "ipc"] if sys.platform == "linux" else ["tcp"], default_value="tcp"
     ).tag(config=True)
-    "Transport for sockets."
-
-    _sockets: Fixed[Self, dict[Channel, ZMQPollSocket]] = Fixed(dict)
+    """Transport for sockets."""
 
     zmq_poll = Fixed(ZMQPoll)
+    """Provides the zmq sockets and message scheduling."""
+
+    _sockets: Fixed[Self, dict[Channel, ZMQPollSocket]] = Fixed(dict)
 
     @traitlets.validate("connection_file")
     def _validate_connection_file(self, proposal: dict) -> str:
@@ -124,7 +125,6 @@ class ZMQMessage(BaseMessage, ConnectionFileMixin):  # pyright: ignore[reportUns
         metadata: dict[str, Any] | None = None,
         buffers: BuffersType | None = None,
     ) -> Message[T]:
-        """Create a message suitable for sending."""
         msg: Message = self.session.msg(msg_type, content, parent, header, metadata)  # pyright: ignore[reportAssignmentType, reportArgumentType]
         msg["channel"] = channel
         msg["buffers"] = [] if buffers is None else buffers
@@ -136,7 +136,7 @@ class ZMQMessage(BaseMessage, ConnectionFileMixin):  # pyright: ignore[reportUns
 
 
 class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_co]):
-    """Provides the ZMQ sockets for clients to connect and communicate with the interface."""
+    """Provides the ZMQ sockets for clients to connect and communicate with the kernel interface."""
 
     @property
     @override
@@ -153,6 +153,7 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
         def iopub_reg_handler(socket: ZMQPollSocket, flags: int) -> None:
             """https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message."""
             # Thread: zmq_poll_thread
+
             # handle PUB subscribe/unsubscribe messages.
             # welcome_message:  https://jupyter.org/enhancement-proposals/65-jupyter-xpub/jupyter-xpub.html#replace-pub-socket-with-xpub-socket
             msg = socket.recv()
@@ -171,7 +172,7 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
             await self._bind_sockets()
             self.parent.update_connections(self)
             started()
-            await self.parent.started
+            await self.parent.started.wait(result=False)
             with (
                 zpoll.event_handler(self._sockets[Channel.control], partial(handler, channel=Channel.control)),
                 zpoll.event_handler(self._sockets[Channel.shell], functools.partial(handler, channel=Channel.shell)),
@@ -211,9 +212,9 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
                     socket.curve_server = True
                 # Bind the socket.
                 addr = f"tcp://{self.ip}:{port}" if self.transport == "tcp" else f"ipc://{self.ip}-{port}"
+                socket.bind(addr)
                 self.log.debug("%s socket on port: %i", channel, port)
                 self._sockets[channel] = socket
-                socket.bind(addr)
 
         await self.zmq_poll.aexecute(bind_sockets)
 
@@ -225,13 +226,23 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
 
 
 class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co]):
-    """A client for an interface that provides a [ZMQConnection][].
+    """A client that connects to a [ZMQConnection][] using zmq sockets to communicate with a kernel interface.
 
-    The client can be connected to an existing interface's using either:
-    - `ZMQClient.load_connection_info` or,
-    - `ZMQClient.load_connection_file`
+    Usage:
+        === "Using a connection file"
+            ```python
+            client = ZMQClient()
+            client.load_connection_file(connection_file)
+            async with client.start():
+                pass
+            ```
 
-    A new interface/kernel can be started with [ZMQClient.subprocess_kernel][].
+        === "Start a new kernel"
+            ```python
+            client = ZMQClient(encryption="curve")
+            async with client.subprocess_kernel(heartbeat_interval=None, backend=anyio_backend):
+                pass
+            ```
     """
 
     encryption = traitlets.Enum(["curve"], default_value=None, allow_none=True)
@@ -306,8 +317,8 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
         """Connect this client to the interface.
 
         Args:
-            connect_timeout: The maximum time to wait for the connection to reply with a welcome message and to configure the session.
-                passing `connect_timeout=0` will skip the `_establish_connection` step.
+            connect_timeout: The maximum time to wait for the connection to be established.
+                passing `connect_timeout=0` will skip establishing a connection.
         """
         if not self.shell_port:
             msg = "Connection info has not been set. Tip: consider using the method `subprocess_kernel` or `load_connection_info`."
@@ -345,7 +356,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
         shutdown_timeout: float | None = 10.0,
         **kwargs,
     ) -> AsyncGenerator[subprocess.Popen]:
-        """Start a kernel interface as a subprocess."""
+        """Start a kernel interface in a subprocess."""
         self.write_connection_file()
         command = make_argv(connection_file=self.connection_file, **kwargs)
         process: subprocess.Popen | None = None

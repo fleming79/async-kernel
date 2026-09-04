@@ -12,6 +12,6 @@ The reference section provides documentation for each module in async-kernel.
 ## Highlights
 
 - [Kernel][async_kernel.kernel.Kernel] - The kernel.
-- [Caller][async_kernel.caller.Caller] - Simplifies event loop management and call scheduling.
+- [Caller][async_kernel.caller.Caller] - A flexible interface for scheduling work across threads and asynchronous backends.
 - [Pending][async_kernel.pending.Pending] - Represents a pending result (like an [asyncio.Future][] that can be awaited anywhere).
 - [command_line][async_kernel.command.command_line] - The command line interface.

@@ -41,8 +41,8 @@ theme:
   icon:
     annotation: material/information-outline
   font:
-    text: Roboto
-    code: Roboto Mono
+    text: Inter
+    code: JetBrains Mono
   palette:
     - media: "(prefers-color-scheme)"
       toggle:

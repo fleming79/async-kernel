@@ -159,8 +159,8 @@ class Caller:
     - [Caller.call_later][]: Schedule a function call in the caller's thread after a delay.
     - [Caller.to_thread][]: Schedule a function call using a worker caller (separate thread).
     - [Caller.call_using_backend][]: Schedule a function call using the backend in the caller's thread.
-    - [Caller.as_completed][]: An async iterator to access pending as they complete.
-    - [Caller.wait][]: A method to wait for pending to complete with a timeout.
+    - [Caller.as_completed][]: An async iterator a collection of pending as they complete.
+    - [Caller.wait][]: A method to wait for a collection of pending to complete.
     - [Caller.create_pending_group][]: Create a new pending group to use as an asynchronous context.
     - [Caller.get][]: Get a new caller instance (child).
 
@@ -343,11 +343,11 @@ class Caller:
         Args:
             modifier: Specifies the caller instance to retrieve.
 
-                - "CurrentThread": The caller for the current thread.
-                - "MainThread": The Caller associated with the main thread.
-                - Advanced:
-                    - "NewThread": Create a caller with a new thread.
-                        [Caller.get][] and [Caller.to_thread][] are recommended for normal usage.
+                - CurrentThread: The caller for the current thread.
+                - MainThread: The Caller associated with the main thread.
+                - NewThread: Create a caller with a new thread. The lifecycle is not
+                    It is recommended to used this as an async context.
+                    [Caller.get][] and [Caller.to_thread][] are preferred alternatives.
 
             **kwargs: Additional options for Caller creation, such as:
                 - name: The name to use.
@@ -1198,7 +1198,6 @@ class Caller:
             timeout: An approximate time limit for the context to remain open before cancelling unfinished pending.
 
         Usage:
-
             ```python
             async with Caller().create_pending_group() as pg:
                 pg.caller.to_thread(my_func)
