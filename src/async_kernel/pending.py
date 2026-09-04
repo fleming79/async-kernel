@@ -493,19 +493,25 @@ class Pending(Awaitable[T]):
             To wait for a cancelled pending to complete use `await pen.wait(result=False)`.
         """
         if not self._done:
+            waiter = create_async_waiter(shield=shield)
             e = None
+            wait_ = waiter.with_(timeout)
+
+            def done(_) -> None:
+                waiter.wake()
+
             try:
-                waiter = create_async_waiter(shield=shield)
                 try:
-                    self._done_callbacks.append(lambda _: waiter.wake())
-                except AttributeError:
-                    # _done_callbacks was deleted meaning _done will be set soon.
-                    while not self._done:
-                        await async_checkpoint(force=True)
-                else:
-                    await waiter.with_(timeout)
+                    self._done_callbacks.append(done)
+                    await wait_
                     if not self._done:
                         e = TimeoutError
+                    del done, wait_, waiter
+                except AttributeError:
+                    # _done_callbacks was deleted meaning _done will be set soon.
+                    wait_.close()
+                    while not self._done:
+                        await async_checkpoint(force=True)
             except anyio.get_cancelled_exc_class() as exc:
                 e = exc
             if e:
