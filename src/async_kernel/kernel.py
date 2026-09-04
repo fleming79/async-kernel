@@ -92,7 +92,6 @@ class Kernel(
 
     _interrupt_message = "Kernel interrupted"
 
-    _restart = False
     _handler_cache: ClassVar[dict[tuple[str | None, MsgType, Channel] | MsgType, HandlerType]] = {}
     _subshells: dict[str, T_shell_co]
     _interrupt_requested: Pending | None = None

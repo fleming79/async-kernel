@@ -93,15 +93,15 @@ class Channel(enum.StrEnum):
     """An enum of channel names [Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introduction)."""
 
     heartbeat = "hb"
-    ""
+    """"""
     shell = "shell"
-    ""
+    """"""
     stdin = "stdin"
-    ""
+    """"""
     control = "control"
-    ""
+    """"""
     iopub = "iopub"
-    ""
+    """"""
 
 
 class RunMode(enum.StrEnum):
@@ -374,8 +374,7 @@ class Tags(enum.StrEnum):
     """
 
     stop_on_error = "stop-on-error"
-    """
-    Override `stop_on_error`.
+    """Override `stop_on_error`.
 
     Examples:
 
@@ -387,8 +386,7 @@ class Tags(enum.StrEnum):
     """
 
     timeout = "timeout"
-    """
-    Specify a timeout in seconds for code execution to complete.
+    """Specify a timeout in seconds for code execution to complete.
 
     Examples:
 
@@ -474,19 +472,19 @@ class MsgHeader(TypedDict):
     """A [message header](https://jupyter-client.readthedocs.io/en/stable/messaging.html#message-header)."""
 
     msg_id: str
-    ""
+    """"""
     session: str
-    ""
+    """"""
     username: str
-    ""
+    """"""
     date: str | datetime.datetime
-    ""
+    """"""
     msg_type: MsgType | str
-    ""
+    """"""
     version: str
-    ""
+    """"""
     subshell_id: NotRequired[str | None]
-    ""
+    """"""
 
 
 class Message(TypedDict, Generic[T]):
@@ -536,37 +534,37 @@ class ExecuteContent(TypedDict):
     code: str
     """The code to execute."""
     silent: bool
-    ""
+    """"""
     store_history: bool
-    ""
+    """"""
     user_expressions: dict[str, str]
-    ""
+    """"""
     allow_stdin: bool
-    ""
+    """"""
     stop_on_error: bool
-    ""
+    """"""
     subshell_id: NotRequired[str | None]
-    ""
+    """"""
 
 
 class FixedCreate(TypedDict, Generic[S]):
     """A TypedDict relevant to Fixed."""
 
     name: str
-    ""
+    """"""
     owner: S
-    ""
+    """"""
 
 
 class FixedCreated(TypedDict, Generic[S, T]):
     """A TypedDict relevant to Fixed."""
 
     name: str
-    ""
+    """"""
     owner: S
-    ""
+    """"""
     obj: T
-    ""
+    """"""
 
 
 class RunSettings(TypedDict):
