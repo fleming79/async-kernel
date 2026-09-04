@@ -54,7 +54,8 @@ class Comm(HasInterface, BaseComm):
 class CommManager(HasInterface, comm.base_comm.CommManager):
     """The comm manager for all Comm instances.
 
-    Not to be called directly; use `get_comm_manager` to obtain the comm manager.
+    Not to be called directly; use `comm.get_comm_manager` (from the `comm` module not `async_kernel.comm`)
+    to obtain the comm manager.
     """
 
     comms: dict[str, BaseComm]
@@ -66,7 +67,7 @@ class CommManager(HasInterface, comm.base_comm.CommManager):
         1.  `comm.create_comm` to [Comm][].
         1. `comm.get_com_manager` to [CommManager][].
 
-        Also patches ipykernel.comm if ipykernel is installed.
+        Also patches [ipykernel.comm][] if ipykernel is installed.
         """
 
         def get_comm_manager() -> Self:
