@@ -6572,8 +6572,12 @@ otherwise a new caller is created.</p>
       <a href="#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.Caller.call_using_backend"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;call_using_backend</a>
   </span>
 
       </li>
@@ -7158,8 +7162,12 @@ otherwise a new caller is created.</p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../typing/#async_kernel.typing.RunMode.task"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;task</a>
   </span>
 
       </li>
@@ -7584,12 +7592,8 @@ be made to avoid blocking the scheduler.</strong></p>
       <a href="../typing/#">typing</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../typing/#async_kernel.typing.RunMode.thread"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;thread</a>
+      <a href="../typing/#async_kernel.typing.RunMode"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RunMode</a>
   </span>
 
       </li>
@@ -9432,7 +9436,7 @@ return once the task has stopped.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">_context_token</span> <span class="o">=</span> <span class="s2">""</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
-            <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">,</span> <span class="s2">"The Task has stopped!"</span><span class="p">)</span>
+            <span class="n">caller</span><span class="o">.</span><span class="n">call_direct</span><span class="p">(</span><span class="n">scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">,</span> <span class="s2">"The task has stopped!"</span><span class="p">)</span>
 
         <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">caller</span> <span class="k">as</span> <span class="n">caller</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -9441,7 +9445,7 @@ return once the task has stopped.</p>
                     <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">result</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                     <span class="k">yield</span> <span class="bp">self</span>
                 <span class="k">if</span> <span class="n">scope</span><span class="o">.</span><span class="n">cancel_called</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopping</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-                    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"Task stopped early </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="si">!r}</span><span class="s2">"</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"The task stopped early </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="si">!r}</span><span class="s2">"</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
             <span class="k">finally</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">remove_done_callback</span><span class="p">(</span><span class="n">stop</span><span class="p">)</span>
@@ -9480,7 +9484,7 @@ return once the task has stopped.</p>
                     <span class="bp">self</span><span class="o">.</span><span class="n">caller</span><span class="o">.</span><span class="n">_pen_stop</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">pen</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
 
                 <span class="k">if</span> <span class="n">pen</span><span class="o">.</span><span class="n">cancelled</span><span class="p">():</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The Task </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="si">}</span><span class="s2"> was cancelled!"</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The Task was cancelled! </span><span class="si">{</span><span class="n">pen</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="k">elif</span> <span class="n">e</span> <span class="o">:=</span> <span class="n">pen</span><span class="o">.</span><span class="n">exception</span><span class="p">():</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -9722,9 +9726,20 @@ return once the task has stopped.</p>
       <a href="#async_kernel.caller.StartStopTask"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;StartStopTask</a>
   </span>
 
+            <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.caller.StartStopTask.start"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;start</a>
   </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.caller.StartStopTask.stop"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;stop</a>
+  </span>
+
+      </li>
+  </ul>
 
       </li>
   </ul>
@@ -9962,7 +9977,7 @@ return once the task has stopped.</p>
                 <span class="bp">self</span><span class="o">.</span><span class="n">caller</span><span class="o">.</span><span class="n">_pen_stop</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">pen</span><span class="p">)</span>  <span class="c1"># pyright: ignore[reportPrivateUsage]</span>
 
             <span class="k">if</span> <span class="n">pen</span><span class="o">.</span><span class="n">cancelled</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The Task </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="si">}</span><span class="s2"> was cancelled!"</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The Task was cancelled! </span><span class="si">{</span><span class="n">pen</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">e</span> <span class="o">:=</span> <span class="n">pen</span><span class="o">.</span><span class="n">exception</span><span class="p">():</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>

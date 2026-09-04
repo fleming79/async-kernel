@@ -5956,11 +5956,7 @@ it's still alive.</p>
 <span class="normal">421</span>
 <span class="normal">422</span>
 <span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span>
-<span class="normal">427</span>
-<span class="normal">428</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQClient</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">ZMQMessage</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">424</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQClient</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">ZMQMessage</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""A client for an interface that provides a [ZMQConnection][].</span>
 
 <span class="sd">    The client can be connected to an existing interface's using either:</span>
@@ -6147,12 +6143,8 @@ it's still alive.</p>
                 <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
         <span class="n">queue</span><span class="p">,</span> <span class="n">ready</span><span class="p">,</span> <span class="n">scope</span> <span class="o">=</span> <span class="n">SingleAsyncQueue</span><span class="p">(),</span> <span class="n">create_async_event</span><span class="p">(),</span> <span class="n">anyio</span><span class="o">.</span><span class="n">CancelScope</span><span class="p">()</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">canceller</span><span class="p">():</span>
-            <span class="n">scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="s2">"ZMQ poll eventloop is stopped!"</span><span class="p">)</span>  <span class="c1"># pragma: no cover</span>
-
         <span class="n">iopub</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connect_socket</span><span class="p">(</span><span class="n">Channel</span><span class="o">.</span><span class="n">iopub</span><span class="p">)</span>
-        <span class="k">with</span> <span class="n">iopub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">event_handler</span><span class="p">(</span><span class="n">iopub</span><span class="p">,</span> <span class="n">forward_messages</span><span class="p">,</span> <span class="n">canceller</span><span class="o">=</span><span class="n">canceller</span><span class="p">),</span> <span class="n">scope</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">iopub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">event_handler</span><span class="p">(</span><span class="n">iopub</span><span class="p">,</span> <span class="n">forward_messages</span><span class="p">,</span> <span class="n">canceller</span><span class="o">=</span><span class="n">scope</span><span class="o">.</span><span class="n">cancel</span><span class="p">),</span> <span class="n">scope</span><span class="p">:</span>
             <span class="n">iopub</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="n">topic</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Waiting for welcome message."</span><span class="p">)</span>
