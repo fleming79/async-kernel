@@ -159,8 +159,8 @@ class Caller:
     - [Caller.call_later][]: Schedule a function call in the caller's thread after a delay.
     - [Caller.to_thread][]: Schedule a function call using a worker caller (separate thread).
     - [Caller.call_using_backend][]: Schedule a function call using the backend in the caller's thread.
-    - [Caller.as_completed][]: An async iterator to access pending as they complete.
-    - [Caller.wait][]: A method to wait for pending to complete with a timeout.
+    - [Caller.as_completed][]: An async iterator a collection of pending as they complete.
+    - [Caller.wait][]: A method to wait for a collection of pending to complete.
     - [Caller.create_pending_group][]: Create a new pending group to use as an asynchronous context.
     - [Caller.get][]: Get a new caller instance (child).
 
@@ -343,11 +343,11 @@ class Caller:
         Args:
             modifier: Specifies the caller instance to retrieve.
 
-                - "CurrentThread": The caller for the current thread.
-                - "MainThread": The Caller associated with the main thread.
-                - Advanced:
-                    - "NewThread": Create a caller with a new thread.
-                        [Caller.get][] and [Caller.to_thread][] are recommended for normal usage.
+                - CurrentThread: The caller for the current thread.
+                - MainThread: The Caller associated with the main thread.
+                - NewThread: Create a caller with a new thread. The lifecycle is not
+                    It is recommended to used this as an async context.
+                    [Caller.get][] and [Caller.to_thread][] are preferred alternatives.
 
             **kwargs: Additional options for Caller creation, such as:
                 - name: The name to use.
@@ -1024,8 +1024,8 @@ class Caller:
 
         `func` must accept two position only arguments:
 
-        1. started: A callable to indicate the task is started.
-        2. stop: A `ProtectedPending` that should be used as an 'event' to stop func.
+        1. A callback to indicate that `func` has started.
+        2. A `ProtectedPending` that is used as a signal for func to stop.
 
         Usage:
             ```python
@@ -1034,9 +1034,11 @@ class Caller:
                 await stopped
 
 
+            # Non-blocking
             task = caller.create_start_stop_task(func).start()
-            await task.stop()
-            # or
+            task.stop()
+
+            # or as an async context
             async with caller.create_start_stop_task(func).start():
                 pass
             ```
@@ -1198,7 +1200,6 @@ class Caller:
             timeout: An approximate time limit for the context to remain open before cancelling unfinished pending.
 
         Usage:
-
             ```python
             async with Caller().create_pending_group() as pg:
                 pg.caller.to_thread(my_func)
@@ -1208,26 +1209,28 @@ class Caller:
 
 
 class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
-    """A class which provides start/stop functionality to run a coroutine function.
+    """A class which provides [start][]/[stop][] functionality to run a coroutine function.
 
-    The task function is 'stopped' rather being 'cancelled'. This means that the function
+    The `func` is 'stopped' rather being 'cancelled'. This means that the function
     will run to completion, so that `try` - `finally` blocks and shielded CancelScopes can
-    be omitted. The function must accept two positional arguments:
+    be omitted (Pending cancelled errors can still occur).
+
+    The function that is set with [set_task_function][] must accept two positional arguments:
 
     1. A callable to indicate the function has 'started'.
     2. A `ProtectedPending` that should be awaited to stop the task.
 
-    The sequencing of a `StartStopTask` is:
+    The sequencing is:
 
-    1. set_task_function: Set the task function and the caller to use.
-    2. start: Start the task.
-    3. started: `func` indicates it has started.
-    4. stopping: `stop` has been called which signals to the task that it should commence it's shutdown.
-    5. stopped: The task is finished.
+    1. [set_task_function][]: Set `func` and the caller to use.
+    2. [start][]: Start the task.
+    3. [started][]: `func` indicates it has started.
+    4. [stop][StartStopTask.stop]: has been called which sets [stopping][] indicating to `func` that it should commence it's shutdown.
+    5. [stopped][]: The task is finished.
 
     For convenience, this class is awaitable and provides an async context manager.
-    Both of which are only available after `start` has been called. The async context can only
-    be entered once, and will initiate stop when the context begins to exit. The conxext will
+    Both of which are only available after [start][] has been called. The async context can only
+    be entered once, and will call [stop][] when the context begins to exit. The conxext will
     return once the task has stopped.
 
     Usage:
@@ -1274,7 +1277,7 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
         *,
         caller: Caller | None = None,
     ) -> Self:
-        """Set the task function and optionally specify the caller to use to run the task.
+        """Set the `func` and optionally specify the `caller` that runs it.
 
         This should only be called once.
 
@@ -1334,7 +1337,7 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
                 await self.stop().wait(shield=True)
 
     def start(self, *args: P.args, **kwargs: P.kwargs) -> Self:
-        """Start the task function that was set via [StartStopTask.set_task_function][].
+        """Schedule `func` (that was set via [set_task_function][]) to run as a task.
 
         Args:
             *args: Arguments to use with the function.
@@ -1344,7 +1347,7 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
             Self: This makes it convenient to chain the call in an async context or await.
         """
         if not hasattr(self, "_func"):
-            msg = "The task function has not been set. Tip: Use the method `set_task_function`."
+            msg = "The `func` has not been set. Tip: Use the method `set_task_function`."
             raise RuntimeError(msg)
         with contextlib.suppress(AttributeError):
             del self._start_token
@@ -1393,7 +1396,7 @@ class StartStopTask(anyio.AsyncContextManagerMixin, Generic[P, T]):
     def stop(self, _=None, /) -> ProtectedPending[T]:
         """Stop the task.
 
-        This sets the `stopping` `ProtectedPending`. The task function should respond to the change and exit normally.
+        This sets [stopping][] where `func` should respond to the change and exit normally.
 
         Returns:
             ProtectedPending: Resolves with the result of the function set using [StartStopTask.set_task_function][].

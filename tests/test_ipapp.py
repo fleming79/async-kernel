@@ -33,6 +33,13 @@ async def test_user_ns(anyio_backend: Backend):
             interface.user_ns = {}  # pyright: ignore[reportAttributeAccessIssue]
 
 
+async def test_start_direct(anyio_backend: Backend):
+    app = IPApp().start()
+    async with LocalClient().start() as client:
+        await client.execute("1+1")
+    await app.stop()
+
+
 async def test_force_shutdown(anyio_backend: Backend) -> None:
     interface = IPApp()
     interface.force_shutdown_delay = 0

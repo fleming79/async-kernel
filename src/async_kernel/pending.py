@@ -123,7 +123,6 @@ class PendingManager(PendingTracker):
     previously active pending manager.
 
     Usage:
-
         ```python
         class MyPendingManager(PendingManager):
             "Manages the context of ..."

@@ -185,7 +185,7 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
 
     @override
     async def connection_task(self, started: Callable[[], Any], stop: ProtectedPending) -> None:
-        """Open the channels, set ready when ready block until stopped, Don't call directly."""
+        """Open the channels, set ready when ready block until stopped, **Don't call directly**."""
         self.parent.update_connections(self)
         started()
         await stop
@@ -193,7 +193,7 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
 
     @override
     def handle_incoming_msg(self, msg: Message, ident: list[bytes]) -> None:
-        """The handler for  messages received on this connection.
+        """The handler for messages received on this connection.
 
         Args:
             msg: A new message.
@@ -263,7 +263,7 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         self.caller.to_thread(self._wrap_request_handler, handler, job)
 
     async def _wrap_request_handler(self, func: Callable[[Job], CoroutineType[Any, Any, Content]], job: Job) -> None:
-        """Handle messages from the kernel (interface), currently only `input_request` is implemented."""
+        """Handle messages from the kernel interface, currently only `input_request` is implemented."""
         reply_msg_type: MsgType = MsgType(job["msg"]["header"]["msg_type"].replace("request", "reply"))
         try:
             content = await func(job)
@@ -283,9 +283,9 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
 
     @asynccontextmanager
     async def iopub_subscribe(
-        self, topic: bytes = b"", *, timeout: float | None = 1
+        self, topic: bytes = b"", *, timeout: float | None = 10.0
     ) -> AsyncGenerator[SingleAsyncQueue[Message]]:
-        """Open a new iopub socket and subscribe to a particular topic.
+        """An async generator that subscribes to iopub messages.
 
         Args:
             topic: The topics to subscribe to.
@@ -294,12 +294,12 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         Raise:
             TimeoutError: If a welcome message is not received in time.
 
-        Usaage:
-        ```python
-        async with client.iopub_subscribe() as queue:
-            async for msg in queue:
-                pass
-        ```
+        Usage:
+            ```python
+            async with client.iopub_subscribe() as queue:
+                async for msg in queue:
+                    pass
+            ```
         """
         queue = SingleAsyncQueue()
         self._iopub_queues.append((topic, queue))
@@ -323,7 +323,7 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         channel: Literal[Channel.shell, Channel.control] = Channel.shell,
         subshell_id: str | None = None,
     ) -> PendingMessage:
-        """Execute code in the kernel.
+        """Execute code.
 
         Params:
             code: A string of code in the kernel's language.
@@ -355,7 +355,7 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         return pen
 
     def complete(self, code: str, cursor_pos: int | None = None) -> PendingMessage[Content]:
-        """Tab complete text in the kernel's namespace.
+        """Tab complete text.
 
         Args:
             code: The context in which completion is requested.
@@ -370,9 +370,7 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         return self.send_message(msg)
 
     def inspect(self, code: str, cursor_pos: int | None = None, detail_level: int = 0) -> PendingMessage[Content]:
-        """Get metadata information about an object in the kernel's namespace.
-
-        It is up to the kernel to determine the appropriate object to inspect.
+        """Get metadata information about an object.
 
         Params:
             code: Context in which info is requested.
@@ -392,20 +390,20 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         hist_access_type: Literal["tail", "range", "search"] = "range",
         **kwargs: Any,
     ) -> PendingMessage[Content]:
-        """Get entries from the kernel's history list.
+        """Get entries from the history list.
 
         Args:
-        raw: If True, return the raw input.
-        output: If True, then return the output as well.
-        hist_access_type: 'range' (fill in session, start and stop params), 'tail' (fill in n)
-             or 'search' (fill in pattern param).
-        **kwargs:
-            session: For a range request, the session from which to get lines. Session numbers
-                are positive integers; negative ones count back from the current session.
-            start: The first line number of a history range.
-            stop: The final (excluded) line number of a history range.
-            n: The number of lines of history to get for a tail request.
-            pattern: The glob-syntax pattern for a search request.
+            raw: If `True`, return the raw input.
+            output: If `True`, then return the output as well.
+            hist_access_type: 'range' (fill in session, start and stop params), 'tail' (fill in n)
+                or 'search' (fill in pattern param).
+            **kwargs:
+                session: For a range request, the session from which to get lines. Session numbers
+                    are positive integers; negative ones count back from the current session.
+                start: The first line number of a history range.
+                stop: The final (excluded) line number of a history range.
+                n: The number of lines of history to get for a tail request.
+                pattern: The glob-syntax pattern for a search request.
 
         Returns: The ID of the message sent.
         """

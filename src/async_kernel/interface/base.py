@@ -72,21 +72,26 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
     interface (Application).
 
     Usage:
-        launch:
+        === "launch"
+
+            A blocking call when a backend is not already running.
+
             ```python
             Interface.launch_instance()
             ```
-        async context:
+        === "async context"
             ```python
             async with Interface().start() as interface:
                 interface.kernel
                 ...
             ```
-        In a thread with a running loop:
-            ```python
-            app = Interface().start()
-            ```
+        === "Backend already started non-blocking"
 
+            If a backend is already running in the thread it can also be started with a non-blocking call.
+
+            ```python
+            Interface().start()
+            ```
     """
 
     kernel_name = traitlets.Unicode("async").tag(config=True)
