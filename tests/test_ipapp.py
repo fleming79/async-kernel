@@ -37,7 +37,7 @@ async def test_start_direct(anyio_backend: Backend):
     app = IPApp().start()
     async with LocalClient().start() as client:
         await client.execute("1+1")
-    app.stop()
+    await app.stop()
 
 
 async def test_force_shutdown(anyio_backend: Backend) -> None:
