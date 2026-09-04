@@ -182,7 +182,7 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
         [Reference](https://jupyter-client.readthedocs.io/en/stable/messaging.html#update-display-data)
         """
         if job := utils.get_job():
-            owner = job["owner"]()
+            owner = job["owner"]
             content = {"data": data, "metadata": metadata or {}, "transient": transient or {}} | kwargs
             msg_type = MsgType.iopub_update_display_data if update else MsgType.iopub_display_data
             msg = owner.msg(msg_type, content, Channel.iopub, parent=utils.get_parent_message())
@@ -205,7 +205,7 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
                 This reduces bounce during repeated clear & display loops.
         """
         if job := utils.get_job():
-            owner = job["owner"]()
+            owner = job["owner"]
             msg = owner.msg(MsgType.iopub_clear_output, {"wait": wait}, Channel.iopub)
             owner.send_message(msg, ident=b"display_data")
 

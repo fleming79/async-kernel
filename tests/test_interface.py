@@ -89,7 +89,7 @@ class TestInterface:
 
         async with Interface(shell_class=BaseShell).start(), LocalClient().start() as client:
             msg = client.msg(MsgType.input_request, None, Channel.stdin)
-            job = Job(msg=msg, owner=client.as_owner, ident=[], received_time=time.monotonic())
+            job = Job(msg=msg, owner=client, ident=[], received_time=time.monotonic())
             with pytest.raises(RuntimeError, match="A handler is not available"):
                 await client.input_request(job)
 
