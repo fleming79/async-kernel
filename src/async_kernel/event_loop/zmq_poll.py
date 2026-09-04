@@ -241,6 +241,7 @@ class ZMQPoll:
                 # Called on receipt of a message (b'') on the 'wake' socket.
                 sockets = []
                 sock.recv()
+                do_execute()
 
             def do_execute() -> None:
                 """Execute pending items added by the `execute` and `aexecute` methods."""
@@ -267,8 +268,6 @@ class ZMQPoll:
                 try:
                     while not stopped.done():
                         try:
-                            if execute:
-                                do_execute()
                             if not sockets:
                                 for k, v in handlers.copy().items():
                                     if k[0].closed:
@@ -279,15 +278,19 @@ class ZMQPoll:
                                     else:
                                         sockets.append(k)
                             for k in _zmq_poll(sockets, timeout=-1):
-                                try:
-                                    handlers[k](*k)  # pyright: ignore[reportArgumentType]
-                                except KeyError:
+                                if k[0].closed:
                                     sockets = []
-                                except SystemExit:
-                                    stopped.set_result(None)
-                                    return
-                                except BaseException as e:
-                                    self.log.exception("Ignoring exception in handler.", exc_info=e)
+                                else:
+                                    try:
+                                        handlers[k](*k)  # pyright: ignore[reportArgumentType]
+                                    except KeyError:
+                                        sockets = []
+                                    except SystemExit:
+                                        stopped.set_result(None)
+                                        return
+                                    except BaseException as e:
+                                        sockets = []
+                                        self.log.exception("Ignoring exception in handler.", exc_info=e)
                                 if count and (c := count.get(k)) is not None:
                                     c = count[k] = (int(c[0]) - 1, c[1])
                                     # Auto eject after 'n' events
@@ -300,7 +303,13 @@ class ZMQPoll:
                             sockets = []
                             self.log.exception("Ignoring exception in zmq_poll_thread.", exc_info=e)
                 finally:
+                    stopped.set_result(None)
                     do_execute()
+                    while zmq_poll_sockets:
+                        try:
+                            zmq_poll_sockets.pop().close()
+                        except Exception as e:
+                            self.log.exception("Socket close call failed", exc_info=e)
                     while cancellers:
                         try:
                             if canceller := cancellers.popitem()[1]:
@@ -308,11 +317,6 @@ class ZMQPoll:
                         except Exception as e:
                             self.log.exception(msg="A canceller failed", exc_info=e)
                     handlers.clear()
-                    while zmq_poll_sockets:
-                        try:
-                            zmq_poll_sockets.pop().close()
-                        except Exception as e:
-                            self.log.exception("Socket close call failed", exc_info=e)
                     log.debug("Stopped zmq_poll event loop")
 
         self.log.debug("Starting ZMQPoll event loop")
@@ -324,7 +328,8 @@ class ZMQPoll:
 
         def _wake(sock=send, lock=send.lock) -> None:
             lock.acquire()
-            sock.send(b"")
+            if not sock.closed:
+                sock.send(b"")
             lock.release()
 
         self._wake = _wake
