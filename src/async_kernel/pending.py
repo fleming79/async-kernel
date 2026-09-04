@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, Self, final, 
 
 import anyio
 from aiologic import BinarySemaphore
-from aiologic.lowlevel import create_async_event, create_async_waiter, create_green_event
+from aiologic.lowlevel import async_checkpoint, create_async_event, create_async_waiter, create_green_event
 from typing_extensions import override
 
 import async_kernel
@@ -492,22 +492,26 @@ class Pending(Awaitable[T]):
         Tip:
             To wait for a cancelled pending to complete use `await pen.wait(result=False)`.
         """
-        e = None
-        try:
-            if not self._done:
+        if not self._done:
+            e = None
+            try:
                 waiter = create_async_waiter(shield=shield)
-                self._done_callbacks.append(lambda _: waiter.wake())
-                await waiter.with_(timeout)
-                if not self._done:
-                    e = TimeoutError
-        except AttributeError:
-            assert self._done
-        except anyio.get_cancelled_exc_class() as exc:
-            e = exc
-        if e:
-            if not protect and not isinstance(self, ProtectedPending):
-                self.cancel(f"Cancelled due to cancellation or timeout: {e}.")
-            raise e
+                try:
+                    self._done_callbacks.append(lambda _: waiter.wake())
+                except AttributeError:
+                    # _done_callbacks was deleted meaning _done will be set soon.
+                    while not self._done:
+                        await async_checkpoint(force=True)
+                else:
+                    await waiter.with_(timeout)
+                    if not self._done:
+                        e = TimeoutError
+            except anyio.get_cancelled_exc_class() as exc:
+                e = exc
+            if e:
+                if not protect and not isinstance(self, ProtectedPending):
+                    self.cancel(f"Cancelled due to cancellation or timeout: {e}.")
+                raise e
         return self.result() if result else None
 
     if TYPE_CHECKING:
