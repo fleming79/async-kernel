@@ -54,8 +54,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -1559,7 +1559,7 @@ viewing the latest version.
             <b><code><a class="autorefs autorefs-internal" title="            command_line (async_kernel.command.command_line)" href="#async_kernel.command.command_line">command_line</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Parses command-line arguments to manage kernel specs and start kernels.</p>
+              <p>Parses command-line arguments to manage kernel specs and start a kernel interface.</p>
             </div>
           </li>
     </ul>
@@ -1592,9 +1592,9 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
 
-        <p>Parses command-line arguments to manage kernel specs and start kernels.</p>
-<p>This function uses <code>argparse</code> to handle command-line arguments for
-various kernel operations, including:</p>
+        <p>Parses command-line arguments to manage kernel specs and start a kernel interface.</p>
+<p>This function uses <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/argparse.html#argparse.ArgumentParser">argparse.ArgumentParser</a> to handle command-line
+arguments for various kernel operations, including:</p>
 <ul>
 <li>Starting a kernel with a specified connection file.</li>
 <li>Adding a new kernel specification.</li>
@@ -1827,10 +1827,10 @@ program is interrupted.</p>
 <span class="normal">228</span>
 <span class="normal">229</span>
 <span class="normal">230</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">command_line</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Parses command-line arguments to manage kernel specs and start kernels.</span>
+<span class="w">    </span><span class="sd">"""Parses command-line arguments to manage kernel specs and start a kernel interface.</span>
 
-<span class="sd">    This function uses `argparse` to handle command-line arguments for</span>
-<span class="sd">    various kernel operations, including:</span>
+<span class="sd">    This function uses [argparse.ArgumentParser][] to handle command-line</span>
+<span class="sd">    arguments for various kernel operations, including:</span>
 
 <span class="sd">    - Starting a kernel with a specified connection file.</span>
 <span class="sd">    - Adding a new kernel specification.</span>

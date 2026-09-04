@@ -54,8 +54,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -1613,7 +1613,7 @@ viewing the latest version.
           <b><code><a class="autorefs autorefs-internal" title="            Comm (async_kernel.comm.Comm)" href="#async_kernel.comm.Comm">Comm</a></code></b>
           –
           <div class="doc-md-description">
-            <p>An implementation of <code>comm.BaseComms</code> for async-kernel  (<a href="https://pypi.org/project/comm/">on pypi</a>).</p>
+            <p>An implementation of <code>comm.BaseComms</code> for async-kernel (<a href="https://pypi.org/project/comm/">on pypi</a>).</p>
           </div>
         </li>
     </ul>
@@ -1651,7 +1651,7 @@ viewing the latest version.
 
 
 
-        <p>An implementation of <code>comm.BaseComms</code> for async-kernel  (<a href="https://pypi.org/project/comm/">on pypi</a>).</p>
+        <p>An implementation of <code>comm.BaseComms</code> for async-kernel (<a href="https://pypi.org/project/comm/">on pypi</a>).</p>
 
           
 
@@ -1694,7 +1694,7 @@ viewing the latest version.
             <b><code><a class="autorefs autorefs-internal" title="            publish_msg (async_kernel.comm.Comm.publish_msg)" href="#async_kernel.comm.Comm.publish_msg">publish_msg</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Helper for sending a comm message on IOPub.</p>
+              <p>Send an iopub message.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -1739,7 +1739,7 @@ viewing the latest version.
 <span class="normal">49</span>
 <span class="normal">50</span>
 <span class="normal">51</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Comm</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">,</span> <span class="n">BaseComm</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""An implementation of `comm.BaseComms` for async-kernel  ([on pypi](https://pypi.org/project/comm/))."""</span>
+<span class="w">    </span><span class="sd">"""An implementation of `comm.BaseComms` for async-kernel ([on pypi](https://pypi.org/project/comm/))."""</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">publish_msg</span><span class="p">(</span>  <span class="c1"># pyright: ignore[reportIncompatibleMethodOverride]</span>
@@ -1750,7 +1750,7 @@ viewing the latest version.
         <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">keys</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Helper for sending a comm message on IOPub."""</span>
+<span class="w">        </span><span class="sd">"""Send an iopub message."""</span>
         <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="p">,</span> <span class="s2">"comm_id"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm_id</span><span class="p">}</span> <span class="o">|</span> <span class="n">keys</span>
         <span class="k">if</span> <span class="n">parent</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
             <span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
@@ -1802,7 +1802,7 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
 
-        <p>Helper for sending a comm message on IOPub.</p>
+        <p>Send an iopub message.</p>
 
           
 
@@ -1836,7 +1836,7 @@ viewing the latest version.
     <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">keys</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Helper for sending a comm message on IOPub."""</span>
+<span class="w">    </span><span class="sd">"""Send an iopub message."""</span>
     <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">data</span><span class="p">,</span> <span class="s2">"comm_id"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm_id</span><span class="p">}</span> <span class="o">|</span> <span class="n">keys</span>
     <span class="k">if</span> <span class="n">parent</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="p">:</span>
         <span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>

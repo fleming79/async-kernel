@@ -54,8 +54,8 @@
         
         
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
-        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
       
     
     
@@ -90,7 +90,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#async_kernel.messaging" class="md-skip">
+        <a href="#messaging" class="md-skip">
           Skip to content
         </a>
       
@@ -974,6 +974,8 @@ viewing the latest version.
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
@@ -1016,51 +1018,14 @@ viewing the latest version.
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#async_kernel.messaging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;messaging
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#async_kernel.messaging.LocalClient" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" LocalClient">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.messaging.LocalClient.connection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
       
         <li class="md-nav__item">
   <a href="#async_kernel.messaging.base" class="md-nav__link">
@@ -1801,51 +1766,14 @@ viewing the latest version.
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#async_kernel.messaging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;messaging
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#async_kernel.messaging.LocalClient" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label=" LocalClient">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#async_kernel.messaging.LocalClient.connection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
       
         <li class="md-nav__item">
   <a href="#async_kernel.messaging.base" class="md-nav__link">
@@ -2264,240 +2192,9 @@ viewing the latest version.
   
 
 
-  <h1>messaging</h1>
+<h1 id="messaging">Messaging<a class="headerlink" href="#messaging" title="Permanent link">&para;</a></h1>
+<p>Provides objects to enable messaging for the kernel interface and clients.</p>
 
-<div class="doc doc-object doc-module">
-
-
-
-<a id="async_kernel.messaging"></a>
-    <div class="doc doc-contents first">
-
-          
-
-
-
-
-
-<p><span class="doc-section-title">Modules:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="async_kernel.messaging.base" href="#async_kernel.messaging.base">base</a></code></b>
-          –
-          <div class="doc-md-description">
-            <p>Default Messaging object definitions for Messaging including <code>BaseMessage</code>, <code>Connection</code> and <code>Client</code>.</p>
-          </div>
-        </li>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="async_kernel.messaging.zmq" href="#async_kernel.messaging.zmq">zmq</a></code></b>
-          –
-          <div class="doc-md-description">
-            <p>ZMQ messaging objects using zmq sockets.</p>
-          </div>
-        </li>
-    </ul>
-
-
-
-
-
-
-<p><span class="doc-section-title">Classes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            LocalClient (async_kernel.messaging.LocalClient)" href="#async_kernel.messaging.LocalClient">LocalClient</a></code></b>
-          –
-          <div class="doc-md-description">
-            <p>A client for an interface running in the current process.</p>
-          </div>
-        </li>
-    </ul>
-
-
-
-
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="async_kernel.messaging.LocalClient" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">LocalClient</span>
-
-
-<a href="#async_kernel.messaging.LocalClient" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-    <div class="doc doc-contents ">
-            <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            HasInterface (async_kernel.interface.HasInterface)" href="../interface/#async_kernel.interface.HasInterface">HasInterface</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code>, <code><a class="autorefs autorefs-internal" title="            BaseClient (async_kernel.messaging.base.BaseClient)" href="#async_kernel.messaging.base.BaseClient">BaseClient</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code></p>
-
-
-
-        <p>A client for an interface running in the current process.</p>
-
-          
-
-
-  <div class="doc doc-backlinks">
-        <b class="doc doc-backlink-type">Referenced by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="#">messaging</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.messaging.base.Connection"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Connection</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.messaging.base.Connection.handle_incoming_msg"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;handle_incoming_msg</a>
-  </span>
-
-      </li>
-  </ul>
-
-  </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<p><span class="doc-section-title">Attributes:</span></p>
-    <ul>
-        <li class="doc-section-item field-body">
-          <b><code><a class="autorefs autorefs-internal" title="            connection
-
-
-  
-      class-attribute
-      instance-attribute
-   (async_kernel.messaging.LocalClient.connection)" href="#async_kernel.messaging.LocalClient.connection">connection</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]]</code>)
-          –
-          <div class="doc-md-description">
-            <p>A local connection to the interface.</p>
-          </div>
-        </li>
-    </ul>
-
-              <details class="mkdocstrings-source">
-                <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LocalClient</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">"""A client for an interface running in the current process."""</span>
-
-    <span class="n">connection</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Connection</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">Connection</span><span class="p">(</span><span class="n">session_id</span><span class="o">=</span><span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">session_id</span><span class="p">))</span>
-<span class="w">    </span><span class="sd">"""A local connection to the interface."""</span>
-
-    <span class="nd">@override</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connection_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">started</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">],</span> <span class="n">stop</span><span class="p">:</span> <span class="n">ProtectedPending</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">started</span>
-        <span class="c1"># Cross-connect</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">transmit_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_incoming_msg</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">transmit_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">handle_incoming_msg</span>
-
-        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">start</span><span class="p">():</span>
-            <span class="k">await</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connection_task</span><span class="p">(</span><span class="n">started</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>
-</code></pre></div></td></tr></table></div>
-              </details>
-
-
-
-<div class="doc doc-children">
-
-
-
-
-
-
-
-<div class="doc doc-object doc-attribute">
-
-
-
-<h3 id="async_kernel.messaging.LocalClient.connection" class="doc doc-heading">
-<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">connection</span>
-
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-class-attribute"><code>class-attribute</code></small>
-      <small class="doc doc-label doc-label-instance-attribute"><code>instance-attribute</code></small>
-  </span>
-
-<a href="#async_kernel.messaging.LocalClient.connection" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">connection</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T_interface_co">T_interface_co</span></span><span class="p">]]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span>
-    <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a></span><span class="p">(</span><span class="n"><span title="async_kernel.messaging.base.Connection(session_id)">session_id</span></span><span class="o">=</span><span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="session_id">session_id</span></span><span class="p">)</span>
-<span class="p">)</span>
-</code></pre></div>
-
-    <div class="doc doc-contents ">
-
-        <p>A local connection to the interface.</p>
-
-          
-    </div>
-
-</div>
-
-
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
 
 <div class="doc doc-object doc-module">
 
@@ -2597,7 +2294,7 @@ viewing the latest version.
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="#">messaging</a>
+      <a href="#messaging">Messaging</a>
   </span>
 
             <ul class="doc doc-backlink-list">
@@ -3145,6 +2842,20 @@ viewing the latest version.
             <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
+      <a href="#messaging">Messaging</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#async_kernel.messaging.base.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.messaging.base.LocalClient.connection"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection</a>
+  </span>
+
+      </li>
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
       <a href="../interface/#">interface</a>
   </span>
 
@@ -3172,35 +2883,6 @@ viewing the latest version.
   </ul>
 
       </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="#">messaging</a>
-  </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.messaging.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.messaging.LocalClient.connection"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.messaging.base.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.messaging.base.LocalClient.connection"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection</a>
-  </span>
-
-      </li>
-  </ul>
-
-      </li>
   </ul>
 
       </li>
@@ -3214,7 +2896,7 @@ viewing the latest version.
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="#">messaging</a>
+      <a href="#messaging">Messaging</a>
   </span>
 
             <span class="doc doc-backlink-crumb last">
@@ -3232,6 +2914,20 @@ viewing the latest version.
   </span>
 
             <ul class="doc doc-backlink-list">
+      <li class="doc doc-backlink">
+            <span class="doc doc-backlink-crumb">
+      <a href="#messaging">Messaging</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb">
+      <a href="#async_kernel.messaging.base.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="#async_kernel.messaging.base.LocalClient.connection"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection</a>
+  </span>
+
+      </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb">
       <a href="../interface/#">interface</a>
@@ -3255,35 +2951,6 @@ viewing the latest version.
 
             <span class="doc doc-backlink-crumb last">
       <a href="../interface/#async_kernel.interface.base.Interface.update_connections"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;update_connections</a>
-  </span>
-
-      </li>
-  </ul>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="#">messaging</a>
-  </span>
-
-            <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.messaging.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.messaging.LocalClient.connection"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection</a>
-  </span>
-
-      </li>
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.messaging.base.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.messaging.base.LocalClient.connection"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;connection</a>
   </span>
 
       </li>
@@ -3319,14 +2986,14 @@ viewing the latest version.
    (async_kernel.messaging.base.Connection.connection_task)" href="#async_kernel.messaging.base.Connection.connection_task">connection_task</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Open the channels, set ready when ready block until stopped, Don't call directly.</p>
+              <p>Open the channels, set ready when ready block until stopped, <strong>Don't call directly</strong>.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            handle_incoming_msg (async_kernel.messaging.base.Connection.handle_incoming_msg)" href="#async_kernel.messaging.base.Connection.handle_incoming_msg">handle_incoming_msg</a></code></b>
             –
             <div class="doc-md-description">
-              <p>The handler for  messages received on this connection.</p>
+              <p>The handler for messages received on this connection.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -3397,7 +3064,7 @@ viewing the latest version.
 
     <span class="nd">@override</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connection_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">started</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">],</span> <span class="n">stop</span><span class="p">:</span> <span class="n">ProtectedPending</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Open the channels, set ready when ready block until stopped, Don't call directly."""</span>
+<span class="w">        </span><span class="sd">"""Open the channels, set ready when ready block until stopped, **Don't call directly**."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">update_connections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">started</span><span class="p">()</span>
         <span class="k">await</span> <span class="n">stop</span>
@@ -3405,7 +3072,7 @@ viewing the latest version.
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">handle_incoming_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">ident</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""The handler for  messages received on this connection.</span>
+<span class="w">        </span><span class="sd">"""The handler for messages received on this connection.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            msg: A new message.</span>
@@ -3476,7 +3143,7 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
 
-        <p>Open the channels, set ready when ready block until stopped, Don't call directly.</p>
+        <p>Open the channels, set ready when ready block until stopped, <strong>Don't call directly</strong>.</p>
 
           
 
@@ -3490,7 +3157,7 @@ viewing the latest version.
 <span class="normal">191</span>
 <span class="normal">192</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connection_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">started</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">],</span> <span class="n">stop</span><span class="p">:</span> <span class="n">ProtectedPending</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Open the channels, set ready when ready block until stopped, Don't call directly."""</span>
+<span class="w">    </span><span class="sd">"""Open the channels, set ready when ready block until stopped, **Don't call directly**."""</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">update_connections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
     <span class="n">started</span><span class="p">()</span>
     <span class="k">await</span> <span class="n">stop</span>
@@ -3514,7 +3181,7 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
 
-        <p>The handler for  messages received on this connection.</p>
+        <p>The handler for messages received on this connection.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -3556,7 +3223,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <span class="normal">205</span>
 <span class="normal">206</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_incoming_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">ident</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""The handler for  messages received on this connection.</span>
+<span class="w">    </span><span class="sd">"""The handler for messages received on this connection.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        msg: A new message.</span>
@@ -3705,16 +3372,10 @@ be an empty list when there is only one connection, such as <a class="autorefs a
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="#">messaging</a>
+      <a href="#messaging">Messaging</a>
   </span>
 
             <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.messaging.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
-  </span>
-
-      </li>
       <li class="doc doc-backlink">
             <span class="doc doc-backlink-crumb last">
       <a href="#async_kernel.messaging.base.LocalClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;LocalClient</a>
@@ -3768,35 +3429,35 @@ be an empty list when there is only one connection, such as <a class="autorefs a
    (async_kernel.messaging.base.BaseClient.iopub_subscribe)" href="#async_kernel.messaging.base.BaseClient.iopub_subscribe">iopub_subscribe</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Open a new iopub socket and subscribe to a particular topic.</p>
+              <p>An async generator that subscribes to iopub messages.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            execute (async_kernel.messaging.base.BaseClient.execute)" href="#async_kernel.messaging.base.BaseClient.execute">execute</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Execute code in the kernel.</p>
+              <p>Execute code.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            complete (async_kernel.messaging.base.BaseClient.complete)" href="#async_kernel.messaging.base.BaseClient.complete">complete</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Tab complete text in the kernel's namespace.</p>
+              <p>Tab complete text.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            inspect (async_kernel.messaging.base.BaseClient.inspect)" href="#async_kernel.messaging.base.BaseClient.inspect">inspect</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Get metadata information about an object in the kernel's namespace.</p>
+              <p>Get metadata information about an object.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
             <b><code><a class="autorefs autorefs-internal" title="            history (async_kernel.messaging.base.BaseClient.history)" href="#async_kernel.messaging.base.BaseClient.history">history</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Get entries from the kernel's history list.</p>
+              <p>Get entries from the history list.</p>
             </div>
           </li>
           <li class="doc-section-item field-body">
@@ -4057,9 +3718,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <span class="normal">433</span>
 <span class="normal">434</span>
 <span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseClient</span><span class="p">(</span><span class="n">BaseMessage</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">436</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseClient</span><span class="p">(</span><span class="n">BaseMessage</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""Communicates with a single connection."""</span>
 
     <span class="n">_input_handlers</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Content</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
@@ -4089,7 +3748,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
         <span class="bp">self</span><span class="o">.</span><span class="n">caller</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wrap_request_handler</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_wrap_request_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Job</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Content</span><span class="p">]],</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Handle messages from the kernel (interface), currently only `input_request` is implemented."""</span>
+<span class="w">        </span><span class="sd">"""Handle messages from the kernel interface, currently only `input_request` is implemented."""</span>
         <span class="n">reply_msg_type</span><span class="p">:</span> <span class="n">MsgType</span> <span class="o">=</span> <span class="n">MsgType</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_type"</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"request"</span><span class="p">,</span> <span class="s2">"reply"</span><span class="p">))</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">func</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
@@ -4109,9 +3768,9 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 
     <span class="nd">@asynccontextmanager</span>
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">iopub_subscribe</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">""</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">""</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">10.0</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">SingleAsyncQueue</span><span class="p">[</span><span class="n">Message</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">"""Open a new iopub socket and subscribe to a particular topic.</span>
+<span class="w">        </span><span class="sd">"""An async generator that subscribes to iopub messages.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            topic: The topics to subscribe to.</span>
@@ -4120,12 +3779,12 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <span class="sd">        Raise:</span>
 <span class="sd">            TimeoutError: If a welcome message is not received in time.</span>
 
-<span class="sd">        Usaage:</span>
-<span class="sd">        ```python</span>
-<span class="sd">        async with client.iopub_subscribe() as queue:</span>
-<span class="sd">            async for msg in queue:</span>
-<span class="sd">                pass</span>
-<span class="sd">        ```</span>
+<span class="sd">        Usage:</span>
+<span class="sd">            ```python</span>
+<span class="sd">            async with client.iopub_subscribe() as queue:</span>
+<span class="sd">                async for msg in queue:</span>
+<span class="sd">                    pass</span>
+<span class="sd">            ```</span>
 <span class="sd">        """</span>
         <span class="n">queue</span> <span class="o">=</span> <span class="n">SingleAsyncQueue</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_iopub_queues</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">topic</span><span class="p">,</span> <span class="n">queue</span><span class="p">))</span>
@@ -4149,7 +3808,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
         <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
         <span class="n">subshell_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Execute code in the kernel.</span>
+<span class="w">        </span><span class="sd">"""Execute code.</span>
 
 <span class="sd">        Params:</span>
 <span class="sd">            code: A string of code in the kernel's language.</span>
@@ -4181,7 +3840,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
         <span class="k">return</span> <span class="n">pen</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Tab complete text in the kernel's namespace.</span>
+<span class="w">        </span><span class="sd">"""Tab complete text.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            code: The context in which completion is requested.</span>
@@ -4196,9 +3855,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Get metadata information about an object in the kernel's namespace.</span>
-
-<span class="sd">        It is up to the kernel to determine the appropriate object to inspect.</span>
+<span class="w">        </span><span class="sd">"""Get metadata information about an object.</span>
 
 <span class="sd">        Params:</span>
 <span class="sd">            code: Context in which info is requested.</span>
@@ -4218,20 +3875,20 @@ be an empty list when there is only one connection, such as <a class="autorefs a
         <span class="n">hist_access_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"tail"</span><span class="p">,</span> <span class="s2">"range"</span><span class="p">,</span> <span class="s2">"search"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"range"</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Get entries from the kernel's history list.</span>
+<span class="w">        </span><span class="sd">"""Get entries from the history list.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">        raw: If True, return the raw input.</span>
-<span class="sd">        output: If True, then return the output as well.</span>
-<span class="sd">        hist_access_type: 'range' (fill in session, start and stop params), 'tail' (fill in n)</span>
-<span class="sd">             or 'search' (fill in pattern param).</span>
-<span class="sd">        **kwargs:</span>
-<span class="sd">            session: For a range request, the session from which to get lines. Session numbers</span>
-<span class="sd">                are positive integers; negative ones count back from the current session.</span>
-<span class="sd">            start: The first line number of a history range.</span>
-<span class="sd">            stop: The final (excluded) line number of a history range.</span>
-<span class="sd">            n: The number of lines of history to get for a tail request.</span>
-<span class="sd">            pattern: The glob-syntax pattern for a search request.</span>
+<span class="sd">            raw: If `True`, return the raw input.</span>
+<span class="sd">            output: If `True`, then return the output as well.</span>
+<span class="sd">            hist_access_type: 'range' (fill in session, start and stop params), 'tail' (fill in n)</span>
+<span class="sd">                or 'search' (fill in pattern param).</span>
+<span class="sd">            **kwargs:</span>
+<span class="sd">                session: For a range request, the session from which to get lines. Session numbers</span>
+<span class="sd">                    are positive integers; negative ones count back from the current session.</span>
+<span class="sd">                start: The first line number of a history range.</span>
+<span class="sd">                stop: The final (excluded) line number of a history range.</span>
+<span class="sd">                n: The number of lines of history to get for a tail request.</span>
+<span class="sd">                pattern: The glob-syntax pattern for a search request.</span>
 
 <span class="sd">        Returns: The ID of the message sent.</span>
 <span class="sd">        """</span>
@@ -4376,13 +4033,13 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 
 <a href="#async_kernel.messaging.base.BaseClient.iopub_subscribe" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">iopub_subscribe</span><span class="p">(</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="topic (async_kernel.messaging.base.BaseClient.iopub_subscribe(topic))" href="#async_kernel.messaging.base.BaseClient.iopub_subscribe(topic)">topic</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></span> <span class="o">=</span> <span class="sa">b</span><span class="s2">""</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="timeout (async_kernel.messaging.base.BaseClient.iopub_subscribe(timeout))" href="#async_kernel.messaging.base.BaseClient.iopub_subscribe(timeout)">timeout</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="topic (async_kernel.messaging.base.BaseClient.iopub_subscribe(topic))" href="#async_kernel.messaging.base.BaseClient.iopub_subscribe(topic)">topic</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></span> <span class="o">=</span> <span class="sa">b</span><span class="s2">""</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="timeout (async_kernel.messaging.base.BaseClient.iopub_subscribe(timeout))" href="#async_kernel.messaging.base.BaseClient.iopub_subscribe(timeout)">timeout</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">10.0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.AsyncGenerator" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.AsyncGenerator">AsyncGenerator</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            SingleAsyncQueue (async_kernel.common.SingleAsyncQueue)" href="../common/#async_kernel.common.SingleAsyncQueue">SingleAsyncQueue</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Message (async_kernel.typing.Message)" href="../typing/#async_kernel.typing.Message">Message</a></span><span class="p">]]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Open a new iopub socket and subscribe to a particular topic.</p>
+        <p>An async generator that subscribes to iopub messages.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4400,7 +4057,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.messaging.base.BaseClient.iopub_subscribe(timeout)" class="doc doc-heading doc-heading-parameter">              <b><code>timeout</code></b>
 <a href="#async_kernel.messaging.base.BaseClient.iopub_subscribe(timeout)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a> | None</code>, default:
-                  <code>1</code>
+                  <code>10.0</code>
 )
           –
           <div class="doc-md-description">
@@ -4413,12 +4070,15 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <details class="raise" open>
   <summary>Raise</summary>
   <p>TimeoutError: If a welcome message is not received in time.</p>
-</details>        <p>Usaage:
-<div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">client</span><span class="o">.</span><span class="n">iopub_subscribe</span><span class="p">()</span> <span class="k">as</span> <span class="n">queue</span><span class="p">:</span>
+</details>
+
+<details class="usage" open>
+  <summary>Usage</summary>
+  <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">with</span> <span class="n">client</span><span class="o">.</span><span class="n">iopub_subscribe</span><span class="p">()</span> <span class="k">as</span> <span class="n">queue</span><span class="p">:</span>
     <span class="k">async</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">queue</span><span class="p">:</span>
         <span class="k">pass</span>
-</code></pre></div></p>
-
+</code></pre></div>
+</details>
           
 
             <details class="mkdocstrings-source">
@@ -4451,9 +4111,9 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <span class="normal">309</span>
 <span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">iopub_subscribe</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">""</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">""</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">10.0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">SingleAsyncQueue</span><span class="p">[</span><span class="n">Message</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">"""Open a new iopub socket and subscribe to a particular topic.</span>
+<span class="w">    </span><span class="sd">"""An async generator that subscribes to iopub messages.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        topic: The topics to subscribe to.</span>
@@ -4462,12 +4122,12 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <span class="sd">    Raise:</span>
 <span class="sd">        TimeoutError: If a welcome message is not received in time.</span>
 
-<span class="sd">    Usaage:</span>
-<span class="sd">    ```python</span>
-<span class="sd">    async with client.iopub_subscribe() as queue:</span>
-<span class="sd">        async for msg in queue:</span>
-<span class="sd">            pass</span>
-<span class="sd">    ```</span>
+<span class="sd">    Usage:</span>
+<span class="sd">        ```python</span>
+<span class="sd">        async with client.iopub_subscribe() as queue:</span>
+<span class="sd">            async for msg in queue:</span>
+<span class="sd">                pass</span>
+<span class="sd">        ```</span>
 <span class="sd">    """</span>
     <span class="n">queue</span> <span class="o">=</span> <span class="n">SingleAsyncQueue</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_iopub_queues</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">topic</span><span class="p">,</span> <span class="n">queue</span><span class="p">))</span>
@@ -4551,7 +4211,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 
     <div class="doc doc-contents ">
 
-        <p>Execute code in the kernel.</p>
+        <p>Execute code.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4704,7 +4364,7 @@ When not provided, stdin is disabled.</p>
     <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
     <span class="n">subshell_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Execute code in the kernel.</span>
+<span class="w">    </span><span class="sd">"""Execute code.</span>
 
 <span class="sd">    Params:</span>
 <span class="sd">        code: A string of code in the kernel's language.</span>
@@ -4758,7 +4418,7 @@ When not provided, stdin is disabled.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Tab complete text in the kernel's namespace.</p>
+        <p>Tab complete text.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4803,7 +4463,7 @@ Default: <code>len(code)</code>.</p>
 <span class="normal">368</span>
 <span class="normal">369</span>
 <span class="normal">370</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Tab complete text in the kernel's namespace.</span>
+<span class="w">    </span><span class="sd">"""Tab complete text.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        code: The context in which completion is requested.</span>
@@ -4842,8 +4502,7 @@ Default: <code>len(code)</code>.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Get metadata information about an object in the kernel's namespace.</p>
-<p>It is up to the kernel to determine the appropriate object to inspect.</p>
+        <p>Get metadata information about an object.</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4895,12 +4554,8 @@ Can be anything between a variable name and an entire cell.</p>
 <span class="normal">381</span>
 <span class="normal">382</span>
 <span class="normal">383</span>
-<span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Get metadata information about an object in the kernel's namespace.</span>
-
-<span class="sd">    It is up to the kernel to determine the appropriate object to inspect.</span>
+<span class="normal">384</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Get metadata information about an object.</span>
 
 <span class="sd">    Params:</span>
 <span class="sd">        code: Context in which info is requested.</span>
@@ -4927,10 +4582,10 @@ Can be anything between a variable name and an entire cell.</p>
 
 <a href="#async_kernel.messaging.base.BaseClient.history" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">history</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.messaging.base.BaseClient.history(raw)">raw</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.messaging.base.BaseClient.history(output)">output</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.messaging.base.BaseClient.history(hist_access_type)">hist_access_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s2">"tail"</span><span class="p">,</span> <span class="s2">"range"</span><span class="p">,</span> <span class="s2">"search"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"range"</span><span class="p">,</span>
-    <span class="o">**</span><span class="n"><span title="async_kernel.messaging.base.BaseClient.history(**kwargs)">kwargs</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="raw (async_kernel.messaging.base.BaseClient.history(raw))" href="#async_kernel.messaging.base.BaseClient.history(raw)">raw</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="output (async_kernel.messaging.base.BaseClient.history(output))" href="#async_kernel.messaging.base.BaseClient.history(output)">output</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="hist_access_type (async_kernel.messaging.base.BaseClient.history(hist_access_type))" href="#async_kernel.messaging.base.BaseClient.history(hist_access_type)">hist_access_type</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s2">"tail"</span><span class="p">,</span> <span class="s2">"range"</span><span class="p">,</span> <span class="s2">"search"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"range"</span><span class="p">,</span>
+    <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.messaging.base.BaseClient.history(**kwargs))" href="#async_kernel.messaging.base.BaseClient.history(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
 
 
@@ -4941,26 +4596,67 @@ Can be anything between a variable name and an entire cell.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Get entries from the kernel's history list.</p>
-<p>Args:
-raw: If True, return the raw input.
-output: If True, then return the output as well.
-hist_access_type: 'range' (fill in session, start and stop params), 'tail' (fill in n)
-     or 'search' (fill in pattern param).
-**kwargs:
-    session: For a range request, the session from which to get lines. Session numbers
-        are positive integers; negative ones count back from the current session.
-    start: The first line number of a history range.
-    stop: The final (excluded) line number of a history range.
-    n: The number of lines of history to get for a tail request.
-    pattern: The glob-syntax pattern for a search request.</p>
-<p>Returns: The ID of the message sent.</p>
+        <p>Get entries from the history list.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.messaging.base.BaseClient.history(raw)" class="doc doc-heading doc-heading-parameter">              <b><code>raw</code></b>
+<a href="#async_kernel.messaging.base.BaseClient.history(raw)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>True</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If <code>True</code>, return the raw input.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.messaging.base.BaseClient.history(output)" class="doc doc-heading doc-heading-parameter">              <b><code>output</code></b>
+<a href="#async_kernel.messaging.base.BaseClient.history(output)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></code>, default:
+                  <code>False</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>If <code>True</code>, then return the output as well.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.messaging.base.BaseClient.history(hist_access_type)" class="doc doc-heading doc-heading-parameter">              <b><code>hist_access_type</code></b>
+<a href="#async_kernel.messaging.base.BaseClient.history(hist_access_type)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a>[&#39;tail&#39;, &#39;range&#39;, &#39;search&#39;]</code>, default:
+                  <code>&#39;range&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>'range' (fill in session, start and stop params), 'tail' (fill in n)
+or 'search' (fill in pattern param).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+<h4 id="async_kernel.messaging.base.BaseClient.history(**kwargs)" class="doc doc-heading doc-heading-parameter">              <b><code>**kwargs</code></b>
+<a href="#async_kernel.messaging.base.BaseClient.history(**kwargs)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></code>, default:
+                  <code>{}</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>session: For a range request, the session from which to get lines. Session numbers
+    are positive integers; negative ones count back from the current session.
+start: The first line number of a history range.
+stop: The final (excluded) line number of a history range.
+n: The number of lines of history to get for a tail request.
+pattern: The glob-syntax pattern for a search request.</p>
+          </div>
+        </li>
+    </ul>
+        <p>Returns: The ID of the message sent.</p>
 
           
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">388</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
 <span class="normal">389</span>
 <span class="normal">390</span>
 <span class="normal">391</span>
@@ -4986,29 +4682,27 @@ hist_access_type: 'range' (fill in session, start and stop params), 'tail' (fill
 <span class="normal">411</span>
 <span class="normal">412</span>
 <span class="normal">413</span>
-<span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">history</span><span class="p">(</span>
+<span class="normal">414</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">history</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">raw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">hist_access_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"tail"</span><span class="p">,</span> <span class="s2">"range"</span><span class="p">,</span> <span class="s2">"search"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"range"</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Get entries from the kernel's history list.</span>
+<span class="w">    </span><span class="sd">"""Get entries from the history list.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">    raw: If True, return the raw input.</span>
-<span class="sd">    output: If True, then return the output as well.</span>
-<span class="sd">    hist_access_type: 'range' (fill in session, start and stop params), 'tail' (fill in n)</span>
-<span class="sd">         or 'search' (fill in pattern param).</span>
-<span class="sd">    **kwargs:</span>
-<span class="sd">        session: For a range request, the session from which to get lines. Session numbers</span>
-<span class="sd">            are positive integers; negative ones count back from the current session.</span>
-<span class="sd">        start: The first line number of a history range.</span>
-<span class="sd">        stop: The final (excluded) line number of a history range.</span>
-<span class="sd">        n: The number of lines of history to get for a tail request.</span>
-<span class="sd">        pattern: The glob-syntax pattern for a search request.</span>
+<span class="sd">        raw: If `True`, return the raw input.</span>
+<span class="sd">        output: If `True`, then return the output as well.</span>
+<span class="sd">        hist_access_type: 'range' (fill in session, start and stop params), 'tail' (fill in n)</span>
+<span class="sd">            or 'search' (fill in pattern param).</span>
+<span class="sd">        **kwargs:</span>
+<span class="sd">            session: For a range request, the session from which to get lines. Session numbers</span>
+<span class="sd">                are positive integers; negative ones count back from the current session.</span>
+<span class="sd">            start: The first line number of a history range.</span>
+<span class="sd">            stop: The final (excluded) line number of a history range.</span>
+<span class="sd">            n: The number of lines of history to get for a tail request.</span>
+<span class="sd">            pattern: The glob-syntax pattern for a search request.</span>
 
 <span class="sd">    Returns: The ID of the message sent.</span>
 <span class="sd">    """</span>
@@ -5047,9 +4741,9 @@ hist_access_type: 'range' (fill in session, start and stop params), 'tail' (fill
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">kernel_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">kernel_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Request kernel info."""</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">kernel_info_request</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
@@ -5082,10 +4776,10 @@ hist_access_type: 'range' (fill in session, start and stop params), 'tail' (fill
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">comm_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">comm_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Request comm info."""</span>
     <span class="n">content</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">target_name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{</span><span class="s2">"target_name"</span><span class="p">:</span> <span class="n">target_name</span><span class="p">}</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">comm_info_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
@@ -5119,9 +4813,9 @@ hist_access_type: 'range' (fill in session, start and stop params), 'tail' (fill
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">427</span>
-<span class="normal">428</span>
-<span class="normal">429</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Ask the kernel whether some code is complete and ready to execute."""</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">is_complete_request</span><span class="p">,</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">},</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
@@ -5157,14 +4851,14 @@ it's still alive.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">431</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
 <span class="normal">432</span>
 <span class="normal">433</span>
 <span class="normal">434</span>
 <span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+<span class="normal">436</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Request an immediate kernel shutdown.</span>
 
 <span class="sd">    Upon receipt of the (empty) reply, client code can safely assume that</span>
@@ -5217,7 +4911,7 @@ it's still alive.</p>
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="#">messaging</a>
+      <a href="#messaging">Messaging</a>
   </span>
 
             <span class="doc doc-backlink-crumb">
@@ -5266,7 +4960,9 @@ it's still alive.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">441</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
 <span class="normal">442</span>
 <span class="normal">443</span>
 <span class="normal">444</span>
@@ -5278,9 +4974,7 @@ it's still alive.</p>
 <span class="normal">450</span>
 <span class="normal">451</span>
 <span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LocalClient</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">453</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LocalClient</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""A client for an interface running in the current process."""</span>
 
     <span class="n">connection</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Connection</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">Connection</span><span class="p">(</span><span class="n">session_id</span><span class="o">=</span><span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">session_id</span><span class="p">))</span>
@@ -5354,7 +5048,9 @@ it's still alive.</p>
 
     </div>
 
-</div>
+</div><p>options:
+show_root_heading: true</p>
+
 
 <div class="doc doc-object doc-module">
 
@@ -5381,14 +5077,14 @@ it's still alive.</p>
           <b><code><a class="autorefs autorefs-internal" title="            ZMQConnection (async_kernel.messaging.zmq.ZMQConnection)" href="#async_kernel.messaging.zmq.ZMQConnection">ZMQConnection</a></code></b>
           –
           <div class="doc-md-description">
-            <p>Provides the ZMQ sockets for clients to connect and communicate with the interface.</p>
+            <p>Provides the ZMQ sockets for clients to connect and communicate with the kernel interface.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
           <b><code><a class="autorefs autorefs-internal" title="            ZMQClient (async_kernel.messaging.zmq.ZMQClient)" href="#async_kernel.messaging.zmq.ZMQClient">ZMQClient</a></code></b>
           –
           <div class="doc-md-description">
-            <p>A client for an interface that provides a <a class="autorefs autorefs-internal" title="            ZMQConnection" href="#async_kernel.messaging.zmq.ZMQConnection">ZMQConnection</a>.</p>
+            <p>A client that connects to a <a class="autorefs autorefs-internal" title="            ZMQConnection" href="#async_kernel.messaging.zmq.ZMQConnection">ZMQConnection</a> using zmq sockets to communicate with a kernel interface.</p>
           </div>
         </li>
     </ul>
@@ -5426,7 +5122,7 @@ it's still alive.</p>
 
 
 
-        <p>Provides the ZMQ sockets for clients to connect and communicate with the interface.</p>
+        <p>Provides the ZMQ sockets for clients to connect and communicate with the kernel interface.</p>
 
           
 
@@ -5440,7 +5136,7 @@ it's still alive.</p>
   </span>
 
             <span class="doc doc-backlink-crumb">
-      <a href="#">messaging</a>
+      <a href="#messaging">Messaging</a>
   </span>
 
             <ul class="doc doc-backlink-list">
@@ -5563,8 +5259,9 @@ it's still alive.</p>
 <span class="normal">221</span>
 <span class="normal">222</span>
 <span class="normal">223</span>
-<span class="normal">224</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQConnection</span><span class="p">(</span><span class="n">ZMQMessage</span><span class="p">,</span> <span class="n">Connection</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">"""Provides the ZMQ sockets for clients to connect and communicate with the interface."""</span>
+<span class="normal">224</span>
+<span class="normal">225</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQConnection</span><span class="p">(</span><span class="n">ZMQMessage</span><span class="p">,</span> <span class="n">Connection</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""Provides the ZMQ sockets for clients to connect and communicate with the kernel interface."""</span>
 
     <span class="nd">@property</span>
     <span class="nd">@override</span>
@@ -5581,6 +5278,7 @@ it's still alive.</p>
         <span class="k">def</span><span class="w"> </span><span class="nf">iopub_reg_handler</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span> <span class="n">ZMQPollSocket</span><span class="p">,</span> <span class="n">flags</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">            </span><span class="sd">"""https://jupyter-client.readthedocs.io/en/stable/messaging.html#welcome-message."""</span>
             <span class="c1"># Thread: zmq_poll_thread</span>
+
             <span class="c1"># handle PUB subscribe/unsubscribe messages.</span>
             <span class="c1"># welcome_message:  https://jupyter.org/enhancement-proposals/65-jupyter-xpub/jupyter-xpub.html#replace-pub-socket-with-xpub-socket</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">()</span>
@@ -5599,7 +5297,7 @@ it's still alive.</p>
             <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bind_sockets</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">update_connections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
             <span class="n">started</span><span class="p">()</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">started</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">started</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">result</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="k">with</span> <span class="p">(</span>
                 <span class="n">zpoll</span><span class="o">.</span><span class="n">event_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sockets</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">],</span> <span class="n">partial</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">)),</span>
                 <span class="n">zpoll</span><span class="o">.</span><span class="n">event_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sockets</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">],</span> <span class="n">functools</span><span class="o">.</span><span class="n">partial</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">)),</span>
@@ -5639,9 +5337,9 @@ it's still alive.</p>
                     <span class="n">socket</span><span class="o">.</span><span class="n">curve_server</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="c1"># Bind the socket.</span>
                 <span class="n">addr</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"tcp://</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transport</span> <span class="o">==</span> <span class="s2">"tcp"</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"ipc://</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">ip</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">"</span>
+                <span class="n">socket</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"</span><span class="si">%s</span><span class="s2"> socket on port: </span><span class="si">%i</span><span class="s2">"</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_sockets</span><span class="p">[</span><span class="n">channel</span><span class="p">]</span> <span class="o">=</span> <span class="n">socket</span>
-                <span class="n">socket</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
 
         <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">zmq_poll</span><span class="o">.</span><span class="n">aexecute</span><span class="p">(</span><span class="n">bind_sockets</span><span class="p">)</span>
 
@@ -5691,17 +5389,29 @@ it's still alive.</p>
 
 
 
-        <p>A client for an interface that provides a <a class="autorefs autorefs-internal" title="            ZMQConnection" href="#async_kernel.messaging.zmq.ZMQConnection">ZMQConnection</a>.</p>
-<p>The client can be connected to an existing interface's using either:
-- <code>ZMQClient.load_connection_info</code> or,
-- <code>ZMQClient.load_connection_file</code></p>
-<p>A new interface/kernel can be started with <a class="autorefs autorefs-internal" title="            subprocess_kernel
+        <p>A client that connects to a <a class="autorefs autorefs-internal" title="            ZMQConnection" href="#async_kernel.messaging.zmq.ZMQConnection">ZMQConnection</a> using zmq sockets to communicate with a kernel interface.</p>
 
 
-  
-      async
-  " href="#async_kernel.messaging.zmq.ZMQClient.subprocess_kernel">ZMQClient.subprocess_kernel</a>.</p>
-
+<details class="usage" open>
+  <summary>Usage</summary>
+  <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="async_kernel.messaging.zmq.ZMQClient--using-a-connection-file" name="async_kernel.messaging.zmq.ZMQClient--__tabbed_1" type="radio" /><input id="async_kernel.messaging.zmq.ZMQClient--start-a-new-kernel" name="async_kernel.messaging.zmq.ZMQClient--__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="async_kernel.messaging.zmq.ZMQClient--using-a-connection-file">Using a connection file</label><label for="async_kernel.messaging.zmq.ZMQClient--start-a-new-kernel">Start a new kernel</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">client</span> <span class="o">=</span> <span class="n">ZMQClient</span><span class="p">()</span>
+<span class="n">client</span><span class="o">.</span><span class="n">load_connection_file</span><span class="p">(</span><span class="n">connection_file</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">client</span><span class="o">.</span><span class="n">start</span><span class="p">():</span>
+    <span class="k">pass</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">client</span> <span class="o">=</span> <span class="n">ZMQClient</span><span class="p">(</span><span class="n">encryption</span><span class="o">=</span><span class="s2">"curve"</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">with</span> <span class="n">client</span><span class="o">.</span><span class="n">subprocess_kernel</span><span class="p">(</span><span class="n">heartbeat_interval</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">anyio_backend</span><span class="p">):</span>
+    <span class="k">pass</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</details>
           
 
 
@@ -5732,7 +5442,7 @@ it's still alive.</p>
    (async_kernel.messaging.zmq.ZMQClient.subprocess_kernel)" href="#async_kernel.messaging.zmq.ZMQClient.subprocess_kernel">subprocess_kernel</a></code></b>
             –
             <div class="doc-md-description">
-              <p>Start a kernel interface as a subprocess.</p>
+              <p>Start a kernel interface in a subprocess.</p>
             </div>
           </li>
     </ul>
@@ -5759,8 +5469,7 @@ it's still alive.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/messaging/zmq.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">227</span>
-<span class="normal">228</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">228</span>
 <span class="normal">229</span>
 <span class="normal">230</span>
 <span class="normal">231</span>
@@ -5956,14 +5665,35 @@ it's still alive.</p>
 <span class="normal">421</span>
 <span class="normal">422</span>
 <span class="normal">423</span>
-<span class="normal">424</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQClient</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">ZMQMessage</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">"""A client for an interface that provides a [ZMQConnection][].</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQClient</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">ZMQMessage</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">"""A client that connects to a [ZMQConnection][] using zmq sockets to communicate with a kernel interface.</span>
 
-<span class="sd">    The client can be connected to an existing interface's using either:</span>
-<span class="sd">    - `ZMQClient.load_connection_info` or,</span>
-<span class="sd">    - `ZMQClient.load_connection_file`</span>
+<span class="sd">    Usage:</span>
+<span class="sd">        === "Using a connection file"</span>
+<span class="sd">            ```python</span>
+<span class="sd">            client = ZMQClient()</span>
+<span class="sd">            client.load_connection_file(connection_file)</span>
+<span class="sd">            async with client.start():</span>
+<span class="sd">                pass</span>
+<span class="sd">            ```</span>
 
-<span class="sd">    A new interface/kernel can be started with [ZMQClient.subprocess_kernel][].</span>
+<span class="sd">        === "Start a new kernel"</span>
+<span class="sd">            ```python</span>
+<span class="sd">            client = ZMQClient(encryption="curve")</span>
+<span class="sd">            async with client.subprocess_kernel(heartbeat_interval=None, backend=anyio_backend):</span>
+<span class="sd">                pass</span>
+<span class="sd">            ```</span>
 <span class="sd">    """</span>
 
     <span class="n">encryption</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Enum</span><span class="p">([</span><span class="s2">"curve"</span><span class="p">],</span> <span class="n">default_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -6038,8 +5768,8 @@ it's still alive.</p>
 <span class="w">        </span><span class="sd">"""Connect this client to the interface.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            connect_timeout: The maximum time to wait for the connection to reply with a welcome message and to configure the session.</span>
-<span class="sd">                passing `connect_timeout=0` will skip the `_establish_connection` step.</span>
+<span class="sd">            connect_timeout: The maximum time to wait for the connection to be established.</span>
+<span class="sd">                passing `connect_timeout=0` will skip establishing a connection.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell_port</span><span class="p">:</span>
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">"Connection info has not been set. Tip: consider using the method `subprocess_kernel` or `load_connection_info`."</span>
@@ -6077,7 +5807,7 @@ it's still alive.</p>
         <span class="n">shutdown_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Start a kernel interface as a subprocess."""</span>
+<span class="w">        </span><span class="sd">"""Start a kernel interface in a subprocess."""</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write_connection_file</span><span class="p">()</span>
         <span class="n">command</span> <span class="o">=</span> <span class="n">make_argv</span><span class="p">(</span><span class="n">connection_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="n">process</span><span class="p">:</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -6221,8 +5951,8 @@ it's still alive.</p>
 )
           –
           <div class="doc-md-description">
-            <p>The maximum time to wait for the connection to reply with a welcome message and to configure the session.
-passing <code>connect_timeout=0</code> will skip the <code>_establish_connection</code> step.</p>
+            <p>The maximum time to wait for the connection to be established.
+passing <code>connect_timeout=0</code> will skip establishing a connection.</p>
           </div>
         </li>
     </ul>
@@ -6231,24 +5961,24 @@ passing <code>connect_timeout=0</code> will skip the <code>_establish_connection
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">connect_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Connect this client to the interface.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        connect_timeout: The maximum time to wait for the connection to reply with a welcome message and to configure the session.</span>
-<span class="sd">            passing `connect_timeout=0` will skip the `_establish_connection` step.</span>
+<span class="sd">        connect_timeout: The maximum time to wait for the connection to be established.</span>
+<span class="sd">            passing `connect_timeout=0` will skip establishing a connection.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">shell_port</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s2">"Connection info has not been set. Tip: consider using the method `subprocess_kernel` or `load_connection_info`."</span>
@@ -6283,47 +6013,13 @@ passing <code>connect_timeout=0</code> will skip the <code>_establish_connection
 
     <div class="doc doc-contents ">
 
-        <p>Start a kernel interface as a subprocess.</p>
+        <p>Start a kernel interface in a subprocess.</p>
 
           
 
-
-  <div class="doc doc-backlinks">
-        <b class="doc doc-backlink-type">Referenced by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="#">messaging</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.messaging.zmq.ZMQClient"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ZMQClient</a>
-  </span>
-
-      </li>
-  </ul>
-
-  </div>
-
-
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">339</span>
-<span class="normal">340</span>
-<span class="normal">341</span>
-<span class="normal">342</span>
-<span class="normal">343</span>
-<span class="normal">344</span>
-<span class="normal">345</span>
-<span class="normal">346</span>
-<span class="normal">347</span>
-<span class="normal">348</span>
-<span class="normal">349</span>
-<span class="normal">350</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">350</span>
 <span class="normal">351</span>
 <span class="normal">352</span>
 <span class="normal">353</span>
@@ -6343,7 +6039,18 @@ passing <code>connect_timeout=0</code> will skip the <code>_establish_connection
 <span class="normal">367</span>
 <span class="normal">368</span>
 <span class="normal">369</span>
-<span class="normal">370</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">subprocess_kernel</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -6352,7 +6059,7 @@ passing <code>connect_timeout=0</code> will skip the <code>_establish_connection
     <span class="n">shutdown_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Start a kernel interface as a subprocess."""</span>
+<span class="w">    </span><span class="sd">"""Start a kernel interface in a subprocess."""</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">write_connection_file</span><span class="p">()</span>
     <span class="n">command</span> <span class="o">=</span> <span class="n">make_argv</span><span class="p">(</span><span class="n">connection_file</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_file</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">process</span><span class="p">:</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -6396,7 +6103,8 @@ passing <code>connect_timeout=0</code> will skip the <code>_establish_connection
 
     </div>
 
-</div>
+</div><p>options:
+show_root_heading: true</p>
 
 
 
@@ -6419,7 +6127,7 @@ passing <code>connect_timeout=0</code> will skip the <code>_establish_connection
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 17, 2026 09:33:35 UTC"><span class="timeago" datetime="2026-08-17T09:33:35+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 17, 2026 09:33:35 UTC">2026-08-17</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 4, 2026 11:42:53 UTC"><span class="timeago" datetime="2026-09-04T11:42:53+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 4, 2026 11:42:53 UTC">2026-09-04</span>
   </span>
 
     
