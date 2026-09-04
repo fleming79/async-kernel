@@ -35,13 +35,13 @@ RESOURCES: Path = Path(__file__).parent.joinpath("resources")
 CUSTOM_LAUNCHER_SEPARATOR: str = "↤"
 
 PROTOCOL_VERSION: str = "5.5"
-"The protocol that is supported by the kernel."
+"""The protocol that is supported by the kernel."""
 
 DEFAULT_LAUNCHER: str = "launch_interface"
-"An importable path to the default interface to start the kernel."
+"""An importable path to the default interface to start the kernel."""
 
 DEFAULT_COMMAND: tuple[str, ...] = (sys.executable, "-m", "async_kernel", "start")
-""
+"""The default command prefix to launch the kernel interface from the command line."""
 
 
 def make_argv(

@@ -246,7 +246,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
     """
 
     encryption = traitlets.Enum(["curve"], default_value=None, allow_none=True)
-    "The type of encryption to use."
+    """The type of encryption to use."""
 
     @override
     def write_connection_file(self, **kwargs: Any) -> None:

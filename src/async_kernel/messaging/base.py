@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from types import CoroutineType
 
 
-__all__ = ["BaseClient", "BaseMessage", "Connection", "LocalClient", "PendingMessage"]
+__all__ = ["BaseClient", "BaseMessage", "Connection", "PendingMessage"]
 
 
 def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:

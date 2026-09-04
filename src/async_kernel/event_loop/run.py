@@ -86,7 +86,7 @@ class Host(Generic[T]):
 
     _outcome: Outcome[T] | None = None
     start_guest: Callable[[], Any] = staticmethod(lambda: None)
-    "A callback to start the guest. This must be called by a subclass."
+    """A callback to start the guest. This must be called by a subclass."""
 
     def __init_subclass__(cls) -> None:
         if cls.HOST is not Hosts.custom:

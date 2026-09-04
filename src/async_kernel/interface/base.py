@@ -64,7 +64,7 @@ class DictValueLiteralEval(traitlets.Dict):
 
 
 class Interface(StartStopTask, Application, Generic[T_shell_co]):
-    """The base class for kernel interface (singleton).
+    """The base kernel interface (singleton).
 
     The interface creates the kernel and provides external communication. It is also
     the parent object for all objects that subclass from `HasInterface`. Configurable

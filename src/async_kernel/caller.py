@@ -726,8 +726,8 @@ class Caller:
     def get(self, **kwargs: Unpack[CallerCreateOptions]) -> Self:
         """Get an existing caller by name or create a new one.
 
-        If 'name' is provided and a child with that name exists, the child will be returned,
-        otherwise a new caller is created.
+        If `name` is provided and a child with that name exists, the child will be returned,
+        otherwise a new caller is returned.
 
         Args:
             **kwargs: Options for creating or retrieving a caller.

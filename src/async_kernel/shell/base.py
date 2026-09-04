@@ -36,33 +36,32 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
     """
 
     kernel: Fixed[Self, Kernel[T_interface_co, Self]] = Fixed(lambda c: c["owner"].parent.kernel)  # pyright: ignore[reportAttributeAccessIssue]
-    ""
+    """"""
 
     pending_manager = Fixed(ShellPendingManager)
-    """
-    Provides the `subshell_id` for the shell which add all consenting pending created in
+    """Provides the `subshell_id` for the shell which add all consenting pending created in
     the context of the shell.
     """
 
     user_ns_hidden: Fixed[Self, dict] = Fixed(dict)
-    ""
+    """"""
 
     timeout = traitlets.CFloat(0.0).tag(config=True)
-    "A timeout in seconds to complete execute requests."
+    """A timeout in seconds to complete execute requests."""
 
     stop_on_error_time_offset = traitlets.Float(0.0).tag(config=True)
-    "An offset to add to the cancellation time to catch late arriving execute requests."
+    """An offset to add to the cancellation time to catch late arriving execute requests."""
 
     protected = traitlets.Bool(read_only=True)
-    "Protect from accidental deletion."
+    """Protect from accidental deletion."""
 
     is_mainshell = traitlets.Bool(False, read_only=True)
-    "Set by the mainshell to indicate it is the main shell."
+    """Set by the mainshell to indicate it is the main shell."""
 
     subshell_id: Fixed[Self, str | None] = Fixed(
         lambda c: None if c["owner"].is_mainshell else c["owner"].pending_manager.id
     )
-    "Used to identify the subshell."
+    """Used to identify the subshell."""
 
     _execution_count = 0
     _resetting = False
@@ -216,15 +215,12 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         raise NotImplementedError
 
     async def do_complete(self, code: str, cursor_pos: int | None = None) -> Content:
-        ""
         raise NotImplementedError
 
     async def is_complete(self, code: str) -> Content:
-        ""
         raise NotImplementedError
 
     async def do_inspect(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
-        ""
         raise NotImplementedError
 
     async def do_history(
@@ -241,5 +237,4 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         unique: bool = False,
         **_ignored,
     ) -> Content:
-        ""
         raise NotImplementedError
