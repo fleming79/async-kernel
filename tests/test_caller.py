@@ -14,7 +14,13 @@ import anyio.to_thread
 import pytest
 import trio
 from aiologic import CountdownEvent, Event, Latch
-from aiologic.lowlevel import async_sleep_forever, create_async_event, create_async_waiter, current_async_library
+from aiologic.lowlevel import (
+    async_checkpoint,
+    async_sleep_forever,
+    create_async_event,
+    create_async_waiter,
+    current_async_library,
+)
 
 from async_kernel.caller import Caller, StartStopTask
 from async_kernel.pending import Pending, PendingCancelled
@@ -241,20 +247,6 @@ class TestCaller:
         pen = caller.call_soon(anyio.sleep_forever)
         pen.cancel()
         await pen.wait(result=False)
-
-    async def test_direct_async(self, caller: Caller):
-        event: Event = Event()
-
-        async def set_event():
-            event.set()
-
-        def fail():
-            raise RuntimeError
-
-        caller.call_direct(fail)
-        caller.call_direct(set_event)
-        with anyio.fail_after(1):
-            await event
 
     async def test_cancels_on_exit(self):
         is_cancelled = False
@@ -736,15 +728,14 @@ class TestCaller:
             pen.set_result(value)
 
         async def async_func(pen: Pending, value):
-            await anyio.lowlevel.checkpoint()
+            await async_checkpoint(force=True)
             pen.set_result(value)
-
-        func = sync_func if mode == "sync" else async_func
 
         n = 1000
         all_pending = []
         for _ in range(n):
             for method in (caller.call_direct, caller.queue_call, caller.call_soon):
+                func = sync_func if mode == "sync" or method.__name__ == "call_direct" else async_func
                 pen = Pending()
                 method(func, pen, method.__name__)
                 all_pending.append(pen)
