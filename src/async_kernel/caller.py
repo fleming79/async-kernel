@@ -620,7 +620,7 @@ class Caller:
                         try:
                             item[0](*item[1], **item[2])
                         except Exception as e:
-                            self.log.exception("Direct call failed", exc_info=e)
+                            self.log.exception("Direct call failed func:%s args:%s kwargs:%s", *item, exc_info=e)
                     del item
 
     @staticmethod

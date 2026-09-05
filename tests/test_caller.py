@@ -151,10 +151,20 @@ class TestCaller:
             caller.stop()
         assert caller.stopped.done()
 
-    async def test_call_returns_result(self, caller: Caller) -> None:
+    async def test_call_direct(self, caller: Caller) -> None:
         pen = Pending()
-        caller.call_direct(lambda: pen)
-        assert await caller.call_soon(lambda: pen) is pen
+        caller.call_direct(lambda: pen.set_result(1))
+        assert await pen == 1
+
+    async def test_call_direct_logs_exception(self, caller: Caller, mocker) -> None:
+        def f():
+            ready.wake()
+            raise RuntimeError
+
+        caller.call_direct(f)
+        log = mocker.patch.object(caller.log, "exception")
+        await (ready := (create_async_waiter()))
+        assert log.call_args[0][0] == "Direct call failed func:%s args:%s kwargs:%s"
 
     async def test_repr_caller_result(self, caller):
         async def test_func(a, b, c):
