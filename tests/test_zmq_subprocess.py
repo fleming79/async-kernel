@@ -79,7 +79,7 @@ async def test_interrupt_request(
     pen_timeout= get_ipython().kernel.caller.call_soon(lambda: [print('started'), time.sleep({utils.TIMEOUT * 2})])
     await pen_timeout
     """
-    async with client.iopub_subscribe() as queue:
+    async with client.iopub_subscribe(timeout=utils.TIMEOUT) as queue:
         reader = aiter(queue)
         pen = client.execute(code)
         await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_stream, text="started\n")

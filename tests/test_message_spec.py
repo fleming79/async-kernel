@@ -27,7 +27,7 @@ async def test_execute(client: ClientType, kernel: Kernel):
 @pytest.mark.parametrize("mode", ["normal", "suppress"])
 async def test_execute_suppress(client: ClientType, kernel: Kernel, mode: Literal["normal", "suppress"]):
 
-    async with client.iopub_subscribe() as queue:
+    async with client.iopub_subscribe(timeout=utils.TIMEOUT) as queue:
         reader = aiter(queue)
         await client.execute("123" if mode == "normal" else "123;")
         await utils.read_until_msg_type(reader, MsgType.iopub_execute_input)
@@ -50,7 +50,7 @@ async def test_execute_silent(client: ClientType, kernel: Kernel):
 
 async def test_execute_error(client: ClientType):
 
-    async with client.iopub_subscribe() as queue:
+    async with client.iopub_subscribe(timeout=utils.TIMEOUT) as queue:
         reply = await client.execute("1/0")
         assert reply["content"]["status"] == "error"
         assert reply["content"].get("ename") == "ZeroDivisionError"
@@ -228,7 +228,7 @@ async def test_history_search(client: ClientType):
 
 
 async def test_stream(client: ClientType):
-    async with client.iopub_subscribe() as queue:
+    async with client.iopub_subscribe(timeout=utils.TIMEOUT) as queue:
         await client.execute("print('hi')")
         reader = aiter(queue)
         await utils.read_until_msg_type(reader, MsgType.iopub_stream, text="hi\n")
@@ -238,7 +238,7 @@ async def test_stream(client: ClientType):
 async def test_displayhook(kernel: Kernel, client: ClientType, clear: bool):
 
     #  Test the displayhook is set builtin_mod.__dict__["display"] = display
-    async with client.iopub_subscribe() as queue:
+    async with client.iopub_subscribe(timeout=utils.TIMEOUT) as queue:
         await client.execute(f"display(1, clear={clear})")
         reader = aiter(queue)
         await utils.read_until_msg_type(reader, MsgType.iopub_execute_input)
@@ -249,7 +249,7 @@ async def test_displayhook(kernel: Kernel, client: ClientType, clear: bool):
 
 async def test_rich_display_data(kernel: Kernel, client: ClientType):
 
-    async with client.iopub_subscribe() as queue:
+    async with client.iopub_subscribe(timeout=utils.TIMEOUT) as queue:
         reader = aiter(queue)
         await client.execute("1 + 1")
         await utils.read_until_msg_type(reader, MsgType.iopub_execute_input)

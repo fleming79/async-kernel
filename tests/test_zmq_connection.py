@@ -32,7 +32,7 @@ async def test_execute_request_success(client: ZMQClient):
 
 async def test_simple_print(kernel: Kernel, client: ZMQClient):
     """Simple print statement in kernel."""
-    async with client.iopub_subscribe() as queue:
+    async with client.iopub_subscribe(timeout=utils.TIMEOUT) as queue:
         reader = aiter(queue)
         await client.execute("print('🌈')")
         msg = await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_stream)
@@ -42,7 +42,7 @@ async def test_simple_print(kernel: Kernel, client: ZMQClient):
 
 async def test_print_non_caller_thread(kernel: Kernel, client: ZMQClient):
 
-    async with client.iopub_subscribe() as queue:
+    async with client.iopub_subscribe(timeout=utils.TIMEOUT) as queue:
         t = threading.Thread(target=print, args=["-non_caller_thread-"])
         t.start()
         reader = aiter(queue)
@@ -73,7 +73,7 @@ async def test_interrupt_request_not_blocked(client: ZMQClient, kernel: Kernel):
 async def test_magic(client: ZMQClient, code: str, kernel: Kernel, monkeypatch):
 
     assert code
-    async with client.iopub_subscribe() as queue:
+    async with client.iopub_subscribe(timeout=utils.TIMEOUT) as queue:
         reader = aiter(queue)
         await client.execute(code)
         await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_execute_input)
@@ -99,7 +99,7 @@ async def test_magic(client: ZMQClient, code: str, kernel: Kernel, monkeypatch):
 async def test_magic_async(client: ZMQClient, code: str, kernel: Kernel, monkeypatch):
 
     assert code
-    async with client.iopub_subscribe() as queue:
+    async with client.iopub_subscribe(timeout=utils.TIMEOUT) as queue:
         reader = aiter(queue)
         await client.execute(code)
         await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_execute_input)
@@ -198,9 +198,7 @@ async def test_iopub_subscribe_timeout(kernel: Kernel, mocker):
     assert isinstance(connection, ZMQConnection)
     client = ZMQClient()
     client.load_connection_info(connection.get_connection_info())
-    async with client.start():
-        async with client.iopub_subscribe():
-            pass
+    async with client.start(connect_timeout=utils.TIMEOUT):
         mocker.patch.object(connection.session, "send")
         with pytest.raises(TimeoutError, match="Welcome message not received"):
             async with client.iopub_subscribe(timeout=0.001):

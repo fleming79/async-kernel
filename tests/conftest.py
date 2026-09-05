@@ -12,6 +12,7 @@ from async_kernel.interface import Interface
 from async_kernel.messaging import LocalClient
 from async_kernel.messaging.zmq import ZMQClient, ZMQConnection
 from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MessageProtocol, MsgHeader, MsgType
+from tests import utils
 
 if TYPE_CHECKING:
     import pathlib
@@ -64,7 +65,7 @@ async def client(
             assert isinstance(connection, ZMQConnection)
             client = ZMQClient()
             client.load_connection_info(connection.get_connection_info())
-            async with client.start():
+            async with client.start(connect_timeout=utils.TIMEOUT):
                 yield client
     else:
         async with Interface().start(), LocalClient().start() as client:

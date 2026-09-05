@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
 
 LAUNCHED_BY_DEBUGPY = async_kernel.utils.LAUNCHED_BY_DEBUGPY
-TIMEOUT = 10 if not async_kernel.utils.LAUNCHED_BY_DEBUGPY else 1e6
+TIMEOUT: float = 10.0 if not async_kernel.utils.LAUNCHED_BY_DEBUGPY else 1e6
 MATPLOTLIB_INLINE_BACKEND = "module://matplotlib_inline.backend_inline"
 
 CI = bool(os.environ.get("CI", "False"))

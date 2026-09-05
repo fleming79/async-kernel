@@ -10,6 +10,7 @@ from async_kernel.messaging import LocalClient
 from async_kernel.messaging.base import BaseClient, Connection
 from async_kernel.messaging.zmq import ZMQClient, ZMQConnection
 from async_kernel.typing import Channel, MsgType
+from tests import utils
 
 if TYPE_CHECKING:
     from async_kernel import Kernel
@@ -48,14 +49,14 @@ class TestZMQConnection:
 
         async with connection.start():
             client.load_connection_info(connection.get_connection_info())
-            async with client.start():
+            async with client.start(connect_timeout=utils.TIMEOUT):
                 reply = await client.kernel_info()
                 assert reply
 
     async def test_iopub_subscribe(self, kernel: Kernel):
 
         async def f(ready):
-            async with client.iopub_subscribe():
+            async with client.iopub_subscribe(timeout=utils.TIMEOUT):
                 ready()
                 await create_async_waiter()
 
