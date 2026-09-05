@@ -259,7 +259,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
             self.encryption = "curve"
         return super().write_connection_file(**kwargs)
 
-    async def _connect_socket(self, channel: Channel, /) -> ZMQPollSocket:
+    async def _connect_socket(self, channel: Channel, /, topic: bytes | None = None) -> ZMQPollSocket:
         """Create, configure and connect a socket."""
         port = int(getattr(self, f"{channel}_port"))
         assert port
@@ -293,6 +293,8 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
             self.log.debug("%s socket connected to %s", channel, addr)
             if channel not in [Channel.iopub, Channel.heartbeat]:
                 self._sockets[channel] = socket
+            if topic is not None:
+                socket.subscribe(topic)
             return socket
 
         return await self.zmq_poll.aexecute(open_socket)
@@ -421,7 +423,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
             queue.append(msg)
 
         queue, scope, caller, cancel_msg = (SingleAsyncQueue(), anyio.CancelScope(), Caller(), "")
-        iopub = await self._connect_socket(Channel.iopub)
+        iopub = await self._connect_socket(Channel.iopub, topic=topic)
 
         def canceller(msg: str) -> None:
             nonlocal cancel_msg
@@ -429,13 +431,14 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
             caller.call_direct(scope.cancel, cancel_msg)
 
         with iopub, scope:
-            iopub.subscribe(topic)
             if timeout is not None:
                 ready = create_async_waiter()
                 with self.zmq_poll.event_handler(iopub, lambda _, __: None, canceller=canceller, count=(1, ready.wake)):
+                    self.log.debug("Waiting for iopub welcome message.")
                     if not await ready.with_(timeout=timeout):
                         msg = f"Welcome message not received after {timeout:0.1f}s!"
                         raise TimeoutError(msg)
+                    self.log.debug("Welcome message received.")
             with self.zmq_poll.event_handler(iopub, forward_messages, canceller=canceller):
                 yield queue
         if cancel_msg:

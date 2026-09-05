@@ -236,7 +236,7 @@ async def test_header_mode(client: ClientType, mode: RunMode):
 {mode}
 print("{mode.name}")
 """
-    async with client.iopub_subscribe() as queue:
+    async with client.iopub_subscribe(timeout=utils.TIMEOUT) as queue:
         reply = await client.execute(code)
         assert reply["content"]["status"] == "ok"
         async for msg in queue:
@@ -357,7 +357,7 @@ async def test_subshell(client: ClientType, kernel: Kernel):
 
 
 async def test_page(client: ClientType, kernel: Kernel):
-    async with client.iopub_subscribe() as queue:
+    async with client.iopub_subscribe(timeout=utils.TIMEOUT) as queue:
         reader = aiter(queue)
         await client.execute("?")
         await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_status, execution_state="busy")
