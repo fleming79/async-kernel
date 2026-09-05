@@ -7,15 +7,15 @@ import pytest
 import zmq
 from aiologic.lowlevel import create_async_waiter
 
-from async_kernel import Pending
+from async_kernel import Caller, Pending
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import Interface
+from async_kernel.messaging.zmq import ZMQClient, ZMQConnection
 from async_kernel.typing import Channel, MsgType
 from tests import utils
 
 if TYPE_CHECKING:
     from async_kernel import Kernel
-    from async_kernel.messaging.zmq import ZMQClient
     from async_kernel.shell import IPShell
 
 
@@ -35,9 +35,7 @@ async def test_simple_print(kernel: Kernel, client: ZMQClient):
     async with client.iopub_subscribe() as queue:
         reader = aiter(queue)
         await client.execute("print('🌈')")
-        await anext(reader)
-        await anext(reader)
-        msg = await anext(reader)
+        msg = await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_stream)
         assert msg["content"]["text"] == "🌈\n"
         assert msg["header"]["msg_type"] == MsgType.iopub_stream
 
@@ -47,9 +45,8 @@ async def test_print_non_caller_thread(kernel: Kernel, client: ZMQClient):
     async with client.iopub_subscribe() as queue:
         t = threading.Thread(target=print, args=["-non_caller_thread-"])
         t.start()
-        async for msg in queue:
-            assert msg["content"]["text"] == "-non_caller_thread-\n"
-            break
+        reader = aiter(queue)
+        await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_stream)
         t.join()
 
 
@@ -177,3 +174,35 @@ async def test_iopub_welcome(topic: str, client: ZMQClient, connection_name: str
         assert msg
         assert msg["msg_type"] == "iopub_welcome"
         assert msg["content"]["subscription"] == topic
+
+
+async def test_iopub_subscribe(kernel: Kernel, client: ZMQClient):
+
+    async def f():
+        async with client2.iopub_subscribe() as queue:
+            ready.wake()
+            async for _ in queue:
+                pass
+
+    client2 = ZMQClient()
+    client2.load_connection_info(client.get_connection_info())
+    async with client2.start():
+        pen = Caller().to_thread(f)
+        await (ready := create_async_waiter())
+
+    with pytest.raises(RuntimeError, match="Scope cancelled"):
+        await pen
+
+
+async def test_iopub_subscribe_timeout(kernel: Kernel, mocker):
+    connection = next(iter(kernel.parent.connections))
+    assert isinstance(connection, ZMQConnection)
+    client = ZMQClient()
+    client.load_connection_info(connection.get_connection_info())
+    async with client.start():
+        async with client.iopub_subscribe():
+            pass
+        mocker.patch.object(connection.session, "send")
+        with pytest.raises(TimeoutError, match="Welcome message not received"):
+            async with client.iopub_subscribe(timeout=0.001):
+                pass

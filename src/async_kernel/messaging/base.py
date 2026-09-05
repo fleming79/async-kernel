@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, Generic, Literal, Self, final
 from uuid import uuid4
 
+import anyio
 from traitlets import traitlets
 from traitlets.config import LoggingConfigurable
 from typing_extensions import override
@@ -289,7 +290,7 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
 
         Args:
             topic: The topics to subscribe to.
-            timeout: The maximum time to wait for a welcome message.
+            timeout: The maximum time to wait for the connection to be established.
 
         Raise:
             TimeoutError: If a welcome message is not received in time.
@@ -301,12 +302,24 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
                     pass
             ```
         """
-        queue = SingleAsyncQueue()
+        queue, caller, scope, cancel_msg = SingleAsyncQueue(), Caller(), anyio.CancelScope(), ""
+
+        def canceller(_) -> None:
+            nonlocal cancel_msg
+            queue.stop()
+            cancel_msg = "Scope cancelled because the client is stopping"
+            caller.call_direct(scope.cancel, "stopping")
+
         self._iopub_queues.append((topic, queue))
+        self.stopping.add_done_callback(canceller)
         try:
-            yield queue
+            with scope:
+                yield queue
+            if cancel_msg:
+                raise RuntimeError(cancel_msg)
         finally:
             self._iopub_queues.remove((topic, queue))
+            self.stopping.remove_done_callback(canceller)
             queue.stop()
 
     # Methods to send specific messages on channels (only relevant to execute). All other message types are decided by the kernel.
