@@ -2969,9 +2969,9 @@ await demo()</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-          139944552026240                   asyncio  MainThread                2    🔐    
-          139944508995264 139944552026240   asyncio  Control                        🔐    
-current → 139944194471616 139944552026240   asyncio  async-kernel worker                 
+          139864726302848                   asyncio  MainThread                2    🔐    
+          139864683460288 139864726302848   asyncio  Control                        🔐    
+current → 139864384202432 139864726302848   asyncio  async-kernel worker                 
 </pre>
 </div>
 </div>
@@ -3026,10 +3026,10 @@ current → 139944194471616 139944552026240   asyncio  async-kernel worker
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-          139944552026240                   asyncio  MainThread                3    🔐    
-          139944508995264 139944552026240   asyncio  Control                        🔐    
-          139944194471616 139944552026240   asyncio  async-kernel worker                 
-current → 139944177690304 139944552026240   asyncio  My thread                           
+          139864726302848                   asyncio  MainThread                3    🔐    
+          139864683460288 139864726302848   asyncio  Control                        🔐    
+          139864384202432 139864726302848   asyncio  async-kernel worker                 
+current → 139864367421120 139864726302848   asyncio  My thread                           
 </pre>
 </div>
 </div>
@@ -3094,10 +3094,10 @@ current → 139944177690304 139944552026240   asyncio  My thread
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-          139944552026240                   asyncio  MainThread                3    🔐    
-          139944508995264 139944552026240   asyncio  Control                        🔐    
-current → 139944194471616 139944552026240   asyncio  async-kernel worker                 
-          139944177690304 139944552026240   asyncio  My thread                           
+          139864726302848                   asyncio  MainThread                3    🔐    
+          139864683460288 139864726302848   asyncio  Control                        🔐    
+current → 139864384202432 139864726302848   asyncio  async-kernel worker                 
+          139864367421120 139864726302848   asyncio  My thread                           
 </pre>
 </div>
 </div>
@@ -3152,11 +3152,11 @@ current → 139944194471616 139944552026240   asyncio  async-kernel worker
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-          139944552026240                   asyncio  MainThread                4    🔐    
-          139944508995264 139944552026240   asyncio  Control                        🔐    
-          139944194471616 139944552026240   asyncio  async-kernel worker                 
-          139944177690304 139944552026240   asyncio  My thread                           
-current → 139944160908992 139944552026240   asyncio  My executor                         
+          139864726302848                   asyncio  MainThread                4    🔐    
+          139864683460288 139864726302848   asyncio  Control                        🔐    
+          139864384202432 139864726302848   asyncio  async-kernel worker                 
+          139864367421120 139864726302848   asyncio  My thread                           
+current → 139864133596864 139864726302848   asyncio  My executor                         
 </pre>
 </div>
 </div>
@@ -3219,12 +3219,12 @@ await trio.sleep(0)</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-          139944552026240                   asyncio  MainThread                5    🔐    
-          139944508995264 139944552026240   asyncio  Control                        🔐    
-          139944194471616 139944552026240   asyncio  async-kernel worker                 
-          139944177690304 139944552026240   asyncio  My thread                           
-          139944160908992 139944552026240   asyncio  My executor                         
-current → 139943858927296 139944552026240     trio   My trio executor                    
+          139864726302848                   asyncio  MainThread                5    🔐    
+          139864683460288 139864726302848   asyncio  Control                        🔐    
+          139864384202432 139864726302848   asyncio  async-kernel worker                 
+          139864367421120 139864726302848   asyncio  My thread                           
+          139864133596864 139864726302848   asyncio  My executor                         
+current → 139864116815552 139864726302848     trio   My trio executor                    
 </pre>
 </div>
 </div>
@@ -3371,12 +3371,12 @@ await trio.sleep(0)</div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-current → 139944552026240                   asyncio  MainThread                5    🔐    
-          139944508995264 139944552026240   asyncio  Control                        🔐    
-          139944194471616 139944552026240   asyncio  async-kernel worker                 
-          139944177690304 139944552026240   asyncio  My thread                           
-          139944160908992 139944552026240   asyncio  My executor                         
-          139943858927296 139944552026240     trio   My trio executor                    
+current → 139864726302848                   asyncio  MainThread                5    🔐    
+          139864683460288 139864726302848   asyncio  Control                        🔐    
+          139864384202432 139864726302848   asyncio  async-kernel worker                 
+          139864367421120 139864726302848   asyncio  My thread                           
+          139864133596864 139864726302848   asyncio  My executor                         
+          139864116815552 139864726302848     trio   My trio executor                    
 </pre>
 </div>
 </div>
@@ -3395,12 +3395,12 @@ current → 139944552026240                   asyncio  MainThread               
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
 <pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-current → 139944552026240                   asyncio  MainThread                5    🔐    
-          139944508995264 139944552026240   asyncio  Control                        🔐    
-          139944194471616 139944552026240   asyncio  async-kernel worker                 
-          139944177690304 139944552026240   asyncio  My thread                           
-          139944160908992 139944552026240   asyncio  My executor                         
-          139943858927296 139944552026240     trio   My trio executor                    
+current → 139864726302848                   asyncio  MainThread                5    🔐    
+          139864683460288 139864726302848   asyncio  Control                        🔐    
+          139864384202432 139864726302848   asyncio  async-kernel worker                 
+          139864367421120 139864726302848   asyncio  My thread                           
+          139864133596864 139864726302848   asyncio  My executor                         
+          139864116815552 139864726302848     trio   My trio executor                    
 </pre>
 </div>
 </div>
