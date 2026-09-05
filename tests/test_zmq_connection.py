@@ -179,10 +179,9 @@ async def test_iopub_welcome(topic: str, client: ZMQClient, connection_name: str
 async def test_iopub_subscribe(kernel: Kernel, client: ZMQClient):
 
     async def f():
-        async with client2.iopub_subscribe() as queue:
+        async with client2.iopub_subscribe():
             ready.wake()
-            async for _ in queue:
-                pass
+            await create_async_waiter()
 
     client2 = ZMQClient()
     client2.load_connection_info(client.get_connection_info())

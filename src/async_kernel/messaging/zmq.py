@@ -425,7 +425,6 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
 
         def canceller(msg: str) -> None:
             nonlocal cancel_msg
-            queue.stop()
             cancel_msg = f"Scope cancelled {msg=}"
             caller.call_direct(scope.cancel, cancel_msg)
 
