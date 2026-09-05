@@ -502,7 +502,7 @@ class Pending(Awaitable[T]):
                     if not self._done:
                         e = TimeoutError
                     del done, wait_, waiter
-                except AttributeError:  # pragma: no cover
+                except AttributeError:
                     # _done_callbacks was deleted meaning _done will be set soon.
                     wait_.close()
                     while not self._done:

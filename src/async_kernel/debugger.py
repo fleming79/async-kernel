@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import os
 import re
 import sys
@@ -504,11 +505,12 @@ class Debugger(HasInterface, LoggingConfigurable):
         # or only the frames from the notebook.
         # We want to remove all the frames from async_kernel when they are present.
 
-        sf_list = reply["body"]["stackFrames"]
-        module_idx = len(sf_list) - next(
-            i for i, v in enumerate(reversed(sf_list), 1) if v["name"] == "<module>" and i != 1
-        )
-        reply["body"]["stackFrames"] = reply["body"]["stackFrames"][: module_idx + 1]
+        with contextlib.suppress(StopIteration):
+            sf_list = reply["body"]["stackFrames"]
+            module_idx = len(sf_list) - next(
+                i for i, v in enumerate(reversed(sf_list), 1) if v["name"] == "<module>" and i != 1
+            )
+            reply["body"]["stackFrames"] = reply["body"]["stackFrames"][: module_idx + 1]
         return reply
 
     async def do_variables(self, msg: DebugMessage, /) -> dict[str, Any]:

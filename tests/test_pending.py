@@ -24,6 +24,8 @@ from async_kernel.pending import (
 )
 from async_kernel.typing import Backend
 
+# pyright: reportPrivateUsage=false
+
 
 @pytest.fixture(params=Backend, scope="module")
 def anyio_backend(request):
@@ -143,7 +145,7 @@ class TestPending:
         pen.add_done_callback(raise_keyboard_interrupt)
         pen.add_done_callback(lambda _: event_after.set())
         with pytest.raises(KeyboardInterrupt):
-            pen._set_done(False, None)  # pyright: ignore[reportPrivateUsage]
+            pen._set_done(False, None)
         assert event_after
 
     async def test_wait_shield(self, caller: Caller):
@@ -258,13 +260,13 @@ class TestPending:
             return r, id_
 
         r, id_ = isolated()
-        assert id_ in Pending._metadata_mappings  # pyright: ignore[reportPrivateUsage]
+        assert id_ in Pending._metadata_mappings
         while not collected:
             gc.collect()
             await anyio.lowlevel.checkpoint()
         assert r() is None, f"References found {gc.get_referrers(r())}"
         assert ok
-        assert id_ not in Pending._metadata_mappings  # pyright: ignore[reportPrivateUsage]
+        assert id_ not in Pending._metadata_mappings
 
     @pytest.mark.parametrize("result", [True, False])
     async def test_wait_sync(self, caller: Caller, result: bool, anyio_backend: Backend):
@@ -305,6 +307,18 @@ class TestPending:
                     wait_sync = not wait_sync
                 else:
                     caller.call_soon(f, i)
+
+    async def test_pending_set_wait_race(self, caller: Caller) -> None:
+        # Simulate a threading set/wait race condition.
+        pen = Pending()
+        del pen._done_callbacks
+
+        async def finish() -> None:
+            pen._result = "okay"
+            pen._done = True
+
+        caller.call_soon(finish)
+        assert await pen == "okay"
 
 
 class TestPendingManagerTest:
@@ -372,7 +386,7 @@ class TestPendingManagerTest:
         class PendingManagerTestSubclass(PendingManagerTest):
             pass
 
-        assert PendingManagerTestSubclass in PendingTracker._subclasses  # pyright: ignore[reportPrivateUsage]
+        assert PendingManagerTestSubclass in PendingTracker._subclasses
         pm2 = PendingManagerTestSubclass()
         assert PendingManagerTestSubclass.current() is None
         pm2_token = pm2.activate()
@@ -405,9 +419,9 @@ class TestPendingGroup:
             assert pm is PendingGroup.current()
             pen1 = caller.call_soon(lambda: 1)
             assert pen1 in pm.pending
-            assert not pm._all_done  # pyright: ignore[reportPrivateUsage]
+            assert not pm._all_done
         assert pen1 not in pm.pending
-        assert pm._all_done  # pyright: ignore[reportPrivateUsage]
+        assert pm._all_done
 
     async def test_async_reenter(self, caller: Caller) -> None:
         assert PendingGroup.current() is None
@@ -537,10 +551,10 @@ class TestPendingGroup:
                 pen_pm = Pending(None, PendingManagerTest)
                 assert pen_pm in pm.pending
                 assert pen_pm not in pg.pending
-                pg._pending.clear()  # pyright: ignore[reportPrivateUsage]
+                pg._pending.clear()
 
         finally:
-            pm._pending.clear()  # pyright: ignore[reportPrivateUsage]
+            pm._pending.clear()
             pm.deactivate(token)
 
     async def test_propagation(self, caller: Caller):
