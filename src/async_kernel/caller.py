@@ -32,12 +32,6 @@ from async_kernel.event_loop.run import Host, get_start_guest_run
 from async_kernel.pending import Pending, PendingGroup, PendingManager, PendingTracker, ProtectedPending
 from async_kernel.typing import Backend, CallerCreateOptions, CallerState, Hosts, NoValue, P, RunSettings, T
 
-with contextlib.suppress(ImportError):
-    # Monkey patch sniffio.current_async_library` with aiologic's version which does a better job.
-    import sniffio
-
-    sniffio.current_async_library = current_async_library
-
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from types import CoroutineType
