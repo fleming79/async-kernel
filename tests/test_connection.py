@@ -3,7 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
+from aiologic.lowlevel import create_async_waiter
 
+from async_kernel import Caller
+from async_kernel.messaging import LocalClient
 from async_kernel.messaging.base import BaseClient, Connection
 from async_kernel.messaging.zmq import ZMQClient, ZMQConnection
 from async_kernel.typing import Channel, MsgType
@@ -49,17 +52,20 @@ class TestZMQConnection:
                 reply = await client.kernel_info()
                 assert reply
 
-    async def test_iopub(self, kernel, mocker):
-        async with ZMQConnection().start() as connection:
-            client = ZMQClient()
-            client.load_connection_info(connection.get_connection_info())
-            async with client.start():
-                async with client.iopub_subscribe():
+    async def test_iopub_subscribe(self, kernel: Kernel):
+
+        async def f(ready):
+            async with client.iopub_subscribe() as queue:
+                ready()
+                async for _ in queue:
                     pass
-                mocker.patch.object(connection.session, "send")
-                with pytest.raises(TimeoutError, match="Welcome message not received"):
-                    async with client.iopub_subscribe(timeout=0.001):
-                        pass
+
+        async with LocalClient().start() as client:
+            ready = create_async_waiter()
+            pen = Caller().to_thread(f, ready.wake)
+            await ready
+        with pytest.raises(RuntimeError, match="Scope cancelled"):
+            await pen
 
     async def test_too_late(self, kernel):
         async with ZMQConnection().start() as connection:

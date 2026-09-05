@@ -15,16 +15,17 @@ from typing import TYPE_CHECKING, Any, Generic, Never, Self
 import anyio
 import jupyter_client.session
 import zmq
-from aiologic.lowlevel import create_async_event, create_async_waiter
+from aiologic.lowlevel import create_async_waiter
 from jupyter_client.connect import ConnectionFileMixin
 from traitlets import traitlets
 from traitlets.config import Config
 from typing_extensions import override
 
+from async_kernel import Caller
 from async_kernel.common import Fixed, MethodNotSupported, SingleAsyncQueue
 from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import Interface
-from async_kernel.kernelspec import make_argv
+from async_kernel.kernelspec import PROTOCOL_VERSION, make_argv
 from async_kernel.messaging.base import BaseClient, BaseMessage, Connection
 from async_kernel.typing import BuffersType, Channel, Message, MsgHeader, MsgType, T, T_interface_co
 
@@ -37,6 +38,8 @@ if TYPE_CHECKING:
 
 
 __all__ = ["ZMQClient", "ZMQConnection"]
+
+jupyter_client.session.protocol_version = PROTOCOL_VERSION  # pyright: ignore[reportPrivateImportUsage]
 
 
 class Session(jupyter_client.session.Session):
@@ -159,8 +162,8 @@ class ZMQConnection(ZMQMessage, Connection[T_interface_co], Generic[T_interface_
             msg = socket.recv()
             if msg[0] == 1:
                 ident = msg[1:]
-                msg = self.msg(MsgType.iopub_welcome, {"subscription": ident.decode()}, Channel.iopub)
-                self.session.send(socket, msg, ident=[ident])  # pyright: ignore[reportArgumentType]
+                msg_ = self.msg(MsgType.iopub_welcome, {"subscription": ident.decode()}, Channel.iopub)
+                self.session.send(socket, msg_, ident=[ident])  # pyright: ignore[reportArgumentType]
 
         def handler(sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg) -> None:
             # Thread: zmq_poll_thread
@@ -313,7 +316,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
         self.log.debug("Session config complete")
 
     @override
-    def start(self, *, connect_timeout: float | None = None) -> Self:
+    def start(self, *, connect_timeout: float | None = 10.0) -> Self:
         """Connect this client to the interface.
 
         Args:
@@ -327,7 +330,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
 
     @override
     async def connection_task(
-        self, started: Callable[[], Any], stop: ProtectedPending, *, connect_timeout: float | None = None
+        self, started: Callable[[], Any], stop: ProtectedPending, *, connect_timeout: float | None = 10
     ) -> None:
         def handler(sock, event, channel: Channel, recv=self.session.recv, handle_msg=self.handle_incoming_msg) -> None:
             ident, msg = recv(sock)
@@ -415,21 +418,26 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
 
         def forward_messages(sock: ZMQPollSocket, event: int) -> None:
             msg: Message = self.session.recv(sock)[1]  # pyright: ignore[reportAssignmentType]
-            if not ready:
-                if msg["header"]["msg_type"] == MsgType.iopub_welcome:
-                    ready.set()
-            else:
-                queue.append(msg)
+            queue.append(msg)
 
-        queue, ready, scope = SingleAsyncQueue(), create_async_event(), anyio.CancelScope()
+        queue, scope, caller, cancel_msg = (SingleAsyncQueue(), anyio.CancelScope(), Caller(), "")
         iopub = await self._connect_socket(Channel.iopub)
-        with iopub, self.zmq_poll.event_handler(iopub, forward_messages, canceller=scope.cancel), scope:
+
+        def canceller(msg: str) -> None:
+            nonlocal cancel_msg
+            queue.stop()
+            cancel_msg = f"Scope cancelled {msg=}"
+            caller.call_direct(scope.cancel, cancel_msg)
+
+        with iopub, scope:
             iopub.subscribe(topic)
             if timeout is not None:
-                self.log.debug("Waiting for welcome message.")
-                if await ready.with_(timeout=timeout):
-                    self.log.debug("Welcome message received.")
-                else:
-                    msg = f"Welcome message not received after {timeout:0.1f}s!"
-                    raise TimeoutError(msg)
-            yield queue
+                ready = create_async_waiter()
+                with self.zmq_poll.event_handler(iopub, lambda _, __: None, canceller=canceller, count=(1, ready.wake)):
+                    if not await ready.with_(timeout=timeout):
+                        msg = f"Welcome message not received after {timeout:0.1f}s!"
+                        raise TimeoutError(msg)
+            with self.zmq_poll.event_handler(iopub, forward_messages, canceller=canceller):
+                yield queue
+        if cancel_msg:
+            raise RuntimeError(cancel_msg)

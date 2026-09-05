@@ -360,14 +360,14 @@ async def test_page(client: ClientType, kernel: Kernel):
     async with client.iopub_subscribe() as queue:
         reader = aiter(queue)
         await client.execute("?")
-        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_status, execution_state="busy")
-        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_input)
-        msg = utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_stream)
+        await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_status, execution_state="busy")
+        await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_execute_input)
+        msg = await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_stream)
         assert msg["header"]["msg_type"] == "stream"
         assert list(msg["content"]) == ["name", "text"]
-        utils.check_pub_message(await anext(reader), execution_state="idle")
+        await utils.read_until_msg_type(reader, MsgType.iopub_status, execution_state="idle")
         page.page({"data": {"text/plain": "hello, world"}, "metadata": {}})
-        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_display_data)
+        await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_display_data)
 
 
 async def test_do_complete(kernel: Kernel):

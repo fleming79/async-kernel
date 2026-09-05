@@ -55,9 +55,7 @@ async def test_execute_error(client: ClientType):
         assert reply["content"]["status"] == "error"
         assert reply["content"].get("ename") == "ZeroDivisionError"
         reader = aiter(queue)
-        while (msg := await anext(reader))["header"]["msg_type"] != MsgType.iopub_error:
-            continue
-        utils.check_pub_message(msg, msg_type=MsgType.iopub_error)
+        await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_error)
 
 
 async def test_execute_inc(client: ClientType):

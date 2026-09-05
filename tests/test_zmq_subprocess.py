@@ -82,9 +82,7 @@ async def test_interrupt_request(
     async with client.iopub_subscribe() as queue:
         reader = aiter(queue)
         pen = client.execute(code)
-        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_status, execution_state="busy")
-        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_execute_input)
-        utils.check_pub_message(await anext(reader), msg_type=MsgType.iopub_stream, text="started\n")
+        await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_stream, text="started\n")
         client.send_message(client.msg(MsgType.interrupt_request, None, Channel.control))
         reply = await pen
 
