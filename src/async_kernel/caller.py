@@ -618,12 +618,9 @@ class Caller:
                             create_task(item.context, run_pending_function, item)
                     else:
                         try:
-                            result = item[0](*item[1], **item[2])
-                            if iscoroutinelike(result):
-                                await result
-                            del result
+                            item[0](*item[1], **item[2])
                         except Exception as e:
-                            self.log.exception("Direct call failed", exc_info=e)
+                            self.log.exception("Direct call failed func:%s args:%s kwargs:%s", *item, exc_info=e)
                     del item
 
     @staticmethod
@@ -867,21 +864,17 @@ class Caller:
 
     def call_direct(
         self,
-        func: Callable[P, T | CoroutineType[Any, Any, T]],
+        func: Callable[P, T],
         /,
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> None:
-        """A low-level method to perform the call to `func` directly in caller's backend scheduler.
+        """A low-level method to schedule `func` to be executed directly in caller's backend scheduler (no context copy).
 
         Args:
             func: The function.
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
-
-        Warning:
-            **Even though coroutine functions are accepted, only non-blocking calls (sync or async) should
-            be made to avoid blocking the scheduler.**
         """
         self._scheduler_queue.append((func, args, kwargs))
 
