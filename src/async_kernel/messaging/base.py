@@ -45,24 +45,6 @@ if TYPE_CHECKING:
 __all__ = ["BaseClient", "BaseMessage", "Connection", "PendingMessage"]
 
 
-def extract_header(msg_or_header: dict[str, Any]) -> MsgHeader | dict:
-    """Given a message or header, return the header."""
-    if not msg_or_header:
-        return {}
-    try:
-        # See if msg_or_header is the entire message.
-        h = msg_or_header["header"]
-    except KeyError:
-        try:
-            # See if msg_or_header is just the header
-            h = msg_or_header["msg_id"]
-        except KeyError:  # noqa: TRY203
-            raise
-        else:
-            h = msg_or_header
-    return h
-
-
 class PendingMessage(Pending[Message[T]], Generic[T]):
     @property
     def msg_id(self) -> str:
@@ -130,7 +112,7 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
         return Message(
             channel=channel,
             header=header,  # pyright: ignore[reportArgumentType]
-            parent_header=extract_header(parent),  # pyright: ignore[reportArgumentType]
+            parent_header=parent["header"] if parent else None,
             content={} if content is None else content,
             metadata=metadata if metadata is not None else {},
             buffers=[] if buffers is None else buffers,

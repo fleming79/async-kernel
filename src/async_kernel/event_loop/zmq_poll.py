@@ -237,10 +237,9 @@ class ZMQPoll:
 
             def on_wake(sock: ZMQPollSocket, flags: int) -> None:
                 """On receipt of a wake event clear the sockets."""
-                nonlocal sockets
                 # Called on receipt of a message (b'') on the 'wake' socket.
-                sockets = []
                 sock.recv()
+                sockets.clear()
                 do_execute()
 
             def do_execute() -> None:
@@ -279,17 +278,14 @@ class ZMQPoll:
                                         sockets.append(k)
                             for k in _zmq_poll(sockets, timeout=-1):
                                 if k[0].closed:
-                                    sockets = []
+                                    sockets.clear()  # pragma: no cover
                                 else:
                                     try:
                                         handlers[k](*k)  # pyright: ignore[reportArgumentType]
                                     except KeyError:
-                                        sockets = []
-                                    except SystemExit:
-                                        stopped.set_result(None)
-                                        return
+                                        sockets.clear()
                                     except BaseException as e:
-                                        sockets = []
+                                        sockets.clear()
                                         self.log.exception("Ignoring exception in handler.", exc_info=e)
                                 if count and (c := count.get(k)) is not None:
                                     c = count[k] = (int(c[0]) - 1, c[1])
@@ -297,10 +293,10 @@ class ZMQPoll:
                                     if c[0] == 0:
                                         handlers.pop(k, None)
                                         count[k] = None
-                                        sockets = []
+                                        sockets.clear()
                                         c[1]()
-                        except Exception as e:
-                            sockets = []
+                        except Exception as e:  # pragma: no cover
+                            sockets.clear()
                             self.log.exception("Ignoring exception in zmq_poll_thread.", exc_info=e)
                 finally:
                     stopped.set_result(None)
@@ -308,7 +304,7 @@ class ZMQPoll:
                     while zmq_poll_sockets:
                         try:
                             zmq_poll_sockets.pop().close()
-                        except Exception as e:
+                        except Exception as e:  # pragma: no cover
                             self.log.exception("Socket close call failed", exc_info=e)
                     while cancellers:
                         try:

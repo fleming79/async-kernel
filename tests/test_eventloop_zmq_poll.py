@@ -73,6 +73,24 @@ class Test_zmq_Poll:
                     break
                 sock_dealer.send(b"done")
 
+    def test_base_exception(self):
+        def f(_=None, __=None):
+            raise KeyboardInterrupt
+
+        with ZMQPoll() as zmq_poll:
+            with pytest.raises(KeyboardInterrupt):
+                zmq_poll.execute(f)
+            with (
+                zmq_poll.socket(zmq.SocketType.ROUTER) as sock_router,
+                zmq_poll.socket(zmq.SocketType.DEALER) as sock_dealer,
+                sock_router.bind(addr := f"inproc://test_messaging_{id(self)}"),
+            ):
+                sock_dealer.connect(addr)
+                ready = threading.Event()
+                with sock_router, zmq_poll.event_handler(sock_router, f, canceller=None, count=(1, ready.set)):
+                    sock_dealer.send(b"")
+                    ready.wait(timeout=tests.utils.TIMEOUT)
+
     async def test_gc(self, caller: Caller):
 
         cleaned = create_async_event()

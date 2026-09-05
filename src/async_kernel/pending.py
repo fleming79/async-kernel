@@ -44,7 +44,7 @@ class PendingTracker:
     """The base class for tracking [Pending][async_kernel.pending.Pending].
 
     Notes:
-        - It must be subclassed.
+        - It must be subclassed to be used.
         - Each subclass is assigned one context variable.
             - This means that only one instance of the subclass can be active
                 in a specific context at any time.
@@ -91,11 +91,7 @@ class PendingTracker:
         self._instances[self.id] = self
 
     def _activate(self) -> Token[str | None]:
-        try:
-            return self._id_contextvar.set(self.id)
-        except AttributeError as e:
-            e.add_note("Pending tracker must be subclassed to use it!")
-            raise
+        return self._id_contextvar.set(self.id)
 
     def _deactivate(self, token: contextvars.Token[str | None]) -> None:
         self._id_contextvar.reset(token)
@@ -295,7 +291,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
             elif pen.exception():
                 self._failed.append(pen)
                 self.cancel(f"Exception in member: {pen}")
-        except KeyError:
+        except KeyError:  # pragma: no cover
             pass
         if self._leaving_context and not self._pending:
             self._all_done.set()
@@ -506,7 +502,7 @@ class Pending(Awaitable[T]):
                     if not self._done:
                         e = TimeoutError
                     del done, wait_, waiter
-                except AttributeError:
+                except AttributeError:  # pragma: no cover
                     # _done_callbacks was deleted meaning _done will be set soon.
                     wait_.close()
                     while not self._done:
@@ -589,7 +585,7 @@ class Pending(Awaitable[T]):
                 self._exception = value
             self._done = True
             self._canceller = None
-        except AttributeError:
+        except AttributeError:  # pragma: no cover
             return
         e = None
         # List reversal and BaseException handling inspiration: https://gist.github.com/x42005e1f/4f18c3c62da9135020bdea8c44c248a2

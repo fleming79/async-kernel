@@ -26,7 +26,7 @@ async def test_start_kernel_callable_interface(anyio_backend: Backend):
         if msg["header"]["msg_type"] == MsgType.input_request:
             msg = client.msg(
                 msg["header"]["msg_type"].replace("request", "reply"),
-                {"value": "The value"},
+                {"value": "The value", "status": "ok"},
                 Channel.stdin,
                 parent=msg,
             )

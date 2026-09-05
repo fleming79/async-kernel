@@ -13,7 +13,6 @@ import time
 import weakref
 from collections.abc import Callable
 from contextlib import contextmanager
-from sqlite3 import OperationalError
 from typing import TYPE_CHECKING, Any, Literal, Never, Self, TextIO
 
 import anyio
@@ -187,13 +186,9 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
             msg_type = MsgType.iopub_update_display_data if update else MsgType.iopub_display_data
             msg = owner.msg(msg_type, content, Channel.iopub, parent=utils.get_parent_message())
             for hook in self._hooks:
-                try:
-                    msg = hook(msg)
-                except Exception as e:
-                    self.parent.log.exception("Failed to execute hook:%r for msg:%r", hook, msg, exc_info=e)
-                if msg is None:
+                if (msg := hook(msg)) is None:
                     return
-            owner.send_message_no_reply(msg, ident=b"display_data")
+            self.parent.iopub_send(msg_type, msg["content"], ident=b"display_data")
 
     @override
     def clear_output(self, wait: bool = False) -> None:
@@ -240,30 +235,14 @@ class IPHistoryManager(HasInterface[Interface["IPShell"]], HistoryManager):
 
         self.db_input_cache_lock = threading.Lock()
         self.db_output_cache_lock = threading.Lock()
-
-        try:
-            self.new_session()
-        except OperationalError as e:
-            self.log.exception(
-                "Failed to create history session in %s. History will not be saved.", self.hist_file, exc_info=e
-            )
-            self.hist_file = ":memory:"
-
-        self.using_thread = False
+        self.new_session()
         if self.enabled and self.hist_file != ":memory:":
+            self.using_thread = True
             self.save_thread = HistorySavingThread(self)
             utils.mark_thread_pydev_do_not_trace(self.save_thread)
-            try:
-                self.save_thread.start()
-            except RuntimeError as e:
-                self.log.exception(
-                    "Failed to start history saving thread. History will not be saved.",
-                    exc_info=e,
-                )
-                self.hist_file = ":memory:"
-            else:
-                self.using_thread = True
+            self.save_thread.start()
         else:
+            self.using_thread = False
             self.save_thread = None
             if shell is not shell.kernel.main_shell:
                 self.output_hist.update(shell.kernel.main_shell.history_manager.output_hist)
@@ -552,7 +531,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             result = self.run_cell_magic(magic_name, line, cell)
             try:
                 return await result  # pyright: ignore[reportGeneralTypeIssues]
-            except TypeError:
+            except TypeError:  # pragma: no cover
                 return result
 
     @override
@@ -603,7 +582,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                 await eval(code_obj, self.user_global_ns, self.user_ns)
             else:
                 exec(code_obj, self.user_global_ns, self.user_ns)
-        except self.custom_exceptions:
+        except self.custom_exceptions:  # pragma: no cover
             etype, value, tb = sys.exc_info()
             if result is not None:
                 result.error_in_exec = value
@@ -888,10 +867,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         self.configurables.clear()
         self.user_ns.clear()
         self.history_manager.stop()
-        try:
-            self.atexit_operations()
-        except AttributeError:
-            pass
+        self.atexit_operations()
 
 
 @magics_class

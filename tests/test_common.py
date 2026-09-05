@@ -216,14 +216,27 @@ class TestFixed:
         assert mc.set_log == set_log_before
         mc.log.warning.assert_called()
 
+    def test_raise_type_error(self):
+        def f():
+            msg = "failed during creation"
+            raise TypeError(msg)
+
+        class MyClass:
+            failed = Fixed(f)
+
+        with pytest.raises(TypeError, match="failed during creation"):
+            assert MyClass().failed
+
 
 class TestSingleAsyncQueue:
     async def test_functional(self, anyio_backend: Backend) -> None:
         rejected = set()
 
         queue = SingleAsyncQueue(reject=rejected.add)
+        assert queue, "bool is not stopped"
         for i in range(4):
             queue.append(i)
+        assert len(queue) == 4
         async for n in queue:
             assert not queue.stopped
             if n == 1:
@@ -235,6 +248,8 @@ class TestSingleAsyncQueue:
         assert not queue.stopped, "Async exiting context is scheduled."
         await anyio.sleep(0.01)
         assert queue.stopped
+        assert not queue, "bool is not stopped"
+        assert len(queue) == 0
         assert rejected == {3}
         async for _ in queue:
             pass
