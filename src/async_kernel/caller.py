@@ -361,7 +361,9 @@ class Caller:
             RuntimeError: If the backend is not provided and backend can't be determined.
             ValueError: If the thread and caller's name do not match.
         """
-        with cls._lock:
+        if modifier != "NewThread":
+            cls._lock.acquire()
+        try:
             name, backend = kwargs.get("name", ""), kwargs.get("backend")
             match modifier:
                 case "MainThread":
@@ -415,7 +417,10 @@ class Caller:
             assert inst._caller_id is not None
             assert inst._caller_id not in cls._instances
             cls._instances[inst._caller_id] = inst
-        return inst
+            return inst
+        finally:
+            if modifier != "NewThread":
+                cls._lock.release()
 
     async def __aenter__(self) -> Self:
         self._protected = True
