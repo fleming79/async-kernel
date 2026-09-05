@@ -484,12 +484,6 @@ class Caller:
                     await async_checkpoint(force=True)
                     self._scheduler_queue.stop()
                     await async_checkpoint(force=True)
-            except anyio.get_cancelled_exc_class():
-                # This may happen when the async event loop is shutting down.
-                pass
-            except BaseException as e:
-                self.log.exception("Caller did not exit context nicely!", exc_info=e)
-                raise
             finally:
                 self._set_state(CallerState.stopping)
                 self._set_state(CallerState.stopped)
