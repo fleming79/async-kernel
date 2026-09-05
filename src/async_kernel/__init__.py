@@ -1,5 +1,14 @@
+import contextlib
 import sys
 from importlib.metadata import version
+
+from aiologic.lowlevel import current_async_library
+
+with contextlib.suppress(ImportError):
+    # Monkey patch sniffio.current_async_library` with aiologic's version which does a better job.
+    import sniffio
+
+    sniffio.current_async_library = current_async_library
 
 from async_kernel import utils
 from async_kernel.caller import Caller
