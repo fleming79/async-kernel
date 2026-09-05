@@ -55,10 +55,9 @@ class TestZMQConnection:
     async def test_iopub_subscribe(self, kernel: Kernel):
 
         async def f(ready):
-            async with client.iopub_subscribe() as queue:
+            async with client.iopub_subscribe():
                 ready()
-                async for _ in queue:
-                    pass
+                await create_async_waiter()
 
         async with LocalClient().start() as client:
             ready = create_async_waiter()

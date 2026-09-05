@@ -306,7 +306,6 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
 
         def canceller(_) -> None:
             nonlocal cancel_msg
-            queue.stop()
             cancel_msg = "Scope cancelled because the client is stopping"
             caller.call_direct(scope.cancel, "stopping")
 
