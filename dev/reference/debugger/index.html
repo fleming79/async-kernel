@@ -3395,9 +3395,7 @@ viewing the latest version.
 <span class="normal">558</span>
 <span class="normal">559</span>
 <span class="normal">560</span>
-<span class="normal">561</span>
-<span class="normal">562</span>
-<span class="normal">563</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Debugger</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">,</span> <span class="n">LoggingConfigurable</span><span class="p">):</span>
+<span class="normal">561</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Debugger</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">,</span> <span class="n">LoggingConfigurable</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The debugger class. Origin: [IPyKernel][ipykernel.debugger.DebugpyClient]."""</span>
 
     <span class="n">no_debug</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">List</span><span class="p">([</span><span class="s2">"IPythonHistorySavingThread"</span><span class="p">])</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -3723,14 +3721,12 @@ viewing the latest version.
         <span class="c1"># {'id': yyy, 'name': '&lt;module&gt;', ... } &lt;= this is the first frame of async_kernel code</span>
         <span class="c1"># or only the frames from the notebook.</span>
         <span class="c1"># We want to remove all the frames from async_kernel when they are present.</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">sf_list</span> <span class="o">=</span> <span class="n">reply</span><span class="p">[</span><span class="s2">"body"</span><span class="p">][</span><span class="s2">"stackFrames"</span><span class="p">]</span>
-            <span class="n">module_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sf_list</span><span class="p">)</span> <span class="o">-</span> <span class="nb">next</span><span class="p">(</span>
-                <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">sf_list</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"&lt;module&gt;"</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">1</span>
-            <span class="p">)</span>
-            <span class="n">reply</span><span class="p">[</span><span class="s2">"body"</span><span class="p">][</span><span class="s2">"stackFrames"</span><span class="p">]</span> <span class="o">=</span> <span class="n">reply</span><span class="p">[</span><span class="s2">"body"</span><span class="p">][</span><span class="s2">"stackFrames"</span><span class="p">][:</span> <span class="n">module_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-            <span class="k">pass</span>
+
+        <span class="n">sf_list</span> <span class="o">=</span> <span class="n">reply</span><span class="p">[</span><span class="s2">"body"</span><span class="p">][</span><span class="s2">"stackFrames"</span><span class="p">]</span>
+        <span class="n">module_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sf_list</span><span class="p">)</span> <span class="o">-</span> <span class="nb">next</span><span class="p">(</span>
+            <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">sf_list</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"&lt;module&gt;"</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="n">reply</span><span class="p">[</span><span class="s2">"body"</span><span class="p">][</span><span class="s2">"stackFrames"</span><span class="p">]</span> <span class="o">=</span> <span class="n">reply</span><span class="p">[</span><span class="s2">"body"</span><span class="p">][</span><span class="s2">"stackFrames"</span><span class="p">][:</span> <span class="n">module_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">reply</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">DebugMessage</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
@@ -4641,9 +4637,7 @@ viewing the latest version.
 <span class="normal">509</span>
 <span class="normal">510</span>
 <span class="normal">511</span>
-<span class="normal">512</span>
-<span class="normal">513</span>
-<span class="normal">514</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_stack_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">DebugMessage</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="normal">512</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_stack_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">DebugMessage</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Handle an stack trace message."""</span>
     <span class="n">reply</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_dap_request</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="c1"># The stackFrames array can have the following content:</span>
@@ -4655,14 +4649,12 @@ viewing the latest version.
     <span class="c1"># {'id': yyy, 'name': '&lt;module&gt;', ... } &lt;= this is the first frame of async_kernel code</span>
     <span class="c1"># or only the frames from the notebook.</span>
     <span class="c1"># We want to remove all the frames from async_kernel when they are present.</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">sf_list</span> <span class="o">=</span> <span class="n">reply</span><span class="p">[</span><span class="s2">"body"</span><span class="p">][</span><span class="s2">"stackFrames"</span><span class="p">]</span>
-        <span class="n">module_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sf_list</span><span class="p">)</span> <span class="o">-</span> <span class="nb">next</span><span class="p">(</span>
-            <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">sf_list</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"&lt;module&gt;"</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">1</span>
-        <span class="p">)</span>
-        <span class="n">reply</span><span class="p">[</span><span class="s2">"body"</span><span class="p">][</span><span class="s2">"stackFrames"</span><span class="p">]</span> <span class="o">=</span> <span class="n">reply</span><span class="p">[</span><span class="s2">"body"</span><span class="p">][</span><span class="s2">"stackFrames"</span><span class="p">][:</span> <span class="n">module_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
-        <span class="k">pass</span>
+
+    <span class="n">sf_list</span> <span class="o">=</span> <span class="n">reply</span><span class="p">[</span><span class="s2">"body"</span><span class="p">][</span><span class="s2">"stackFrames"</span><span class="p">]</span>
+    <span class="n">module_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sf_list</span><span class="p">)</span> <span class="o">-</span> <span class="nb">next</span><span class="p">(</span>
+        <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">sf_list</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">v</span><span class="p">[</span><span class="s2">"name"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"&lt;module&gt;"</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">1</span>
+    <span class="p">)</span>
+    <span class="n">reply</span><span class="p">[</span><span class="s2">"body"</span><span class="p">][</span><span class="s2">"stackFrames"</span><span class="p">]</span> <span class="o">=</span> <span class="n">reply</span><span class="p">[</span><span class="s2">"body"</span><span class="p">][</span><span class="s2">"stackFrames"</span><span class="p">][:</span> <span class="n">module_idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">reply</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4698,7 +4690,9 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/debugger.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">516</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
 <span class="normal">517</span>
 <span class="normal">518</span>
 <span class="normal">519</span>
@@ -4706,9 +4700,7 @@ viewing the latest version.
 <span class="normal">521</span>
 <span class="normal">522</span>
 <span class="normal">523</span>
-<span class="normal">524</span>
-<span class="normal">525</span>
-<span class="normal">526</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">DebugMessage</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="normal">524</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">DebugMessage</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Handle an variables message."""</span>
     <span class="n">reply</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped_threads</span><span class="p">:</span>
@@ -4753,7 +4745,9 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/debugger.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">528</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
 <span class="normal">529</span>
 <span class="normal">530</span>
 <span class="normal">531</span>
@@ -4766,9 +4760,7 @@ viewing the latest version.
 <span class="normal">538</span>
 <span class="normal">539</span>
 <span class="normal">540</span>
-<span class="normal">541</span>
-<span class="normal">542</span>
-<span class="normal">543</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_attach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">DebugMessage</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="normal">541</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_attach</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">DebugMessage</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Handle an attach message."""</span>
     <span class="k">assert</span> <span class="n">_host_port</span>
     <span class="n">msg</span><span class="p">[</span><span class="s2">"arguments"</span><span class="p">][</span><span class="s2">"connect"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"host"</span><span class="p">:</span> <span class="n">_host_port</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">"port"</span><span class="p">:</span> <span class="n">_host_port</span><span class="p">[</span><span class="mi">1</span><span class="p">]}</span>
@@ -4818,7 +4810,9 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/debugger.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">545</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
 <span class="normal">546</span>
 <span class="normal">547</span>
 <span class="normal">548</span>
@@ -4826,9 +4820,7 @@ viewing the latest version.
 <span class="normal">550</span>
 <span class="normal">551</span>
 <span class="normal">552</span>
-<span class="normal">553</span>
-<span class="normal">554</span>
-<span class="normal">555</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_configuration_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">DebugMessage</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="normal">553</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_configuration_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">DebugMessage</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Handle an configuration done message."""</span>
     <span class="c1"># This is only supposed to be called during initialize but can come at anytime. Ref: https://microsoft.github.io/debug-adapter-protocol/specification#Events_Initialized</span>
     <span class="c1"># see : https://github.com/jupyterlab/jupyterlab/issues/17673</span>
