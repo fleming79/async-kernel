@@ -78,6 +78,9 @@ class Kernel(
     caller: Fixed[Self, Caller] = Fixed(lambda c: c["owner"].callers[Channel.shell])
     """The caller for the shell thread."""
 
+    main_shell: Fixed[Self, T_shell_co] = Fixed(lambda c: c["owner"]._shell_class(protected=True, is_mainshell=True))
+    """The main shell."""
+
     debugger = Fixed(Debugger)
     """The debugger for handling debug requests."""
 
@@ -151,14 +154,6 @@ class Kernel(
         }
 
     @property
-    def main_shell(self) -> T_shell_co:
-        try:
-            return self._main_shell
-        except AttributeError:
-            msg = "The main_shell is only available once the kernel is started."
-            raise RuntimeError(msg) from None
-
-    @property
     def shell(self) -> T_shell_co:
         """The shell given the current context.
 
@@ -187,8 +182,7 @@ class Kernel(
         """
         remove_patch = self.apply_patches()
         try:
-            self._main_shell = self._shell_class(protected=True, is_mainshell=True)
-            async with self._main_shell.mainshell_running():
+            async with self.main_shell.mainshell_running():
                 self.log.info("Kernel started")
                 yield self
         finally:
@@ -598,7 +592,7 @@ class Kernel(
                 time.sleep(0.01)
         else:
             pen.wait_sync()
-        return pen.result()["content"]["value"]
+        return self._parse_input_request_content(pen.result())
 
     def raw_input(self, prompt="") -> str:
         """Matches signature of [ipykernel.kernelbase.Kernel.raw_input][], also used for builtin 'input'."""
@@ -609,4 +603,12 @@ class Kernel(
                 time.sleep(0.01)
         else:
             pen.wait_sync()
-        return pen.result()["content"]["value"]
+        return self._parse_input_request_content(pen.result())
+
+    def _parse_input_request_content(self, msg: Message[Content]) -> str:
+        try:
+            return msg["content"]["value"]
+        except KeyError:
+            traceback = "".join(msg["content"].get("traceback") or ())
+            f"""Input reply failed with error {msg["content"]["ename"]}("{msg["content"]["evalue"]}") \n{traceback}"""
+            raise RuntimeError(msg) from None

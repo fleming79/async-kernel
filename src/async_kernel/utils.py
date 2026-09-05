@@ -167,23 +167,19 @@ def setattr_nested(obj: object, name: str, value: str | Any, *, _return_value=Fa
         The mapping of the name to the set value if the value has been set.
         An empty dict indicates the value was not set.
     """
-    try:
-        if len(bits := name.split(".")) > 1:
-            try:
-                obj = getattr(obj, bits[0])
-            except Exception:
-                return {}
-            value = setattr_nested(obj, ".".join(bits[1:]), value, _return_value=True)
-            return value if _return_value else {name: value}
-        if (isinstance(obj, traitlets.HasTraits) and obj.has_trait(name)) or hasattr(obj, name):
-            try:
-                setattr(obj, name, value)
-            except Exception:
-                setattr(obj, name, eval(value))
-            return value if _return_value else {name: value}  # pyright: ignore[reportReturnType]
-    except Exception:
-        if not _return_value:
-            raise
+    if len(bits := name.split(".")) > 1:
+        try:
+            obj = getattr(obj, bits[0])
+        except Exception:
+            return {}
+        value = setattr_nested(obj, ".".join(bits[1:]), value, _return_value=True)
+        return value if _return_value else {name: value}
+    if (isinstance(obj, traitlets.HasTraits) and obj.has_trait(name)) or hasattr(obj, name):
+        try:
+            setattr(obj, name, value)
+        except Exception:
+            setattr(obj, name, eval(value))
+        return value if _return_value else {name: value}  # pyright: ignore[reportReturnType]
     return {}
 
 

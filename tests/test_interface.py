@@ -93,6 +93,16 @@ class TestInterface:
             with pytest.raises(RuntimeError, match="A handler is not available"):
                 await client.input_request(job)
 
+    async def test_base_client_handle_wrap_request_handler_exception(self, anyio_backend: Backend):
+
+        async def bad_input_handler(content):
+            msg = "bad input"
+            raise RuntimeError(msg)
+
+        async with Interface().start(), LocalClient().start() as client:
+            reply = await client.execute("input('test')", input_handler=bad_input_handler)
+            assert "bad input" in reply["content"]["evalue"]
+
     async def test_stop(self, anyio_backend: Backend) -> None:
 
         async with Interface(shell_class=BaseShell).start() as interface:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import contextlib
 import gc
 import importlib.util
 import logging
@@ -56,10 +57,8 @@ class DictValueLiteralEval(traitlets.Dict):
     def item_from_string(self, s: str) -> dict:
         d = super().item_from_string(s)
         for k, v in d.items():
-            try:
+            with contextlib.suppress(ValueError):
                 d[k] = ast.literal_eval(v)
-            except ValueError:
-                pass
         return d
 
 
@@ -498,7 +497,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
         for c in self._connections:
             try:
                 c.iopub_send(msg_type, content, metadata=metadata, parent=parent, ident=ident, buffers=buffers)
-            except Exception as e:
+            except Exception as e:  # pragma: no cover
                 self.log.exception("iopub_send failed for connection %r", c, exc_info=e)
 
     def get_connection_info(self) -> list[str]:

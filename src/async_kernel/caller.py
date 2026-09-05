@@ -502,7 +502,7 @@ class Caller:
                     utils.mark_thread_pydev_do_not_trace()
                     try:
                         trio.from_thread.run(run_scheduler, trio_token=trio_token)
-                    except (BaseExceptionGroup, BaseException) as e:
+                    except (BaseExceptionGroup, BaseException) as e:  # pragma: no cover
                         if not "shutdown" not in str(e):
                             raise
 
@@ -517,12 +517,7 @@ class Caller:
                     backend_options=self.backend_options,
                     host_options=self.host_options,
                 )
-                try:
-                    async_kernel.event_loop.run(run_scheduler, (), settings)
-                except Exception as e:
-                    if not self.stopping.done():
-                        self.started.set_exception(e)
-                        self.stop(force=True)
+                async_kernel.event_loop.run(run_scheduler, (), settings)
 
             thread = threading.Thread(target=async_kernel_caller, name=self._name or None)
             if no_debug:

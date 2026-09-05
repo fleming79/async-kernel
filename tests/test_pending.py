@@ -206,6 +206,20 @@ class TestPending:
                 f3.result()
                 assert pen.done()
 
+    async def test_wait_set_stress_test(self, caller: Caller):
+
+        async def f():
+            await barrier
+            await pen.wait()
+
+        for _ in range(20):
+            barrier = Latch(2)
+            pen = Pending()
+            p2 = caller.to_thread(f)
+            await barrier
+            pen.set_result(None)
+            await p2
+
     def test_repr(self):
         a = "long string" * 100
         b = {f"name {i}": "long_string" * 100 for i in range(100)}

@@ -165,7 +165,9 @@ class TestCaller:
 
     async def test_stopping(self, anyio_backend: Backend):
         caller = Caller("NewThread")
-        caller.stop()
+        caller.protected = True
+        assert caller.protected
+        caller.stop(force=True)
         with pytest.raises(RuntimeError):
             async with caller:
                 pass
@@ -345,6 +347,17 @@ class TestCaller:
         event = Event()
         caller.to_thread(caller.queue_call, event.set)
         await event
+
+    async def test_queue_call_log_exception(self, caller: Caller, mocker):
+
+        def f():
+            ready.wake()
+            raise RuntimeError
+
+        log = mocker.patch.object(caller.log, "exception")
+        caller.queue_call(f)
+        await (ready := create_async_waiter())
+        assert log.call_args[0][0] == "Execution of %s failed! args:%s kwargs:%s"
 
     async def test_gc(self, anyio_backend: Backend):
         collected = Event()
@@ -950,3 +963,5 @@ class TestStartStopTask:
     def test_no_func(self):
         with pytest.raises(RuntimeError, match="The `func` has not been set"):
             StartStopTask().start()
+        with pytest.raises(RuntimeError, match="The caller has not been set"):
+            assert StartStopTask().caller
