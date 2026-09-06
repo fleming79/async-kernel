@@ -245,10 +245,12 @@ class TestCaller:
 
     async def test_usage_example(self, anyio_backend: Backend):
         async with Caller() as caller:
-            child_1 = caller.get()
+            child_1 = caller.get(name="child 1")
             child_2 = caller.get(name="asyncio backend", backend="asyncio")
             child_3 = caller.get(name="trio backend", backend="trio")
             assert caller.children == {child_1, child_2, child_3}
+            with pytest.raises(ValueError, match="Name must be specified"):
+                caller.get()
         assert not caller.children
         with pytest.raises(RuntimeError):
             caller.get()
