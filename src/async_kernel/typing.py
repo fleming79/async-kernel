@@ -38,6 +38,9 @@ __all__ = [
     "NoValue",
     "RunMode",
     "RunSettings",
+    "T_interface_co",
+    "T_ipshell_co",
+    "T_shell_co",
     "Tags",
 ]
 
@@ -51,8 +54,13 @@ D = TypeVar("D", bound=dict)
 P = ParamSpec("P")
 
 T_shell_co = TypeVar("T_shell_co", covariant=True, bound="BaseShell", default="BaseShell")
+"""A Covariant typevar for a [shell][async_kernel.shell.base.BaseShell]."""
+
 T_ipshell_co = TypeVar("T_ipshell_co", covariant=True, bound="IPShell", default="IPShell")
+"""A Covariant typevar for an [IPShell][async_kernel.shell.ipshell.IPShell]."""
+
 T_interface_co = TypeVar("T_interface_co", covariant=True, bound="Interface", default="Interface")
+"""A Covariant typevar for an [interface][async_kernel.interface.base.Interface]."""
 
 
 class Backend(enum.StrEnum):
@@ -505,7 +513,8 @@ class Message(TypedDict, Generic[T]):
     content: T | Content
     """[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)
     
-    See also:
+    **See Also**
+
         - [ExecuteContent][]
     """
     buffers: BuffersType
@@ -602,12 +611,7 @@ DebugMessage = dict[str, Any]
 """A TypeAlias for a debug message."""
 
 Content = dict[str, Any]
-"""A TypeAlias for the content in `Message`.
-
-Notes:
-    - The content of a message handler can provide 'buffers'. When present, 
-        the buffers are extracted from dict and handled separately by the interface.
-"""
+"""A TypeAlias for the content in `Message`."""
 
 HandlerType = Callable[[Job], Awaitable[Content | None]]
 """A TypeAlias for the handler of message requests."""

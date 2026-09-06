@@ -134,7 +134,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
     """Options for starting the loop."""
 
     backend: traitlets.TraitType[Backend, Backend] = traitlets.UseEnum(Backend).tag(config=True)
-    """The type of asynchronous backend used. Options are 'asyncio' or 'trio'."""
+    """The type of asynchronous backend used. Options are asyncio or trio."""
 
     backend_options = DictValueLiteralEval(allow_none=True).tag(config=True)
     """Options for starting the backend."""

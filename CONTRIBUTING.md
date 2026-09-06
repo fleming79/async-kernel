@@ -25,13 +25,13 @@ Additional steps to build documentation (optional):
 
 ```bash
 uv sync --group docs
-uv run async-kernel install --name=async-docs --timeout=1
+async-kernel install --name=async-docs --timeout=1
 ```
 
 ### Running tests
 
 ```bash
-uv run pytest
+pytest
 ```
 
 #### Running tests with coverage
@@ -114,7 +114,7 @@ uv run mkdocs build -s
     The command:
 
     ```bash
-    uv run async-kernel install --name=async-docs --timeout=1
+    async-kernel install --name=async-docs --timeout=1
     ```
 
     Defines a new kernel spec with the name "async-docs" that sets the `timeout` to 1s.
@@ -193,9 +193,9 @@ You can run tests locally to see if there is anything that might be caught by CI
 
 ```bash
 uvx prek run -a
-uv run pytest -vv --cov --cov-fail-under=100
+pytest -vv --cov --cov-fail-under=100
 uvx basedpyright
-uv run mkdocs build -s
+mkdocs build -s
 ```
 
 !!! note

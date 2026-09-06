@@ -51,7 +51,7 @@ truncated_rep.fillvalue = "…"
 
 @asynccontextmanager
 async def task_factory() -> AsyncGenerator[Callable[[contextvars.Context | None, Callable, Unpack[tuple]], None]]:
-    """An async context that yields a function to start tasks for the current async library ('asyncio' or 'trio').
+    """An async context that yields a function to start tasks for the current async library (asyncio or trio).
 
     Asyncio will use `eager_start` where the loop supports it.
 
@@ -130,7 +130,7 @@ class Caller:
     - guest backend: The opposite of the backend that runs as a guest of the host or backend
         when there is no host.
 
-    A `Caller` instance can be created in any thread where a backend ('asyncio' or 'trio')
+    A `Caller` instance can be created in any thread where a backend (asyncio or trio)
     is already running. However the `Caller` instance must be created from a function call
     made inside the thread (using `Caller()`).
 
@@ -311,8 +311,8 @@ class Caller:
             "name": self._name,
             "backend": str(self._backend),
             "host": self._host,
-            "thread": self._thread.name,
             "id": self._caller_id,
+            "parent": self.parent.id if self.parent else None,
         }
 
     @override
@@ -741,6 +741,9 @@ class Caller:
                             msg = f"Host mismatch! {host=} {child.host=}"
                             raise RuntimeError(msg)
                         return child
+            if name is None:
+                msg = "Name must be specified"
+                raise ValueError(msg)
             if "backend" not in kwargs:
                 kwargs["backend"] = self._backend
                 kwargs["backend_options"] = self.backend_options
@@ -857,7 +860,8 @@ class Caller:
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
 
-        See Also:
+        **See Also**
+
             - [Caller.get][]
         """
         return self.schedule_call(func, args, kwargs, None, PendingTracker, Backend(backend))
@@ -913,7 +917,7 @@ class Caller:
             while (caller := self._worker_pool.popleft()) and caller.stopping.done():
                 pass
         except IndexError:
-            caller = self.get()
+            caller = self.get(name="")
             caller._name = "async-kernel worker"
         pen = caller.call_soon(func, *args, **kwargs)
         pen.add_done_callback(_to_thread_on_done)

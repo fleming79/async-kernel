@@ -908,7 +908,7 @@ class KernelMagics(HasInterface[Interface[IPShell]], Magics):
             "".join(
                 [
                     "Caller ID".center(n_1),
-                    "Parent's ID".center(n_2),
+                    "Parent".center(n_2),
                     "Backend".center(n_3),
                     "Name".center(n_4),
                     "Children  ".center(n_5),

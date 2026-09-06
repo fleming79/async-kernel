@@ -27,7 +27,7 @@ The kernel interface supports multiple connections including:
   backends, with guest event loop support built in.
 - A zmq poll event loop for thread-safe zmq sockets.
 - [IPython shell](https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell)
-    - top-level await ('asyncio' or 'trio' backend) in cells
+    - top-level await (asyncio or trio backend) in cells
     - async magic function support in cells
 - Per-subshell user_ns
 - GUI event loops [^1]

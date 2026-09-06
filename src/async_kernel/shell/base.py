@@ -32,11 +32,30 @@ class ShellPendingManager(PendingManager):
 class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_interface_co]):
     """The base shell implementation.
 
-    This should be the left most inherited class to be used.
+    A shell provides a namespace, performs code execution and provides introspection functionality.
+    Shells are created as needed by the [kernel][async_kernel.Kernel].
+
+    **Subclassing:**
+
+    This should be the first class (left most) when subclassing.
+
+    The following methods should be overridden in a subclass:
+
+    - [do_execute][BaseShell.do_execute]
+    - [do_complete][BaseShell.do_complete]
+    - [is_complete][BaseShell.is_complete]
+    - [do_inspect][BaseShell.do_inspect]
+    - [do_history][BaseShell.do_history]
+
+    **See also:**
+
+    - [async_kernel.kernel.Kernel.main_shell][]
+    - [async_kernel.kernel.Kernel.shell][]
+    - [async_kernel.kernel.Kernel.create_subshell][]
     """
 
     kernel: Fixed[Self, Kernel[T_interface_co, Self]] = Fixed(lambda c: c["owner"].parent.kernel)  # pyright: ignore[reportAttributeAccessIssue]
-    """"""
+    """Access to the kernel."""
 
     pending_manager = Fixed(ShellPendingManager)
     """Provides the `subshell_id` for the shell which add all consenting pending created in
@@ -211,16 +230,19 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         tags: Iterable[str] = (),
         **_ignored,
     ) -> Content:
-        """Execute code in the shell."""
+        """Called by [async_kernel.kernel.Kernel.execute_request][]."""
         raise NotImplementedError
 
     async def do_complete(self, code: str, cursor_pos: int | None = None) -> Content:
+        """Called by [async_kernel.kernel.Kernel.do_complete][]."""
         raise NotImplementedError
 
     async def is_complete(self, code: str) -> Content:
+        """Called by [async_kernel.kernel.Kernel.complete_request][]."""
         raise NotImplementedError
 
     async def do_inspect(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
+        """Called by [async_kernel.kernel.Kernel.do_inspect][]."""
         raise NotImplementedError
 
     async def do_history(
@@ -237,4 +259,5 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         unique: bool = False,
         **_ignored,
     ) -> Content:
+        """Called by [async_kernel.kernel.Kernel.do_history][]."""
         raise NotImplementedError

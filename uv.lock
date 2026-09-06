@@ -205,7 +205,7 @@ uvloop = [
 
 [package.metadata]
 requires-dist = [
-    { name = "aiologic", specifier = ">=0.17.0" },
+    { name = "aiologic", specifier = ">=0.17.1,<0.18.0" },
     { name = "anyio", specifier = ">=4.12" },
     { name = "comm", specifier = ">=0.2" },
     { name = "ipython", specifier = ">=9.17" },
