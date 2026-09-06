@@ -162,6 +162,7 @@ class KernelInfoReply(Reply):
     implementation_version = Version(min="0.0")
     language_info = Dict()
     banner = Unicode()
+    kernel_name = Unicode()
 
     @override
     def check(self, d):

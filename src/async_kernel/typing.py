@@ -505,7 +505,8 @@ class Message(TypedDict, Generic[T]):
     content: T | Content
     """[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)
     
-    See also:
+    **See Also**
+
         - [ExecuteContent][]
     """
     buffers: BuffersType

@@ -860,7 +860,8 @@ class Caller:
             *args: Arguments to use with `func`.
             **kwargs: Keyword arguments to use with `func`.
 
-        See Also:
+        **See Also**
+
             - [Caller.get][]
         """
         return self.schedule_call(func, args, kwargs, None, PendingTracker, Backend(backend))

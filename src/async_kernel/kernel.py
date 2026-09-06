@@ -63,14 +63,35 @@ class Kernel(
     supported_features = traitlets.List(traitlets.Unicode()).tag(config=True)
     """A list of features supported by the kernel."""
 
+    @traitlets.default("supported_features")
+    def _default_supported_features(self) -> list[str]:
+        features = ["kernel subshells"]
+        if self.debugger.enabled:
+            features.append("debugger")
+        return features
+
     handle_in_shell_thread = traitlets.List(
         traitlets.UseEnum(MsgType),
-        [MsgType.comm_msg, MsgType.comm_open, MsgType.comm_close],
+        [
+            MsgType.comm_msg,
+            MsgType.comm_open,
+            MsgType.comm_close,
+        ],
     ).tag(config=True)
     """A list of `MsgType` that are always handled in the shell's thread (typically the _MainThread_)."""
 
-    handle_in_thread = traitlets.Dict(key_trait=traitlets.UseEnum(MsgType), value_trait=traitlets.Unicode())
+    handle_in_thread: traitlets.Dict[MsgType, CallerCreateOptions] = traitlets.Dict(
+        key_trait=traitlets.UseEnum(MsgType), value_trait=traitlets.Dict()
+    )
     """A mapping of `MsgType` to the name of a separate caller (thread) in which to run the handler."""
+
+    @traitlets.default("handle_in_thread")
+    def _default_handle_in_thread(self) -> dict[MsgType, dict]:
+        return {
+            MsgType.inspect_request: {"name": "language_server", "no_debug": True},
+            MsgType.complete_request: {"name": "language_server", "no_debug": True},
+            MsgType.is_complete_request: {"name": "language_server", "no_debug": True},
+        }
 
     callers: Fixed[Self, dict] = Fixed(lambda c: c["owner"].parent.callers)
     """A shortcut to the callers dict on the parent."""
@@ -124,25 +145,11 @@ class Kernel(
             },
         )
 
-    @traitlets.default("handle_in_thread")
-    def _default_handle_in_thread(self) -> dict[MsgType, str]:
-        return {
-            MsgType.inspect_request: "language_server",
-            MsgType.complete_request: "language_server",
-            MsgType.is_complete_request: "language_server",
-        }
-
-    @traitlets.default("supported_features")
-    def _default_supported_features(self) -> list[str]:
-        features = ["kernel subshells"]
-        if self.debugger.enabled:
-            features.append("debugger")
-        return features
-
     @property
     def kernel_info(self) -> dict[str, Any]:
         """Info provided to a kernel info request."""
         return {
+            "kernel_name": self.parent.kernel_name,
             "protocol_version": async_kernel.kernel_protocol_version,
             "implementation": async_kernel.distribution_name,
             "implementation_version": async_kernel.__version__,
@@ -341,7 +348,7 @@ class Kernel(
             return self._handler_cache[key]
 
     def handle_request(self, job: Job) -> None:
-        """Schedule handling of the job (msg) with a handler running in a Task managed by a Caller.
+        """Schedule handling of the job (msg) with a handler running in a task managed by a Caller.
 
         Each `msg_type` runs in a separate task, possibly in a separate thread and event loop.
         Typically, jobs are queued for execution by either the 'shell' or 'control' caller using
@@ -357,6 +364,11 @@ class Kernel(
 
         Args:
             job: A dict with the msg and supporting details.
+
+        **See also:**
+
+        - [Kernel.handle_in_shell_thread][]
+        - [Kernel.handle_in_thread][]
         """
         handler = self._get_handler(job)
 
@@ -375,7 +387,8 @@ class Kernel(
                         run_mode = mode
                     if content.get("silent"):
                         run_mode = RunMode.task
-
+        elif options := self.handle_in_thread.get(msg_type):
+            caller = self.callers[Channel.control].get(**options)
         elif msg_type in self.handle_in_shell_thread:
             caller = self.callers[Channel.shell]
         elif msg_type is MsgType.shutdown_request:
@@ -383,8 +396,6 @@ class Kernel(
             run_mode = RunMode.task
         else:
             caller = self.callers[Channel.control]
-            if thread_name := self.handle_in_thread.get(msg_type):
-                caller = caller.get(name=thread_name, no_debug=True)
         match run_mode:
             case RunMode.queue | None:
                 caller.queue_call(handler, job)
@@ -521,7 +532,8 @@ class Kernel(
 
         'parent' is the parameter name used by [Session.send][jupyter_client.session.Session.send] to provide context when sending a reply.
 
-        See Also:
+        **See Also**
+
             - [ipywidgets.Output][ipywidgets.widgets.widget_output.Output]:
                 Uses `get_ipython().kernel.get_parent()` to obtain the `msg_id` which
                 is used to 'capture' output when its context has been acquired.

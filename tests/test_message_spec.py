@@ -179,6 +179,7 @@ async def test_kernel_info_request(client: ClientType):
     utils.validate_message(reply, MsgType.kernel_info_reply)
     keys = list(reply["content"])
     assert keys == [
+        "kernel_name",
         "protocol_version",
         "implementation",
         "implementation_version",

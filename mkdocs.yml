@@ -169,9 +169,10 @@ nav:
   - Usage:
       - usage/index.md
       - "Command line": usage/commands.md
-      - notebooks/concurrency.ipynb
+      - notebooks/async_kernel.ipynb
       - notebooks/caller.ipynb
       - notebooks/custom_kernel.ipynb
+      - notebooks/client.ipynb
   - Reference:
       - reference/index.md
       - "caller": reference/caller.md

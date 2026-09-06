@@ -221,7 +221,8 @@ def error_to_content(error: BaseException, /) -> Content:
 def redirect_stdout(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirectT, Any, None]:
     """Re-direct [sys.stdout][] generated in the current context.
 
-    See Also:
+    **See Also**
+
         - [contextlib.redirect_stdout][]
     """
     token = _stdout_context.set(stream)
@@ -235,7 +236,8 @@ def redirect_stdout(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirec
 def redirect_stderr(stream: _SupportsRedirectT, /) -> Generator[_SupportsRedirectT, Any, None]:
     """Re-direct [sys.stderr][] generated in the current context.
 
-    See Also:
+    **See Also**
+
         - [contextlib.redirect_stderr][]
     """
     token = _stderr_context.set(stream)
