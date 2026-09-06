@@ -464,6 +464,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -553,14 +555,14 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../notebooks/concurrency/" class="md-nav__link">
+      <a href="../../notebooks/async_kernel/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Concurrent message handling (notebook)
+    Async-kernel (notebook)
   
 
     
@@ -588,7 +590,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Caller: A backend agnostic executor (notebook)
+    Caller: Multi-thread and asynchronous backend function caller (notebook)
   
 
     
@@ -617,6 +619,34 @@ viewing the latest version.
     
   
     Kernel customisation (notebook)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client (Notebook)
   
 
     
@@ -2931,14 +2961,10 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
     <div class="doc doc-contents ">
 
         <p>Re-direct <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/sys.html#sys.stdout">sys.stdout</a> generated in the current context.</p>
+<p><strong>See Also</strong></p>
+<pre><code>- [contextlib.redirect_stdout][]
+</code></pre>
 
-
-<details class="see-also" open>
-  <summary>See Also</summary>
-  <ul>
-<li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextlib.html#contextlib.redirect_stdout">contextlib.redirect_stdout</a></li>
-</ul>
-</details>
           
 
 
@@ -2981,11 +3007,13 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="normal">228</span>
 <span class="normal">229</span>
 <span class="normal">230</span>
-<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
+<span class="normal">231</span>
+<span class="normal">232</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">redirect_stdout</span><span class="p">(</span><span class="n">stream</span><span class="p">:</span> <span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Re-direct [sys.stdout][] generated in the current context.</span>
 
-<span class="sd">    See Also:</span>
+<span class="sd">    **See Also**</span>
+
 <span class="sd">        - [contextlib.redirect_stdout][]</span>
 <span class="sd">    """</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">_stdout_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
@@ -3013,14 +3041,10 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
     <div class="doc doc-contents ">
 
         <p>Re-direct <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/sys.html#sys.stderr">sys.stderr</a> generated in the current context.</p>
+<p><strong>See Also</strong></p>
+<pre><code>- [contextlib.redirect_stderr][]
+</code></pre>
 
-
-<details class="see-also" open>
-  <summary>See Also</summary>
-  <ul>
-<li><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/contextlib.html#contextlib.redirect_stderr">contextlib.redirect_stderr</a></li>
-</ul>
-</details>
           
 
 
@@ -3052,8 +3076,7 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">234</span>
-<span class="normal">235</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">235</span>
 <span class="normal">236</span>
 <span class="normal">237</span>
 <span class="normal">238</span>
@@ -3063,11 +3086,14 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 <span class="normal">242</span>
 <span class="normal">243</span>
 <span class="normal">244</span>
-<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">redirect_stderr</span><span class="p">(</span><span class="n">stream</span><span class="p">:</span> <span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">_SupportsRedirectT</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Re-direct [sys.stderr][] generated in the current context.</span>
 
-<span class="sd">    See Also:</span>
+<span class="sd">    **See Also**</span>
+
 <span class="sd">        - [contextlib.redirect_stderr][]</span>
 <span class="sd">    """</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">_stderr_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
@@ -3100,15 +3126,15 @@ For example, if name is "a.b.c", then the code will attempt to set obj.a.b.c to 
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/utils.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">250</span>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
 <span class="normal">254</span>
 <span class="normal">255</span>
-<span class="normal">256</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@contextmanager</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">show_result</span><span class="p">(</span><span class="n">show</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""A context where `show_result` is enabled/disabled."""</span>
     <span class="n">token</span> <span class="o">=</span> <span class="n">_show_result_context</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">show</span><span class="p">)</span>

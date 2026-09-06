@@ -464,6 +464,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -553,14 +555,14 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../notebooks/concurrency/" class="md-nav__link">
+      <a href="../../notebooks/async_kernel/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Concurrent message handling (notebook)
+    Async-kernel (notebook)
   
 
     
@@ -588,7 +590,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Caller: A backend agnostic executor (notebook)
+    Caller: Multi-thread and asynchronous backend function caller (notebook)
   
 
     
@@ -617,6 +619,34 @@ viewing the latest version.
     
   
     Kernel customisation (notebook)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client (Notebook)
   
 
     
@@ -2286,7 +2316,22 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            HasInterface (async_kernel.interface.HasInterface)" href="../interface/#async_kernel.interface.HasInterface">HasInterface</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code>, <code><a class="autorefs autorefs-internal" title="            BaseClient (async_kernel.messaging.base.BaseClient)" href="#async_kernel.messaging.base.BaseClient">BaseClient</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            HasInterface (async_kernel.interface.HasInterface)" href="../interface/#async_kernel.interface.HasInterface">HasInterface</a>[<a class="autorefs autorefs-internal" title="            T_interface_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_interface_co)" href="../typing/#async_kernel.typing.T_interface_co">T_interface_co</a>]</code>, <code><a class="autorefs autorefs-internal" title="            BaseClient (async_kernel.messaging.base.BaseClient)" href="#async_kernel.messaging.base.BaseClient">BaseClient</a>[<a class="autorefs autorefs-internal" title="            T_interface_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_interface_co)" href="../typing/#async_kernel.typing.T_interface_co">T_interface_co</a>]</code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<a class="autorefs autorefs-internal" title="            T_interface_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_interface_co)" href="../typing/#async_kernel.typing.T_interface_co">T_interface_co</a>]</code></p>
 
 
 
@@ -2343,7 +2388,12 @@ viewing the latest version.
       class-attribute
       instance-attribute
    (async_kernel.messaging.LocalClient.connection)" href="#async_kernel.messaging.LocalClient.connection">connection</a></code></b>
-              (<code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]]</code>)
+              (<code><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a>[<a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a>, <a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a>[<a class="autorefs autorefs-internal" title="            T_interface_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_interface_co)" href="../typing/#async_kernel.typing.T_interface_co">T_interface_co</a>]]</code>)
           –
           <div class="doc-md-description">
             <p>A local connection to the interface.</p>
@@ -2409,7 +2459,12 @@ viewing the latest version.
   </span>
 
 <a href="#async_kernel.messaging.LocalClient.connection" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">connection</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a></span><span class="p">[</span><span class="n"><span title="async_kernel.typing.T_interface_co">T_interface_co</span></span><span class="p">]]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">connection</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            T_interface_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_interface_co)" href="../typing/#async_kernel.typing.T_interface_co">T_interface_co</a></span><span class="p">]]</span> <span class="o">=</span> <span class="n"><a class="autorefs autorefs-internal" title="            Fixed (async_kernel.common.Fixed)" href="../common/#async_kernel.common.Fixed">Fixed</a></span><span class="p">(</span>
     <span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a></span><span class="p">(</span><span class="n"><span title="async_kernel.messaging.base.Connection(session_id)">session_id</span></span><span class="o">=</span><span class="n"><span title="c">c</span></span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n"><span title="session_id">session_id</span></span><span class="p">)</span>
 <span class="p">)</span>
 </code></pre></div>
@@ -3062,7 +3117,17 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            HasInterface (async_kernel.interface.HasInterface)" href="../interface/#async_kernel.interface.HasInterface">HasInterface</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code>, <code><a class="autorefs autorefs-internal" title="            BaseMessage (async_kernel.messaging.base.BaseMessage)" href="#async_kernel.messaging.base.BaseMessage">BaseMessage</a></code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            HasInterface (async_kernel.interface.HasInterface)" href="../interface/#async_kernel.interface.HasInterface">HasInterface</a>[<a class="autorefs autorefs-internal" title="            T_interface_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_interface_co)" href="../typing/#async_kernel.typing.T_interface_co">T_interface_co</a>]</code>, <code><a class="autorefs autorefs-internal" title="            BaseMessage (async_kernel.messaging.base.BaseMessage)" href="#async_kernel.messaging.base.BaseMessage">BaseMessage</a></code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<a class="autorefs autorefs-internal" title="            T_interface_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_interface_co)" href="../typing/#async_kernel.typing.T_interface_co">T_interface_co</a>]</code></p>
 
 
 
@@ -3594,7 +3659,12 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            BaseMessage (async_kernel.messaging.base.BaseMessage)" href="#async_kernel.messaging.base.BaseMessage">BaseMessage</a></code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            BaseMessage (async_kernel.messaging.base.BaseMessage)" href="#async_kernel.messaging.base.BaseMessage">BaseMessage</a></code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<a class="autorefs autorefs-internal" title="            T_interface_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_interface_co)" href="../typing/#async_kernel.typing.T_interface_co">T_interface_co</a>]</code></p>
 
 
 
@@ -5239,7 +5309,17 @@ it's still alive.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="async_kernel.messaging.zmq.ZMQMessage">ZMQMessage</span></code>, <code><a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code></p>
+              Bases: <code><span title="async_kernel.messaging.zmq.ZMQMessage">ZMQMessage</span></code>, <code><a class="autorefs autorefs-internal" title="            Connection (async_kernel.messaging.base.Connection)" href="#async_kernel.messaging.base.Connection">Connection</a>[<a class="autorefs autorefs-internal" title="            T_interface_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_interface_co)" href="../typing/#async_kernel.typing.T_interface_co">T_interface_co</a>]</code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<a class="autorefs autorefs-internal" title="            T_interface_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_interface_co)" href="../typing/#async_kernel.typing.T_interface_co">T_interface_co</a>]</code></p>
 
 
 
@@ -5506,7 +5586,17 @@ it's still alive.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            BaseClient (async_kernel.messaging.base.BaseClient)" href="#async_kernel.messaging.base.BaseClient">BaseClient</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code>, <code><span title="async_kernel.messaging.zmq.ZMQMessage">ZMQMessage</span></code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<span title="async_kernel.typing.T_interface_co">T_interface_co</span>]</code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            BaseClient (async_kernel.messaging.base.BaseClient)" href="#async_kernel.messaging.base.BaseClient">BaseClient</a>[<a class="autorefs autorefs-internal" title="            T_interface_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_interface_co)" href="../typing/#async_kernel.typing.T_interface_co">T_interface_co</a>]</code>, <code><span title="async_kernel.messaging.zmq.ZMQMessage">ZMQMessage</span></code>, <code><a class="autorefs autorefs-external" title="typing.Generic" href="https://docs.python.org/3/library/typing.html#typing.Generic">Generic</a>[<a class="autorefs autorefs-internal" title="            T_interface_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_interface_co)" href="../typing/#async_kernel.typing.T_interface_co">T_interface_co</a>]</code></p>
 
 
 

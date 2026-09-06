@@ -464,6 +464,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -553,14 +555,14 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="../../notebooks/concurrency/" class="md-nav__link">
+      <a href="../../notebooks/async_kernel/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Concurrent message handling (notebook)
+    Async-kernel (notebook)
   
 
     
@@ -588,7 +590,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Caller: A backend agnostic executor (notebook)
+    Caller: Multi-thread and asynchronous backend function caller (notebook)
   
 
     
@@ -617,6 +619,34 @@ viewing the latest version.
     
   
     Kernel customisation (notebook)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../notebooks/client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client (Notebook)
   
 
     
@@ -8521,6 +8551,9 @@ and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semant
 <h2 id="unreleased"><a href="https://github.com/fleming79/async-kernel/compare/v0.22.4..HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
 <h3 id="breaking-changes"><!-- 0 --> 🏗️ Breaking changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h3>
 <ul>
+<li>
+<p>Require 'name' in caller.get, update docstrings and pin aiologic version range <a href="https://github.com/fleming79/async-kernel/pull/611">#611</a></p>
+</li>
 <li>
 <p>Do not await coroutine functions in Caller.call_direct. <a href="https://github.com/fleming79/async-kernel/pull/610">#610</a></p>
 </li>

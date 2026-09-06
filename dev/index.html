@@ -577,6 +577,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -666,14 +668,14 @@ viewing the latest version.
   
   
     <li class="md-nav__item">
-      <a href="notebooks/concurrency/" class="md-nav__link">
+      <a href="notebooks/async_kernel/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Concurrent message handling (notebook)
+    Async-kernel (notebook)
   
 
     
@@ -701,7 +703,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Caller: A backend agnostic executor (notebook)
+    Caller: Multi-thread and asynchronous backend function caller (notebook)
   
 
     
@@ -730,6 +732,34 @@ viewing the latest version.
     
   
     Kernel customisation (notebook)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="notebooks/client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client (Notebook)
   
 
     
@@ -1606,7 +1636,7 @@ compatible with CPython (Jupyter &amp; VS code) and Pyodide (Jupyterlite).</p>
   backends, with guest event loop support built in.</li>
 <li>A zmq poll event loop for thread-safe zmq sockets.</li>
 <li><a href="https://ipython.readthedocs.io/en/stable/overview.html#enhanced-interactive-python-shell">IPython shell</a><ul>
-<li>top-level await ('asyncio' or 'trio' backend) in cells</li>
+<li>top-level await (asyncio or trio backend) in cells</li>
 <li>async magic function support in cells</li>
 </ul>
 </li>

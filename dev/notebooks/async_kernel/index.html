@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://fleming79.github.io/async-kernel/dev/notebooks/concurrency/">
+        <link rel="canonical" href="https://fleming79.github.io/async-kernel/dev/notebooks/async_kernel/">
       
       
         <link rel="prev" href="../../usage/commands/">
@@ -27,7 +27,7 @@
     
     
       
-        <title>Concurrent message handling (notebook) - async-kernel</title>
+        <title>Async-kernel (notebook) - async-kernel</title>
       
     
     
@@ -90,7 +90,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#concurrent-message-handling-notebook" class="md-skip">
+        <a href="#async-kernel-notebook" class="md-skip">
           Skip to content
         </a>
       
@@ -142,7 +142,7 @@ viewing the latest version.
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Concurrent message handling (notebook)
+              Async-kernel (notebook)
             
           </span>
         </div>
@@ -466,6 +466,8 @@ viewing the latest version.
       
         
       
+        
+      
     
     
     
@@ -574,7 +576,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Concurrent message handling (notebook)
+    Async-kernel (notebook)
   
 
     
@@ -592,7 +594,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Concurrent message handling (notebook)
+    Async-kernel (notebook)
   
 
     
@@ -618,10 +620,38 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#callers" class="md-nav__link">
+  <a href="#kernel" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Callers
+        Kernel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kernel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        -
       
     </span>
   </a>
@@ -662,21 +692,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#shell-messaging" class="md-nav__link">
+  <a href="#subshells" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Shell messaging
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#control-messaging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Control messaging
+        Subshells
       
     </span>
   </a>
@@ -790,7 +809,7 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#-" class="md-nav__link">
+  <a href="#-_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         -
@@ -801,7 +820,7 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#-_1" class="md-nav__link">
+  <a href="#-_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         -
@@ -834,7 +853,7 @@ viewing the latest version.
   <span class="md-ellipsis">
     
   
-    Caller: A backend agnostic executor (notebook)
+    Caller: Multi-thread and asynchronous backend function caller (notebook)
   
 
     
@@ -863,6 +882,34 @@ viewing the latest version.
     
   
     Kernel customisation (notebook)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../client/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Client (Notebook)
   
 
     
@@ -1621,10 +1668,38 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#callers" class="md-nav__link">
+  <a href="#kernel" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Callers
+        Kernel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kernel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        -
       
     </span>
   </a>
@@ -1665,21 +1740,10 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#shell-messaging" class="md-nav__link">
+  <a href="#subshells" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Shell messaging
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#control-messaging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Control messaging
+        Subshells
       
     </span>
   </a>
@@ -1793,7 +1857,7 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#-" class="md-nav__link">
+  <a href="#-_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         -
@@ -1804,7 +1868,7 @@ viewing the latest version.
 </li>
       
         <li class="md-nav__item">
-  <a href="#-_1" class="md-nav__link">
+  <a href="#-_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         -
@@ -1876,7 +1940,7 @@ viewing the latest version.
               <article class="md-content__inner md-typeset">
                  
 <a
-  href="/async-kernel/dev/notebooks/concurrency/concurrency.ipynb"
+  href="/async-kernel/dev/notebooks/async_kernel/async_kernel.ipynb"
   title="Download Notebook"
   class="md-content__button md-icon"
   download=""
@@ -2618,25 +2682,32 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="concurrent-message-handling-notebook">Concurrent message handling (notebook)<a class="anchor-link" href="#concurrent-message-handling-notebook">¶</a></h1><p>async-kernel provides concurrent message handling with a separate message handler queue for each channel and msg_type.
-Execute requests also provide a separate queue per subshell.</p>
-<h2 id="callers">Callers<a class="anchor-link" href="#callers">¶</a></h2><p>async-kernel provides two <code>Callers</code> for the <em>shell</em> and <em>control</em> channels. The shell's <code>Caller</code> is
-associated with the thread where the kernel is started, normally this is the <em>MainThread</em>.</p>
+<h1 id="async-kernel-notebook">Async-kernel (notebook)<a class="anchor-link" href="#async-kernel-notebook">¶</a></h1><h2 id="kernel">Kernel<a class="anchor-link" href="#kernel">¶</a></h2><p>The kernel provides concurrent message handling for a more responsive kernel and better user experience.</p>
+<h3 id="how-it-works">How it works<a class="anchor-link" href="#how-it-works">¶</a></h3><p>Each <code>msg_type</code> has its own message handler function. As messages arrive the kernel schedules handling of the message as a <em>job</em> with a handler using a <code>Caller</code>. All message types are queued for execution using <code>Caller.queue_call</code> (a queue which runs the handler with each job in the order in which they are scheduled). The message type <code>execute_request</code> also permits <a href="#execute-request-run-mode">concurrent cell execution as a <em>task</em> or <em>thread</em></a>.</p>
+<p>There are a few special message types that are handle by the <em>shell</em> caller, including:</p>
+<ul>
+<li><code>execute_request</code></li>
+<li><code>comm_msg</code></li>
+</ul>
+<p>which are best handled directly in the shell's thread because:</p>
+<ul>
+<li>These messages were initiated by the user or affect the users code directly.</li>
+<li>signal based interrupts can only interrupt on the <code>MainThread</code>.</li>
+<li>It is safer for comm based widget callbacks to surface in the <code>MainThread</code>.</li>
+</ul>
+<p>Most other message types are handled in the 'Control' caller (thread), which means the kernel is responsive, even when the shell's thread is busy.</p>
+<p>There are a few other message types which run in a different caller (named 'language_server') including: <code>inspect_request</code>, <code>complete_request</code> and <code>is_complete_request</code> (see: <code>kernel._default_handle_in_thread</code>).</p>
 <h2 id="interface">Interface<a class="anchor-link" href="#interface">¶</a></h2><p>The interface is a singleton which provides configuration for all classes that subclass from <code>HasInterface</code>.
 The interface coordinates the startup and shutdown of the kernel and connections to communicate with the
 kernel.</p>
 <p>In CPython the interface can be started from the command line with a connection file. The interface
 is configurable via settings defined in the kernel spec, or by using the traitlets style configuration
-files. Multiple connections are allow on the connection.</p>
-<h2 id="connections">Connections<a class="anchor-link" href="#connections">¶</a></h2><p>Connections are provided to communicate with the kernel in the same thread. There is
-no limit to the number of connections, however increasing the number of connections will slow
-down the interface because all iopub messages are sent on every connection. Additional connection
-subclasses can created by subclassing from Connection.</p>
-<h2 id="zmq-socket-based-connection">ZMQ Socket Based connection<a class="anchor-link" href="#zmq-socket-based-connection">¶</a></h2><p>Currently zmq sockets are the only <em>external</em> connection provided. A ZMQConnection is automatically
-started when the interface is started in CPython.</p>
-<h2 id="shell-messaging">Shell messaging<a class="anchor-link" href="#shell-messaging">¶</a></h2><p>Both <code>execute_request</code> and <code>com_msg</code> are always handled in the shell's thread (normally the <em>MainThread</em>).
-All other messages on the shell channel are handled in the control thread.</p>
-<h2 id="control-messaging">Control messaging<a class="anchor-link" href="#control-messaging">¶</a></h2><p>All messages on the control channel are handled in the control thread.</p>
+files. Multiple connections are allow on the interface.</p>
+<h2 id="connections">Connections<a class="anchor-link" href="#connections">¶</a></h2><p>Connections are provided to communicate with the kernel. There is no limit to the number of connections, however increasing the number of connections will slow
+down the interface because all iopub messages are sent to every connection. Additional connection subclasses can created by subclassing <code>Connection</code>.</p>
+<h2 id="zmq-socket-based-connection">ZMQ Socket Based connection<a class="anchor-link" href="#zmq-socket-based-connection">¶</a></h2><p>Currently zmq sockets are the only <em>external</em> connection implemented. A ZMQConnection is automatically
+started when the interface is started in CPython. Multiple zmq clients can connect to the same zmq connection.</p>
+<h2 id="subshells">Subshells<a class="anchor-link" href="#subshells">¶</a></h2><p>A subshell is a new shell instance with its own <code>user_ns</code> (where cell code objects live) (In Jupyterlab / Jupyterlite you can start a subshell from a notebook from the right-click context menu <code>"New subshell console for Notebook"</code>). Execute requests have a separate handler queue per subshell.</p>
 </div>
 </div>
 </div>
@@ -2659,14 +2730,10 @@ All other messages on the shell channel are handled in the control thread.</p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">threading</span>
-
-<span class="kn">import</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ipw</span>
+<div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ipw</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">aiologic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import threading
-
-import ipywidgets as ipw
+<div class="clipboard-copy-txt" id="cell-1">import ipywidgets as ipw
 from aiologic import Event</div>
 </div>
 </div>
@@ -2680,17 +2747,15 @@ from aiologic import Event</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="execute-request-run-mode">Execute request run mode<a class="anchor-link" href="#execute-request-run-mode">¶</a></h2><p>The run mode of <code>execute_request</code> can be modified to run an <code>execute_request</code> separately as a task or thread.</p>
-<p>There are a few options to modify the run mode.</p>
+<h2 id="execute-request-run-mode">Execute request run mode<a class="anchor-link" href="#execute-request-run-mode">¶</a></h2><p>An <code>execute_request</code> can be modified to run as a task or thread.</p>
+<p>There are a few ways this can be achieved:</p>
 <ul>
-<li>Metadata</li>
-<li>Directly in code</li>
-<li>tags</li>
-<li>Message header (in custom messages)</li>
+<li>The top line of a code block</li>
+<li>As a <em>tag</em></li>
 </ul>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>Only Jupyter lab is known to allow concurrent execution of cells.</p>
+<p>Only Jupyterlab and Jupyterlite allow concurrent cell execution. VSCode waits for each cell to complete before running the next.</p>
 </div>
 <h3 id="code-for-example">Code for example<a class="anchor-link" href="#code-for-example">¶</a></h3><ul>
 <li><strong>This example requires ipywidgets</strong></li>
@@ -2721,26 +2786,24 @@ from aiologic import Event</div>
 </div>
 <div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">demo</span><span class="p">():</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Thread name: '</span><span class="si">{</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+    <span class="o">%</span><span class="n">callers</span>
     <span class="n">button</span> <span class="o">=</span> <span class="n">ipw</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"Finish"</span><span class="p">)</span>
     <span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
     <span class="n">button</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="n">event</span><span class="o">.</span><span class="n">set</span><span class="p">())</span>
     <span class="n">display</span><span class="p">(</span><span class="n">button</span><span class="p">)</span>
     <span class="k">await</span> <span class="n">event</span>
     <span class="n">button</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Finished ... thread name: '</span><span class="si">{</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
     <span class="k">return</span> <span class="s2">"Finished"</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">async def demo():
 
-    print(f"Thread name: '{threading.current_thread().name}'")
+    %callers
     button = ipw.Button(description="Finish")
     event = Event()
     button.on_click(lambda _: event.set())
     display(button)
     await event
     button.close()
-    print(f"Finished ... thread name: '{threading.current_thread().name}'")
     return "Finished"</div>
 </div>
 </div>
@@ -2791,7 +2854,10 @@ from aiologic import Event</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Thread name: 'MainThread'
+<pre>        Caller ID              Parent       Backend     Name   Children  Protected
+──────────────────────────────────────────────────────────────────────────────────────
+current → 139771098206336                   asyncio  MainThread       1    🔐    
+          139771053094592 139771098206336   asyncio  Control               🔐    
 </pre>
 </div>
 </div>
@@ -2836,11 +2902,11 @@ from aiologic import Event</div>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python custom-css-classes"><pre><span></span><span class="c1"># task</span>
-<span class="c1"># Tip: try running this cell while the previous cell is still busy.</span>
+<span class="c1"># Tip: try running this cell while the previous cell is still busy (requires Jupyterlab or Jupyterlite).</span>
 <span class="k">await</span> <span class="n">demo</span><span class="p">()</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-4"># task
-# Tip: try running this cell while the previous cell is still busy.
+# Tip: try running this cell while the previous cell is still busy (requires Jupyterlab or Jupyterlite).
 await demo()</div>
 </div>
 </div>
@@ -2853,7 +2919,10 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Thread name: 'MainThread'
+<pre>        Caller ID              Parent       Backend     Name   Children  Protected
+──────────────────────────────────────────────────────────────────────────────────────
+current → 139771098206336                   asyncio  MainThread       1    🔐    
+          139771053094592 139771098206336   asyncio  Control               🔐    
 </pre>
 </div>
 </div>
@@ -2919,7 +2988,10 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>Thread name: 'MainThread'
+<pre>        Caller ID              Parent       Backend     Name   Children  Protected
+──────────────────────────────────────────────────────────────────────────────────────
+current → 139771098206336                   asyncio  MainThread       1    🔐    
+          139771053094592 139771098206336   asyncio  Control               🔐    
 </pre>
 </div>
 </div>
@@ -2967,11 +3039,11 @@ await demo()</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
+<pre>        Caller ID              Parent       Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-          140185870561408                   asyncio  MainThread                2    🔐    
-          140185827686080 140185870561408   asyncio  Control                        🔐    
-current → 140185517946560 140185870561408   asyncio  async-kernel worker                 
+          139771098206336                   asyncio  MainThread                2    🔐    
+          139771053094592 139771098206336   asyncio  Control                        🔐    
+current → 139770751604416 139771098206336   asyncio  async-kernel worker                 
 </pre>
 </div>
 </div>
@@ -3024,12 +3096,12 @@ current → 140185517946560 140185870561408   asyncio  async-kernel worker
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
+<pre>        Caller ID              Parent       Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-          140185870561408                   asyncio  MainThread                3    🔐    
-          140185827686080 140185870561408   asyncio  Control                        🔐    
-          140185517946560 140185870561408   asyncio  async-kernel worker                 
-current → 140185501165248 140185870561408   asyncio  My thread                           
+          139771098206336                   asyncio  MainThread                3    🔐    
+          139771053094592 139771098206336   asyncio  Control                        🔐    
+          139770751604416 139771098206336   asyncio  async-kernel worker                 
+current → 139770650949312 139771098206336   asyncio  My thread                           
 </pre>
 </div>
 </div>
@@ -3092,12 +3164,12 @@ current → 140185501165248 140185870561408   asyncio  My thread
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
+<pre>        Caller ID              Parent       Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-          140185870561408                   asyncio  MainThread                3    🔐    
-          140185827686080 140185870561408   asyncio  Control                        🔐    
-current → 140185517946560 140185870561408   asyncio  async-kernel worker                 
-          140185501165248 140185870561408   asyncio  My thread                           
+          139771098206336                   asyncio  MainThread                3    🔐    
+          139771053094592 139771098206336   asyncio  Control                        🔐    
+current → 139770751604416 139771098206336   asyncio  async-kernel worker                 
+          139770650949312 139771098206336   asyncio  My thread                           
 </pre>
 </div>
 </div>
@@ -3150,13 +3222,13 @@ current → 140185517946560 140185870561408   asyncio  async-kernel worker
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
+<pre>        Caller ID              Parent       Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-          140185870561408                   asyncio  MainThread                4    🔐    
-          140185827686080 140185870561408   asyncio  Control                        🔐    
-          140185517946560 140185870561408   asyncio  async-kernel worker                 
-          140185501165248 140185870561408   asyncio  My thread                           
-current → 140185484383936 140185870561408   asyncio  My executor                         
+          139771098206336                   asyncio  MainThread                4    🔐    
+          139771053094592 139771098206336   asyncio  Control                        🔐    
+          139770751604416 139771098206336   asyncio  async-kernel worker                 
+          139770650949312 139771098206336   asyncio  My thread                           
+current → 139770634168000 139771098206336   asyncio  My executor                         
 </pre>
 </div>
 </div>
@@ -3217,14 +3289,14 @@ await trio.sleep(0)</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
+<pre>        Caller ID              Parent       Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-          140185870561408                   asyncio  MainThread                5    🔐    
-          140185827686080 140185870561408   asyncio  Control                        🔐    
-          140185517946560 140185870561408   asyncio  async-kernel worker                 
-          140185501165248 140185870561408   asyncio  My thread                           
-          140185484383936 140185870561408   asyncio  My executor                         
-current → 140185182402240 140185870561408     trio   My trio executor                    
+          139771098206336                   asyncio  MainThread                5    🔐    
+          139771053094592 139771098206336   asyncio  Control                        🔐    
+          139770751604416 139771098206336   asyncio  async-kernel worker                 
+          139770650949312 139771098206336   asyncio  My thread                           
+          139770634168000 139771098206336   asyncio  My executor                         
+current → 139770617386688 139771098206336     trio   My trio executor                    
 </pre>
 </div>
 </div>
@@ -3238,7 +3310,7 @@ current → 140185182402240 140185870561408     trio   My trio executor
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="specify-the-backend">Specify the backend<a class="anchor-link" href="#specify-the-backend">¶</a></h2><p>Code that is written for a specific backend ('asyncio' or 'trio') can be run in the same thread with one of the following:</p>
+<h2 id="specify-the-backend">Specify the backend<a class="anchor-link" href="#specify-the-backend">¶</a></h2><p>Code that is written for a specific backend (asyncio or trio) can be run in the same thread with one of the following:</p>
 <ul>
 <li><p>Line magic - The code following the magic on the same line is run using the specified backend.</p>
 <ul>
@@ -3369,14 +3441,14 @@ await trio.sleep(0)</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
+<pre>        Caller ID              Parent       Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-current → 140185870561408                   asyncio  MainThread                5    🔐    
-          140185827686080 140185870561408   asyncio  Control                        🔐    
-          140185517946560 140185870561408   asyncio  async-kernel worker                 
-          140185501165248 140185870561408   asyncio  My thread                           
-          140185484383936 140185870561408   asyncio  My executor                         
-          140185182402240 140185870561408     trio   My trio executor                    
+current → 139771098206336                   asyncio  MainThread                5    🔐    
+          139771053094592 139771098206336   asyncio  Control                        🔐    
+          139770751604416 139771098206336   asyncio  async-kernel worker                 
+          139770650949312 139771098206336   asyncio  My thread                           
+          139770634168000 139771098206336   asyncio  My executor                         
+          139770617386688 139771098206336     trio   My trio executor                    
 </pre>
 </div>
 </div>
@@ -3393,14 +3465,14 @@ current → 140185870561408                   asyncio  MainThread               
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output custom-css-classes" data-mime-type="text/plain" tabindex="0">
-<pre>        Caller ID           Parent's ID     Backend          Name       Children  Protected
+<pre>        Caller ID              Parent       Backend          Name       Children  Protected
 ───────────────────────────────────────────────────────────────────────────────────────────────
-current → 140185870561408                   asyncio  MainThread                5    🔐    
-          140185827686080 140185870561408   asyncio  Control                        🔐    
-          140185517946560 140185870561408   asyncio  async-kernel worker                 
-          140185501165248 140185870561408   asyncio  My thread                           
-          140185484383936 140185870561408   asyncio  My executor                         
-          140185182402240 140185870561408     trio   My trio executor                    
+current → 139771098206336                   asyncio  MainThread                5    🔐    
+          139771053094592 139771098206336   asyncio  Control                        🔐    
+          139770751604416 139771098206336   asyncio  async-kernel worker                 
+          139770650949312 139771098206336   asyncio  My thread                           
+          139770634168000 139771098206336   asyncio  My executor                         
+          139770617386688 139771098206336     trio   My trio executor                    
 </pre>
 </div>
 </div>
@@ -3499,13 +3571,13 @@ current → 140185870561408                   asyncio  MainThread               
         
         
           
-          <a href="../caller/" class="md-footer__link md-footer__link--next" aria-label="Next: Caller: A backend agnostic executor (notebook)">
+          <a href="../caller/" class="md-footer__link md-footer__link--next" aria-label="Next: Caller: Multi-thread and asynchronous backend function caller (notebook)">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Caller: A backend agnostic executor (notebook)
+                Caller: Multi-thread and asynchronous backend function caller (notebook)
               </div>
             </div>
             <div class="md-footer__button md-icon">
