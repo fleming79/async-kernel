@@ -55,7 +55,14 @@ class Kernel(
     anyio.AsyncContextManagerMixin,
     Generic[T_interface_co, T_shell_co],
 ):
-    """The class containing the handler methods to implement a Jupyter Kernel."""
+    """This class provides handler methods to implement a Jupyter kernel.
+
+    The kernel [interface][async_kernel.interface.base.Interface] creates a kernel when it is started, so
+    normally there is no reason to create a kernel directly.
+
+    This class can be subclassed to provide a custom kernel, though it may be worth considering
+    if the customization is better achieved by writing a custom [shell][async_kernel.shell.BaseShell] instead.
+    """
 
     help_links = traitlets.List(trait=traitlets.Dict()).tag(config=True)
     """A list of links provided kernel info request."""
@@ -283,19 +290,27 @@ class Kernel(
             if key[0] == subshell_id:
                 self._handler_cache.pop(key, None)
 
-    def _get_handler(self, job: Job) -> HandlerType:
-        """Create or retrieve a handler from the cache.
-
-        Each handler consists of a method from the kernel whose name matches the MsgType such as 'execute_request'.
-        The handler is wrapped in a coroutine `run_job` which performs the steps to publish 'busy' and 'idle' status,
-        execute the handler, and send the reply to the request.
+    def get_handler(self, job: Job) -> HandlerType:
+        """Create or retrieve a job handler from the cache.
 
         Args:
-            job: The message request bundle.
+            job: The message request bundled with the origin and other details.
 
         The cache key is:
-            - (subshell id, Msgtype, Channel): When the MsgType is an Execute request.
-            - (None, Msgtype, Channel): For all other requests.
+            - (subshell id, Msgtype, Channel): When job's message type is an [async_kernel.typing.MsgType.execute_request][].
+            - Msgtype: For all other requests.
+
+        Each handler consists of a method from the kernel whose name matches the [`MsgType`][async_kernel.typing.MsgType].
+        The handler is wrapped in a coroutine function which performs the steps:
+
+        1. Set the context of the job and subshell.
+        2. Publish 'busy' status.
+        3. Run the handler.
+        4. Process handler result.
+            a. If an exception occurred; send a reply that the request failed.
+            b. Send a reply if the handler returned [content][async_kernel.typing.Content].
+        5. Publish 'idle' status.
+        6. Reset the context of the job and subshell.
         """
         try:
             subshell_id = job["msg"]["content"]["subshell_id"]
@@ -304,10 +319,10 @@ class Kernel(
                 subshell_id = job["msg"]["header"]["subshell_id"]  # pyright: ignore[reportTypedDictNotRequiredAccess]
             except KeyError:
                 subshell_id = None
-        msg_type = MsgType(job["msg"]["header"]["msg_type"])
-        key = (
-            (subshell_id, msg_type, Channel(job["msg"]["channel"])) if msg_type is MsgType.execute_request else msg_type
-        )
+        if (msg_type := MsgType(job["msg"]["header"]["msg_type"])) is MsgType.execute_request:
+            key = (subshell_id, msg_type, Channel(job["msg"]["channel"]))
+        else:
+            key = msg_type
         try:
             # Return an existing handler from the cache.
             return self._handler_cache[key]
@@ -338,7 +353,7 @@ class Kernel(
                 finally:
                     # 5. Publish idle status.
                     iopub_send(MsgType.iopub_status, idle, parent=job["msg"], ident=b"kernel.status")
-                    # 6. Set the context of the job and subshell.
+                    # 6. Reset the context of the job and subshell.
                     utils._job_var.reset(job_token)  # pyright: ignore[reportPrivateUsage]
                     ShellPendingManager._id_contextvar.reset(subshell_token)  # pyright: ignore[reportPrivateUsage]
                     del job
@@ -367,10 +382,11 @@ class Kernel(
 
         **See also:**
 
+        - [Kernel.get_handler][]
         - [Kernel.handle_in_shell_thread][]
         - [Kernel.handle_in_thread][]
         """
-        handler = self._get_handler(job)
+        handler = self.get_handler(job)
 
         run_mode: RunMode | CallerCreateOptions | None = None
         msg_type = MsgType(job["msg"]["header"]["msg_type"])
@@ -422,13 +438,10 @@ class Kernel(
         """Create a subshell.
 
         Use [`shell.stop(force=True)`][async_kernel.shell.base.BaseShell.stop] to stop a
-        protected subshell when it is no longer required.
+        _protected_ subshell when it is no longer required.
 
         Args:
             protected: Protect the subshell from accidental deletion.
-
-        Tip:
-            - `await shell.ready` to ensure the shell is 'ready'.
         """
         return self._shell_class(protected=protected)
 
