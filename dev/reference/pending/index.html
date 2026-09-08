@@ -3662,8 +3662,12 @@ previously active pending manager.</p>
       <a href="../caller/#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb last">
+            <span class="doc doc-backlink-crumb">
       <a href="../caller/#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
+  </span>
+
+            <span class="doc doc-backlink-crumb last">
+      <a href="../caller/#async_kernel.caller.Caller.create_pending_group"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_pending_group</a>
   </span>
 
       </li>
@@ -4328,7 +4332,7 @@ previously active pending manager.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a>[<span title="async_kernel.typing.T">T</span>]</code></p>
+              Bases: <code><a class="autorefs autorefs-external" title="collections.abc.Awaitable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Awaitable">Awaitable</a>[<span title="async_kernel.typing.T_co">T_co</span>]</code></p>
 
 
 
@@ -4408,12 +4412,8 @@ previously active pending manager.</p>
       <a href="../caller/#">caller</a>
   </span>
 
-            <span class="doc doc-backlink-crumb">
-      <a href="../caller/#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="../caller/#async_kernel.caller.Caller.create_pending_group"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;create_pending_group</a>
+      <a href="../caller/#async_kernel.caller.Caller"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;Caller</a>
   </span>
 
       </li>
@@ -4448,12 +4448,8 @@ previously active pending manager.</p>
 
       </li>
       <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.pending.PendingTracker"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PendingTracker</a>
-  </span>
-
             <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.pending.PendingTracker.add"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;add</a>
+      <a href="#async_kernel.pending.PendingTracker"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PendingTracker</a>
   </span>
 
       </li>
@@ -5224,7 +5220,7 @@ previously active pending manager.</p>
 <span class="normal">744</span>
 <span class="normal">745</span>
 <span class="normal">746</span>
-<span class="normal">747</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Pending</span><span class="p">(</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T</span><span class="p">]):</span>
+<span class="normal">747</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Pending</span><span class="p">(</span><span class="n">Awaitable</span><span class="p">[</span><span class="n">T_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""Pending is an internally synchronised, cancellable, waitable/awaitable representation of a pending result.</span>
 
 <span class="sd">    It can be thought of as a hybrid between of [asyncio.Future][] and [concurrent.futures.Future][].</span>
@@ -5278,7 +5274,7 @@ previously active pending manager.</p>
     <span class="n">_canceller</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span>
     <span class="n">_exception</span><span class="p">:</span> <span class="ne">Exception</span>
     <span class="n">_done</span><span class="p">:</span> <span class="nb">bool</span>
-    <span class="n">_result</span><span class="p">:</span> <span class="n">T</span>
+    <span class="n">_result</span><span class="p">:</span> <span class="n">T_co</span>
     <span class="n">context</span><span class="p">:</span> <span class="n">contextvars</span><span class="o">.</span><span class="n">Context</span> <span class="o">|</span> <span class="kc">None</span>
 <span class="w">    </span><span class="sd">"""The context associated with Pending."""</span>
 
@@ -5348,7 +5344,7 @@ previously active pending manager.</p>
         <span class="k">return</span> <span class="n">rep</span> <span class="o">+</span> <span class="s2">" &gt;"</span>
 
     <span class="nd">@override</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__await__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">T</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__await__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">T_co</span><span class="p">]:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span><span class="o">.</span><span class="fm">__await__</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
@@ -5361,7 +5357,7 @@ previously active pending manager.</p>
             <span class="n">protect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span> <span class="o">|</span> <span class="o">...</span><span class="p">,</span>
             <span class="n">result</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
             <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
-        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="o">...</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_co</span><span class="p">:</span> <span class="o">...</span>
 
         <span class="nd">@overload</span>
         <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">wait</span><span class="p">(</span>
@@ -5380,7 +5376,7 @@ previously active pending manager.</p>
         <span class="n">protect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_co</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Wait for the pending to be done (internally synchronised).</span>
 
 <span class="sd">        Args:</span>
@@ -5390,7 +5386,7 @@ previously active pending manager.</p>
 <span class="sd">            shield: Shield from external cancellation.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            T: If `result` is `True`.</span>
+<span class="sd">            T_co: If `result` is `True`.</span>
 <span class="sd">            None: If `result` is 'False`.</span>
 
 <span class="sd">        Raises:</span>
@@ -5439,7 +5435,7 @@ previously active pending manager.</p>
             <span class="n">protect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span> <span class="o">|</span> <span class="o">...</span><span class="p">,</span>
             <span class="n">result</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
             <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
-        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span> <span class="o">...</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_co</span><span class="p">:</span> <span class="o">...</span>
 
         <span class="nd">@overload</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">wait_sync</span><span class="p">(</span>
@@ -5458,7 +5454,7 @@ previously active pending manager.</p>
         <span class="n">protect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_co</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Wait synchronously for the pending to be done (internally synchronised) returning the result if specified.</span>
 
 <span class="sd">        Args:</span>
@@ -5514,7 +5510,7 @@ previously active pending manager.</p>
         <span class="k">if</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">e</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">set_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T_co</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pyright: ignore[reportGeneralTypeIssues]</span>
 <span class="w">        </span><span class="sd">"""Set the result (low-level internally synchronised).</span>
 
 <span class="sd">        This is noop if already done.</span>
@@ -5632,7 +5628,7 @@ previously active pending manager.</p>
                     <span class="k">break</span>
         <span class="k">return</span> <span class="n">n</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_co</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Return the result.</span>
 
 <span class="sd">        Raises:</span>
@@ -5937,7 +5933,7 @@ previously active pending manager.</p>
     <span class="n"><a class="autorefs autorefs-internal" title="protect (async_kernel.pending.Pending.wait(protect))" href="#async_kernel.pending.Pending.wait(protect)">protect</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span> <span class="o">|</span> <span class="o">...</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="result (async_kernel.pending.Pending.wait(result))" href="#async_kernel.pending.Pending.wait(result)">result</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="shield (async_kernel.pending.Pending.wait(shield))" href="#async_kernel.pending.Pending.wait(shield)">shield</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T">T</span></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T_co">T_co</span></span>
 </code></pre></div><div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="timeout (async_kernel.pending.Pending.wait(timeout))" href="#async_kernel.pending.Pending.wait(timeout)">timeout</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
@@ -5952,7 +5948,7 @@ previously active pending manager.</p>
     <span class="n"><a class="autorefs autorefs-internal" title="protect (async_kernel.pending.Pending.wait(protect))" href="#async_kernel.pending.Pending.wait(protect)">protect</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="result (async_kernel.pending.Pending.wait(result))" href="#async_kernel.pending.Pending.wait(result)">result</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="shield (async_kernel.pending.Pending.wait(shield))" href="#async_kernel.pending.Pending.wait(shield)">shield</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T_co">T_co</span></span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6008,14 +6004,14 @@ previously active pending manager.</p>
 <p><span class="doc-section-title">Returns:</span></p>
     <ul>
         <li class="doc-section-item field-body">
-<b><code>T</code></b> (              <code><span title="async_kernel.typing.T">T</span> | None</code>
+<b><code>T_co</code></b> (              <code><span title="async_kernel.typing.T_co">T_co</span> | None</code>
 )          –
           <div class="doc-md-description">
             <p>If <code>result</code> is <code>True</code>.</p>
           </div>
         </li>
         <li class="doc-section-item field-body">
-<b><code>None</code></b> (              <code><span title="async_kernel.typing.T">T</span> | None</code>
+<b><code>None</code></b> (              <code><span title="async_kernel.typing.T_co">T_co</span> | None</code>
 )          –
           <div class="doc-md-description">
             <p>If <code>result</code> is 'False`.</p>
@@ -6142,7 +6138,7 @@ previously active pending manager.</p>
     <span class="n">protect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_co</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Wait for the pending to be done (internally synchronised).</span>
 
 <span class="sd">    Args:</span>
@@ -6152,7 +6148,7 @@ previously active pending manager.</p>
 <span class="sd">        shield: Shield from external cancellation.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        T: If `result` is `True`.</span>
+<span class="sd">        T_co: If `result` is `True`.</span>
 <span class="sd">        None: If `result` is 'False`.</span>
 
 <span class="sd">    Raises:</span>
@@ -6211,7 +6207,7 @@ previously active pending manager.</p>
     <span class="n"><a class="autorefs autorefs-internal" title="protect (async_kernel.pending.Pending.wait_sync(protect))" href="#async_kernel.pending.Pending.wait_sync(protect)">protect</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span> <span class="o">|</span> <span class="o">...</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="result (async_kernel.pending.Pending.wait_sync(result))" href="#async_kernel.pending.Pending.wait_sync(result)">result</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="shield (async_kernel.pending.Pending.wait_sync(shield))" href="#async_kernel.pending.Pending.wait_sync(shield)">shield</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T">T</span></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T_co">T_co</span></span>
 </code></pre></div><div class="doc-signature highlight"><pre><span></span><code><span class="nf">wait_sync</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="timeout (async_kernel.pending.Pending.wait_sync(timeout))" href="#async_kernel.pending.Pending.wait_sync(timeout)">timeout</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="o">...</span><span class="p">,</span>
@@ -6226,7 +6222,7 @@ previously active pending manager.</p>
     <span class="n"><a class="autorefs autorefs-internal" title="protect (async_kernel.pending.Pending.wait_sync(protect))" href="#async_kernel.pending.Pending.wait_sync(protect)">protect</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="result (async_kernel.pending.Pending.wait_sync(result))" href="#async_kernel.pending.Pending.wait_sync(result)">result</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="shield (async_kernel.pending.Pending.wait_sync(shield))" href="#async_kernel.pending.Pending.wait_sync(shield)">shield</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T">T</span></span> <span class="o">|</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T_co">T_co</span></span> <span class="o">|</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6378,7 +6374,7 @@ will result in deadlock unless a greenlet based event library is in use.</strong
     <span class="n">protect</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">result</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">shield</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_co</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Wait synchronously for the pending to be done (internally synchronised) returning the result if specified.</span>
 
 <span class="sd">    Args:</span>
@@ -6420,7 +6416,7 @@ will result in deadlock unless a greenlet based event library is in use.</strong
 
 
 <a href="#async_kernel.pending.Pending.set_result" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">set_result</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="value (async_kernel.pending.Pending.set_result(value))" href="#async_kernel.pending.Pending.set_result(value)">value</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.T">T</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">set_result</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="value (async_kernel.pending.Pending.set_result(value))" href="#async_kernel.pending.Pending.set_result(value)">value</a></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.T_co">T_co</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6433,7 +6429,7 @@ will result in deadlock unless a greenlet based event library is in use.</strong
     <ul>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.pending.Pending.set_result(value)" class="doc doc-heading doc-heading-parameter">              <b><code>value</code></b>
-<a href="#async_kernel.pending.Pending.set_result(value)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><span title="async_kernel.typing.T">T</span></code>)
+<a href="#async_kernel.pending.Pending.set_result(value)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><span title="async_kernel.typing.T_co">T_co</span></code>)
           –
           <div class="doc-md-description">
             <p>The result to set.</p>
@@ -6480,7 +6476,7 @@ will result in deadlock unless a greenlet based event library is in use.</strong
 <span class="normal">608</span>
 <span class="normal">609</span>
 <span class="normal">610</span>
-<span class="normal">611</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">611</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">set_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">T_co</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pyright: ignore[reportGeneralTypeIssues]</span>
 <span class="w">    </span><span class="sd">"""Set the result (low-level internally synchronised).</span>
 
 <span class="sd">    This is noop if already done.</span>
@@ -7186,7 +7182,7 @@ will result in deadlock unless a greenlet based event library is in use.</strong
 
 
 <a href="#async_kernel.pending.Pending.result" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">result</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T">T</span></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">result</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.T_co">T_co</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -7252,7 +7248,7 @@ will result in deadlock unless a greenlet based event library is in use.</strong
 <span class="normal">731</span>
 <span class="normal">732</span>
 <span class="normal">733</span>
-<span class="normal">734</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="p">:</span>
+<span class="normal">734</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_co</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Return the result.</span>
 
 <span class="sd">    Raises:</span>

@@ -2149,28 +2149,6 @@ Shells are created as needed by the <a class="autorefs autorefs-internal" title=
       </li>
   </ul>
 
-        <b class="doc doc-backlink-type">Returned by:</b>
-          <ul class="doc doc-backlink-list">
-      <li class="doc doc-backlink">
-            <span class="doc doc-backlink-crumb">
-      <span>Reference</span>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="#">shell</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb">
-      <a href="#async_kernel.shell.base.BaseShell"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaseShell</a>
-  </span>
-
-            <span class="doc doc-backlink-crumb last">
-      <a href="#async_kernel.shell.base.BaseShell.get_ipython"><code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;get_ipython</a>
-  </span>
-
-      </li>
-  </ul>
-
         <b class="doc doc-backlink-type">Subclassed by:</b>
           <ul class="doc doc-backlink-list">
       <li class="doc doc-backlink">
@@ -2677,8 +2655,7 @@ Shells are created as needed by the <a class="autorefs autorefs-internal" title=
 <span class="normal">259</span>
 <span class="normal">260</span>
 <span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseShell</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">LoggingConfigurable</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">262</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseShell</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">LoggingConfigurable</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""The base shell implementation.</span>
 
 <span class="sd">    A shell provides a namespace, performs code execution and provides introspection functionality.</span>
@@ -2842,9 +2819,9 @@ Shells are created as needed by the <a class="autorefs autorefs-internal" title=
             <span class="k">finally</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_resetting</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_ipython</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseShell</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_ipython</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Return the shell for the current context."""</span>
-        <span class="k">return</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_ipython</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_ipython</span><span class="p">()</span>  <span class="c1"># pyright: ignore[reportReturnType]</span>
 
     <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">context</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
@@ -2859,10 +2836,7 @@ Shells are created as needed by the <a class="autorefs autorefs-internal" title=
 <span class="sd">        activated by setting the variable sys.displayhook to it.</span>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">utils</span><span class="o">.</span><span class="n">show_result_enabled</span><span class="p">():</span>
-            <span class="n">content</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="n">content</span><span class="p">[</span><span class="s2">"execution_count"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_count</span>
-            <span class="n">content</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-            <span class="n">content</span><span class="p">[</span><span class="s2">"metadata"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">t_content</span><span class="o">.</span><span class="n">AnyContent</span><span class="p">(</span><span class="n">execution_count</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">execution_count</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="nb">repr</span><span class="p">(</span><span class="n">result</span><span class="p">),</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{})</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_execute_result</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">)</span>
 
     <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_execute</span><span class="p">(</span>
@@ -2878,19 +2852,21 @@ Shells are created as needed by the <a class="autorefs autorefs-internal" title=
         <span class="n">received_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">tags</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteErrorReply</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Called by [async_kernel.kernel.Kernel.execute_request][]."""</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">CompleteReply</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Called by [async_kernel.kernel.Kernel.do_complete][]."""</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">IsCompleteReply</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Called by [async_kernel.kernel.Kernel.complete_request][]."""</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_inspect</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">InspectReply</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Called by [async_kernel.kernel.Kernel.do_inspect][]."""</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 
@@ -2907,7 +2883,7 @@ Shells are created as needed by the <a class="autorefs autorefs-internal" title=
         <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"*"</span><span class="p">,</span>
         <span class="n">unique</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">HistoryReply</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Called by [async_kernel.kernel.Kernel.do_history][]."""</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </code></pre></div></td></tr></table></div>
@@ -3286,7 +3262,7 @@ the context of the shell.</p>
 
 
 <a href="#async_kernel.shell.base.BaseShell.get_ipython" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_ipython</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            BaseShell (async_kernel.shell.base.BaseShell)" href="#async_kernel.shell.base.BaseShell">BaseShell</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">get_ipython</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Self" href="https://docs.python.org/3/library/typing.html#typing.Self">Self</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3299,9 +3275,9 @@ the context of the shell.</p>
               <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">196</span>
 <span class="normal">197</span>
-<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_ipython</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BaseShell</span><span class="p">:</span>
+<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_ipython</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Return the shell for the current context."""</span>
-    <span class="k">return</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_ipython</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">async_kernel</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">get_ipython</span><span class="p">()</span>  <span class="c1"># pyright: ignore[reportReturnType]</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3371,20 +3347,14 @@ activated by setting the variable sys.displayhook to it.</p>
 <span class="normal">211</span>
 <span class="normal">212</span>
 <span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">displayhook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">displayhook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Publish execution results.</span>
 
 <span class="sd">    This is invoked every time the interpreter needs to print, and is</span>
 <span class="sd">    activated by setting the variable sys.displayhook to it.</span>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">utils</span><span class="o">.</span><span class="n">show_result_enabled</span><span class="p">():</span>
-        <span class="n">content</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">content</span><span class="p">[</span><span class="s2">"execution_count"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_count</span>
-        <span class="n">content</span><span class="p">[</span><span class="s2">"data"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-        <span class="n">content</span><span class="p">[</span><span class="s2">"metadata"</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">t_content</span><span class="o">.</span><span class="n">AnyContent</span><span class="p">(</span><span class="n">execution_count</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">execution_count</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="nb">repr</span><span class="p">(</span><span class="n">result</span><span class="p">),</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{})</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_execute_result</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3416,12 +3386,7 @@ activated by setting the variable sys.displayhook to it.</p>
     <span class="n"><span title="async_kernel.shell.base.BaseShell.do_execute(received_time)">received_time</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n"><span title="async_kernel.shell.base.BaseShell.do_execute(tags)">tags</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
     <span class="o">**</span><span class="n"><span title="async_kernel.shell.base.BaseShell.do_execute(**_ignored)">_ignored</span></span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.t_content.ExecuteReply">ExecuteReply</span></span> <span class="o">|</span> <span class="n"><span title="async_kernel.typing.t_content.ExecuteErrorReply">ExecuteErrorReply</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3460,7 +3425,10 @@ activated by setting the variable sys.displayhook to it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">219</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
 <span class="normal">220</span>
 <span class="normal">221</span>
 <span class="normal">222</span>
@@ -3472,10 +3440,7 @@ activated by setting the variable sys.displayhook to it.</p>
 <span class="normal">228</span>
 <span class="normal">229</span>
 <span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_execute</span><span class="p">(</span>
+<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_execute</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
@@ -3488,7 +3453,7 @@ activated by setting the variable sys.displayhook to it.</p>
     <span class="n">received_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">tags</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
     <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteErrorReply</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Called by [async_kernel.kernel.Kernel.execute_request][]."""</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </code></pre></div></td></tr></table></div>
@@ -3509,12 +3474,7 @@ activated by setting the variable sys.displayhook to it.</p>
   </span>
 
 <a href="#async_kernel.shell.base.BaseShell.do_complete" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">do_complete</span><span class="p">(</span><span class="n"><span title="async_kernel.shell.base.BaseShell.do_complete(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.base.BaseShell.do_complete(cursor_pos)">cursor_pos</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">do_complete</span><span class="p">(</span><span class="n"><span title="async_kernel.shell.base.BaseShell.do_complete(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.base.BaseShell.do_complete(cursor_pos)">cursor_pos</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.t_content.CompleteReply">CompleteReply</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3553,9 +3513,9 @@ activated by setting the variable sys.displayhook to it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">CompleteReply</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Called by [async_kernel.kernel.Kernel.do_complete][]."""</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </code></pre></div></td></tr></table></div>
@@ -3576,12 +3536,7 @@ activated by setting the variable sys.displayhook to it.</p>
   </span>
 
 <a href="#async_kernel.shell.base.BaseShell.is_complete" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_complete</span><span class="p">(</span><span class="n"><span title="async_kernel.shell.base.BaseShell.is_complete(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_complete</span><span class="p">(</span><span class="n"><span title="async_kernel.shell.base.BaseShell.is_complete(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.t_content.IsCompleteReply">IsCompleteReply</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3620,9 +3575,9 @@ activated by setting the variable sys.displayhook to it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">240</span>
-<span class="normal">241</span>
-<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">IsCompleteReply</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Called by [async_kernel.kernel.Kernel.complete_request][]."""</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </code></pre></div></td></tr></table></div>
@@ -3643,12 +3598,9 @@ activated by setting the variable sys.displayhook to it.</p>
   </span>
 
 <a href="#async_kernel.shell.base.BaseShell.do_inspect" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">do_inspect</span><span class="p">(</span><span class="n"><span title="async_kernel.shell.base.BaseShell.do_inspect(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.base.BaseShell.do_inspect(cursor_pos)">cursor_pos</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.base.BaseShell.do_inspect(detail_level)">detail_level</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">do_inspect</span><span class="p">(</span>
+    <span class="n"><span title="async_kernel.shell.base.BaseShell.do_inspect(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.base.BaseShell.do_inspect(cursor_pos)">cursor_pos</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.base.BaseShell.do_inspect(detail_level)">detail_level</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.t_content.InspectReply">InspectReply</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3687,9 +3639,13 @@ activated by setting the variable sys.displayhook to it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_inspect</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">InspectReply</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Called by [async_kernel.kernel.Kernel.do_inspect][]."""</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </code></pre></div></td></tr></table></div>
@@ -3722,12 +3678,7 @@ activated by setting the variable sys.displayhook to it.</p>
     <span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(pattern)">pattern</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">=</span> <span class="s2">"*"</span><span class="p">,</span>
     <span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(unique)">unique</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="o">**</span><span class="n"><span title="async_kernel.shell.base.BaseShell.do_history(**_ignored)">_ignored</span></span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.t_content.HistoryReply">HistoryReply</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3766,7 +3717,8 @@ activated by setting the variable sys.displayhook to it.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">248</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">247</span>
+<span class="normal">248</span>
 <span class="normal">249</span>
 <span class="normal">250</span>
 <span class="normal">251</span>
@@ -3780,8 +3732,7 @@ activated by setting the variable sys.displayhook to it.</p>
 <span class="normal">259</span>
 <span class="normal">260</span>
 <span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_history</span><span class="p">(</span>
+<span class="normal">262</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_history</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -3794,7 +3745,7 @@ activated by setting the variable sys.displayhook to it.</p>
     <span class="n">pattern</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"*"</span><span class="p">,</span>
     <span class="n">unique</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">HistoryReply</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Called by [async_kernel.kernel.Kernel.do_history][]."""</span>
     <span class="k">raise</span> <span class="ne">NotImplementedError</span>
 </code></pre></div></td></tr></table></div>

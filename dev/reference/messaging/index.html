@@ -2403,21 +2403,21 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">433</span>
-<span class="normal">434</span>
-<span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span>
-<span class="normal">439</span>
-<span class="normal">440</span>
-<span class="normal">441</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">441</span>
 <span class="normal">442</span>
 <span class="normal">443</span>
 <span class="normal">444</span>
 <span class="normal">445</span>
 <span class="normal">446</span>
-<span class="normal">447</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LocalClient</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LocalClient</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""A client for an interface running in the current process."""</span>
 
     <span class="n">connection</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="n">Connection</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">Connection</span><span class="p">(</span><span class="n">session_id</span><span class="o">=</span><span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">session_id</span><span class="p">))</span>
@@ -2571,7 +2571,7 @@ viewing the latest version.
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="            StartStopTask (async_kernel.caller.StartStopTask)" href="../caller/#async_kernel.caller.StartStopTask">StartStopTask</a></code>, <code><a class="autorefs autorefs-external" title="traitlets.config.LoggingConfigurable" href="https://traitlets.readthedocs.io/en/stable/config-api.html#traitlets.config.LoggingConfigurable">LoggingConfigurable</a></code>, <code><span title="async_kernel.typing.MessageProtocol">MessageProtocol</span></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="            StartStopTask (async_kernel.caller.StartStopTask)" href="../caller/#async_kernel.caller.StartStopTask">StartStopTask</a></code>, <code><a class="autorefs autorefs-external" title="traitlets.config.LoggingConfigurable" href="https://traitlets.readthedocs.io/en/stable/config-api.html#traitlets.config.LoggingConfigurable">LoggingConfigurable</a></code>, <code><a class="autorefs autorefs-internal" title="            MessageProtocol (async_kernel.typing.MessageProtocol)" href="../typing/#async_kernel.typing.MessageProtocol">MessageProtocol</a></code></p>
 
 
 
@@ -2771,9 +2771,7 @@ viewing the latest version.
 <span class="normal">158</span>
 <span class="normal">159</span>
 <span class="normal">160</span>
-<span class="normal">161</span>
-<span class="normal">162</span>
-<span class="normal">163</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseMessage</span><span class="p">(</span><span class="n">StartStopTask</span><span class="p">,</span> <span class="n">LoggingConfigurable</span><span class="p">,</span> <span class="n">MessageProtocol</span><span class="p">):</span>
+<span class="normal">161</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseMessage</span><span class="p">(</span><span class="n">StartStopTask</span><span class="p">,</span> <span class="n">LoggingConfigurable</span><span class="p">,</span> <span class="n">MessageProtocol</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""The base for messaging between kernel interfaces and clients."""</span>
 
     <span class="n">session_id</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="n">c</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span><span class="o">.</span><span class="n">_session_id</span><span class="p">)</span>
@@ -2813,14 +2811,14 @@ viewing the latest version.
     <span class="k">def</span><span class="w"> </span><span class="nf">msg</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">MsgType</span><span class="p">,</span>
-        <span class="n">content</span><span class="p">:</span> <span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">T_content_co</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
         <span class="n">channel</span><span class="p">:</span> <span class="n">Channel</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
-        <span class="n">parent</span><span class="p">:</span> <span class="n">Message</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">parent</span><span class="p">:</span> <span class="n">Message</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">header</span><span class="p">:</span> <span class="n">MsgHeader</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">[</span><span class="n">T</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">[</span><span class="n">T_content_co</span><span class="p">]:</span>
         <span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span> <span class="ow">or</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_parent_message</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">header</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">header</span> <span class="o">=</span> <span class="n">MsgHeader</span><span class="p">(</span>
@@ -2831,11 +2829,11 @@ viewing the latest version.
                 <span class="n">username</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
                 <span class="n">version</span><span class="o">=</span><span class="n">async_kernel</span><span class="o">.</span><span class="n">kernel_protocol_version</span><span class="p">,</span>
             <span class="p">)</span>
-        <span class="k">return</span> <span class="n">Message</span><span class="p">(</span>
+        <span class="k">return</span> <span class="n">Message</span><span class="p">[</span><span class="n">T_content_co</span><span class="p">](</span>
             <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">,</span>
             <span class="n">header</span><span class="o">=</span><span class="n">header</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
             <span class="n">parent_header</span><span class="o">=</span><span class="n">parent</span><span class="p">[</span><span class="s2">"header"</span><span class="p">]</span> <span class="k">if</span> <span class="n">parent</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-            <span class="n">content</span><span class="o">=</span><span class="p">{}</span> <span class="k">if</span> <span class="n">content</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">content</span><span class="p">,</span>
+            <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span>  <span class="c1"># pyright: ignore[reportArgumentType]</span>
             <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span> <span class="k">if</span> <span class="n">metadata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{},</span>
             <span class="n">buffers</span><span class="o">=</span><span class="p">[]</span> <span class="k">if</span> <span class="n">buffers</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">buffers</span><span class="p">,</span>
         <span class="p">)</span>
@@ -2848,16 +2846,14 @@ viewing the latest version.
     <span class="nd">@override</span>
     <span class="nd">@final</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">send_message</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span>
-        <span class="n">ident</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">ident</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">T_reply_content_co</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Sends the message to the other side (client for kernel and vice versa) and returns a PendingMessage."""</span>
         <span class="k">if</span> <span class="n">MsgType</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_type"</span><span class="p">])</span> <span class="ow">in</span> <span class="n">MsgTypeNoReply</span><span class="p">:</span>
             <span class="n">msg_</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">'header'</span><span class="p">][</span><span class="s1">'msg_type'</span><span class="p">]</span><span class="si">}</span><span class="s2"> does not send a reply! Use `send_message_no_reply` instead."</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg_</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Send mssage </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_type"</span><span class="p">],</span> <span class="n">msg</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_pending_messages</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_id"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pen</span> <span class="o">=</span> <span class="n">PendingMessage</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pending_messages</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_id"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pen</span> <span class="o">=</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">T_reply_content_co</span><span class="p">]()</span>
         <span class="n">pen</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_send_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ident</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">pen</span>
 
@@ -2867,16 +2863,16 @@ viewing the latest version.
         <span class="bp">self</span><span class="o">.</span><span class="n">_base_send_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ident</span><span class="p">)</span>
 
     <span class="nd">@override</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">send_reply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s2">"status"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
-            <span class="n">content</span><span class="p">[</span><span class="s2">"status"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"ok"</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">send_reply</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">T_reply_content_co</span><span class="p">,</span> <span class="o">/</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">buffers</span><span class="p">:</span> <span class="n">BuffersType</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span>
             <span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_type"</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"request"</span><span class="p">,</span> <span class="s2">"reply"</span><span class="p">),</span>
             <span class="n">content</span><span class="p">,</span>
             <span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"channel"</span><span class="p">],</span>
             <span class="n">parent</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">],</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">send_message_no_reply</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">job</span><span class="p">[</span><span class="s2">"ident"</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_send_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">job</span><span class="p">[</span><span class="s2">"ident"</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">msg</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"send_reply </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
 
@@ -3045,12 +3041,12 @@ viewing the latest version.
 <a href="#async_kernel.messaging.base.BaseMessage.send_message" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">send_message</span><span class="p">(</span>
     <span class="n"><span title="async_kernel.messaging.base.BaseMessage.send_message(msg)">msg</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Message (async_kernel.typing.Message)" href="../typing/#async_kernel.typing.Message">Message</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.messaging.base.BaseMessage.send_message(ident)">ident</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#list">list</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#bytes">bytes</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            T_reply_content_co
 
 
   
       module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">]</span>
+   (async_kernel.typing._content.T_reply_content_co)" href="../typing/#async_kernel.typing._content.T_reply_content_co">T_reply_content_co</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -3073,21 +3069,17 @@ viewing the latest version.
 <span class="normal">135</span>
 <span class="normal">136</span>
 <span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">138</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="nd">@final</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">send_message</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span>
-    <span class="n">ident</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">ident</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">T_reply_content_co</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Sends the message to the other side (client for kernel and vice versa) and returns a PendingMessage."""</span>
     <span class="k">if</span> <span class="n">MsgType</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_type"</span><span class="p">])</span> <span class="ow">in</span> <span class="n">MsgTypeNoReply</span><span class="p">:</span>
         <span class="n">msg_</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">msg</span><span class="p">[</span><span class="s1">'header'</span><span class="p">][</span><span class="s1">'msg_type'</span><span class="p">]</span><span class="si">}</span><span class="s2"> does not send a reply! Use `send_message_no_reply` instead."</span>
         <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg_</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Send mssage </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">"</span><span class="p">,</span> <span class="n">msg</span><span class="p">[</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_type"</span><span class="p">],</span> <span class="n">msg</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_pending_messages</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_id"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pen</span> <span class="o">=</span> <span class="n">PendingMessage</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_pending_messages</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_id"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">pen</span> <span class="o">=</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">T_reply_content_co</span><span class="p">]()</span>
     <span class="n">pen</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_base_send_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ident</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">pen</span>
 </code></pre></div></td></tr></table></div>
@@ -3314,7 +3306,9 @@ viewing the latest version.
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">166</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
 <span class="normal">167</span>
 <span class="normal">168</span>
 <span class="normal">169</span>
@@ -3362,9 +3356,7 @@ viewing the latest version.
 <span class="normal">211</span>
 <span class="normal">212</span>
 <span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Connection</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">BaseMessage</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Connection</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">BaseMessage</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""Provides a connection to the interface for messaging."""</span>
 
     <span class="nd">@override</span>
@@ -3395,7 +3387,7 @@ viewing the latest version.
     <span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">msg_type</span><span class="p">:</span> <span class="n">IOPubMsgTypeAlias</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
-        <span class="n">content</span><span class="p">:</span> <span class="n">Content</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">content</span><span class="p">:</span> <span class="n">T_content_co</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">parent</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">MsgHeader</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>
@@ -3454,13 +3446,13 @@ viewing the latest version.
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">169</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
 <span class="normal">170</span>
 <span class="normal">171</span>
 <span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">173</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">connection_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">started</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Any</span><span class="p">],</span> <span class="n">stop</span><span class="p">:</span> <span class="n">ProtectedPending</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Open the channels, set ready when ready block until stopped, **Don't call directly**."""</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">update_connections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -3514,7 +3506,9 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">177</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span>
 <span class="normal">180</span>
@@ -3524,9 +3518,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">handle_incoming_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">ident</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bytes</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""The handler for messages received on this connection.</span>
 
@@ -3554,13 +3546,18 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 
 <a href="#async_kernel.messaging.base.Connection.iopub_send" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">iopub_send</span><span class="p">(</span>
-    <span class="n"><span title="async_kernel.messaging.base.Connection.iopub_send(msg_type)">msg_type</span></span><span class="p">:</span> <span class="n"><span title="async_kernel.typing.IOPubMsgTypeAlias">IOPubMsgTypeAlias</span></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span>
-    <span class="n"><span title="async_kernel.messaging.base.Connection.iopub_send(content)">content</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
+    <span class="n"><span title="async_kernel.messaging.base.Connection.iopub_send(msg_type)">msg_type</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            IOPubMsgTypeAlias
 
 
   
       module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+   (async_kernel.typing.IOPubMsgTypeAlias)" href="../typing/#async_kernel.typing.IOPubMsgTypeAlias">IOPubMsgTypeAlias</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span>
+    <span class="n"><span title="async_kernel.messaging.base.Connection.iopub_send(content)">content</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            T_content_co
+
+
+  
+      module-attribute
+   (async_kernel.typing.T_content_co)" href="../typing/#async_kernel.typing.T_content_co">T_content_co</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n"><span title="async_kernel.messaging.base.Connection.iopub_send(metadata)">metadata</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n"><span title="async_kernel.messaging.base.Connection.iopub_send(parent)">parent</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            MsgHeader (async_kernel.typing.MsgHeader)" href="../typing/#async_kernel.typing.MsgHeader">MsgHeader</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            NoValue
@@ -3587,7 +3584,9 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">194</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
 <span class="normal">195</span>
 <span class="normal">196</span>
 <span class="normal">197</span>
@@ -3607,12 +3606,10 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <span class="normal">211</span>
 <span class="normal">212</span>
 <span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">iopub_send</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">msg_type</span><span class="p">:</span> <span class="n">IOPubMsgTypeAlias</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">content</span><span class="p">:</span> <span class="n">Content</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">content</span><span class="p">:</span> <span class="n">T_content_co</span> <span class="o">|</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
     <span class="o">*</span><span class="p">,</span>
     <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">parent</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">MsgHeader</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>
@@ -3813,12 +3810,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
       class-attribute
       instance-attribute
    (async_kernel.messaging.base.BaseClient.default_input_hander)" href="#async_kernel.messaging.base.BaseClient.default_input_hander">default_input_hander</a></code></b>
-              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a>], <a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]] | None</code>)
+              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-internal" title="            InputRequest (async_kernel.typing._content.InputRequest)" href="../typing/#async_kernel.typing._content.InputRequest">InputRequest</a>], <a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]] | None</code>)
           –
           <div class="doc-md-description">
             <p>The default handler for input requests.</p>
@@ -3828,7 +3820,9 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">219</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
 <span class="normal">220</span>
 <span class="normal">221</span>
 <span class="normal">222</span>
@@ -4039,12 +4033,22 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <span class="normal">427</span>
 <span class="normal">428</span>
 <span class="normal">429</span>
-<span class="normal">430</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseClient</span><span class="p">(</span><span class="n">BaseMessage</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">BaseClient</span><span class="p">(</span><span class="n">BaseMessage</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""Communicates with a single connection."""</span>
 
-    <span class="n">_input_handlers</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Content</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">_input_handlers</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">t_content</span><span class="o">.</span><span class="n">InputRequest</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span>
+        <span class="nb">dict</span>
+    <span class="p">)</span>
 
-    <span class="n">default_input_hander</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Content</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Callable</span><span class="p">(</span>  <span class="c1"># pyright: ignore[reportAssignmentType]</span>
+    <span class="n">default_input_hander</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">t_content</span><span class="o">.</span><span class="n">InputRequest</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">Callable</span><span class="p">(</span>  <span class="c1"># pyright: ignore[reportAssignmentType]</span>
         <span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="w">    </span><span class="sd">"""The default handler for input requests."""</span>
@@ -4068,22 +4072,23 @@ be an empty list when there is only one connection, such as <a class="autorefs a
         <span class="n">handler</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_type"</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">caller</span><span class="o">.</span><span class="n">to_thread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wrap_request_handler</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="n">job</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_wrap_request_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Job</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Content</span><span class="p">]],</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">_wrap_request_handler</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Job</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">t_content</span><span class="o">.</span><span class="n">T_content_co</span><span class="p">]],</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Handle messages from the kernel interface, currently only `input_request` is implemented."""</span>
         <span class="n">reply_msg_type</span><span class="p">:</span> <span class="n">MsgType</span> <span class="o">=</span> <span class="n">MsgType</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_type"</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"request"</span><span class="p">,</span> <span class="s2">"reply"</span><span class="p">))</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">content</span> <span class="o">=</span> <span class="k">await</span> <span class="n">func</span><span class="p">(</span><span class="n">job</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="n">content</span><span class="p">[</span><span class="s2">"status"</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"error"</span><span class="p">,</span> <span class="s2">"ok"</span><span class="p">]</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">content</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">reply_msg_type</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"channel"</span><span class="p">],</span> <span class="n">parent</span><span class="o">=</span><span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">send_message_no_reply</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">job</span><span class="p">[</span><span class="s2">"ident"</span><span class="p">])</span>
 
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">InputRequest</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">InputReply</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Handle an `input_request` raised by the connected kernel."""</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">parent</span> <span class="o">:=</span> <span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"parent_header"</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">handler</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_handlers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">parent</span><span class="p">[</span><span class="s2">"msg_id"</span><span class="p">],</span> <span class="kc">None</span><span class="p">)):</span>
             <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">handler</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"content"</span><span class="p">])</span>
-            <span class="k">return</span> <span class="n">Content</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="s2">"ok"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">t_content</span><span class="o">.</span><span class="n">InputReply</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="s2">"ok"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
         <span class="n">msg_</span> <span class="o">=</span> <span class="s2">"A handler is not available!"</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg_</span><span class="p">)</span>
 
@@ -4136,10 +4141,10 @@ be an empty list when there is only one connection, such as <a class="autorefs a
         <span class="n">user_expressions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">stop_on_error</span><span class="p">:</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>
         <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">input_handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Content</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>
+        <span class="n">input_handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">t_content</span><span class="o">.</span><span class="n">InputRequest</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>
         <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
         <span class="n">subshell_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteErrorReply</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Execute code.</span>
 
 <span class="sd">        Params:</span>
@@ -4155,7 +4160,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <span class="sd">            stop_on_error: Flag whether to abort the execution queue, if an exception is encountered.</span>
 <span class="sd">        """</span>
         <span class="n">input_handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_input_hander</span> <span class="k">if</span> <span class="n">input_handler</span> <span class="ow">is</span> <span class="n">NoValue</span> <span class="k">else</span> <span class="n">input_handler</span>
-        <span class="n">content</span><span class="p">:</span> <span class="n">ExecuteContent</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteRequest</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span>
             <span class="s2">"silent"</span><span class="p">:</span> <span class="n">silent</span><span class="p">,</span>
             <span class="s2">"store_history"</span><span class="p">:</span> <span class="n">store_history</span><span class="p">,</span>
@@ -4167,11 +4172,13 @@ be an empty list when there is only one connection, such as <a class="autorefs a
         <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">execute_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">input_handler</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_input_handlers</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_id"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">input_handler</span>
-        <span class="n">pen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">pen</span><span class="p">:</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteErrorReply</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
         <span class="n">pen</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_handlers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">pen</span><span class="o">.</span><span class="n">msg_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">pen</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">CompleteReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Tab complete text.</span>
 
 <span class="sd">        Args:</span>
@@ -4180,13 +4187,13 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <span class="sd">            cursor_pos: The position of the cursor in the block of code where the completion was requested.</span>
 <span class="sd">                Default: `len(code)`.</span>
 <span class="sd">        """</span>
-        <span class="k">if</span> <span class="n">cursor_pos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">cursor_pos</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
-        <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">"cursor_pos"</span><span class="p">:</span> <span class="n">cursor_pos</span><span class="p">}</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">t_content</span><span class="o">.</span><span class="n">CompleteRequest</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span> <span class="k">if</span> <span class="n">cursor_pos</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">cursor_pos</span><span class="p">)</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">complete_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inspect</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">InspectReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Get metadata information about an object.</span>
 
 <span class="sd">        Params:</span>
@@ -4197,7 +4204,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">cursor_pos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">cursor_pos</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
-        <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">"cursor_pos"</span><span class="p">:</span> <span class="n">cursor_pos</span><span class="p">,</span> <span class="s2">"detail_level"</span><span class="p">:</span> <span class="n">detail_level</span><span class="p">}</span>
+        <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">InspectRequest</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">"cursor_pos"</span><span class="p">:</span> <span class="n">cursor_pos</span><span class="p">,</span> <span class="s2">"detail_level"</span><span class="p">:</span> <span class="n">detail_level</span><span class="p">}</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">inspect_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">history</span><span class="p">(</span>
@@ -4206,7 +4213,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
         <span class="n">output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">hist_access_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"tail"</span><span class="p">,</span> <span class="s2">"range"</span><span class="p">,</span> <span class="s2">"search"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"range"</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">HistoryReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Get entries from the history list.</span>
 
 <span class="sd">        Args:</span>
@@ -4227,30 +4234,35 @@ be an empty list when there is only one connection, such as <a class="autorefs a
         <span class="k">if</span> <span class="n">hist_access_type</span> <span class="o">==</span> <span class="s2">"range"</span><span class="p">:</span>
             <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"session"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
             <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"start"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">content</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">raw</span><span class="o">=</span><span class="n">raw</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">hist_access_type</span><span class="o">=</span><span class="n">hist_access_type</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">t_content</span><span class="o">.</span><span class="n">HistoryRequest</span><span class="p">(</span><span class="n">raw</span><span class="o">=</span><span class="n">raw</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">hist_access_type</span><span class="o">=</span><span class="n">hist_access_type</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">history_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">kernel_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">kernel_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">KernelInfoReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Request kernel info."""</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">kernel_info_request</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">t_content</span><span class="o">.</span><span class="n">KernelInfoRequest</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">kernel_info_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">comm_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">comm_info</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">target_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">CommInfoReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Request comm info."""</span>
-        <span class="n">content</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">target_name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{</span><span class="s2">"target_name"</span><span class="p">:</span> <span class="n">target_name</span><span class="p">}</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">comm_info_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">t_content</span><span class="o">.</span><span class="n">CommInfoRequest</span><span class="p">(</span><span class="n">target_name</span><span class="o">=</span><span class="n">target_name</span><span class="p">)</span> <span class="k">if</span> <span class="n">target_name</span> <span class="k">else</span> <span class="n">t_content</span><span class="o">.</span><span class="n">CommInfoRequest</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">comm_info_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">IsCompleteReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Ask the kernel whether some code is complete and ready to execute."""</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">is_complete_request</span><span class="p">,</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">},</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
+        <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">IsCompleteRequest</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">is_complete_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">ShutdownReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">"""Request an immediate kernel shutdown.</span>
 
 <span class="sd">        Upon receipt of the (empty) reply, client code can safely assume that</span>
 <span class="sd">        the kernel has shut down and it's safe to forcefully terminate it if</span>
 <span class="sd">        it's still alive.</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">shutdown_request</span><span class="p">,</span> <span class="p">{</span><span class="s2">"restart"</span><span class="p">:</span> <span class="n">restart</span><span class="p">},</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">))</span>
+        <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ShutdownRequest</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"restart"</span><span class="p">:</span> <span class="n">restart</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">shutdown_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
               </details>
 
@@ -4278,12 +4290,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
   </span>
 
 <a href="#async_kernel.messaging.base.BaseClient.default_input_hander" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="n">default_input_hander</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">default_input_hander</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="            InputRequest (async_kernel.typing._content.InputRequest)" href="../typing/#async_kernel.typing._content.InputRequest">InputRequest</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n"><span title="traitlets.traitlets">traitlets</span></span><span class="o">.</span><span class="n"><a class="autorefs autorefs-external" title="traitlets.traitlets.Callable" href="https://traitlets.readthedocs.io/en/stable/trait_types.html#traitlets.Callable">Callable</a></span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n"><span title="traitlets.traitlets.Callable(allow_none)">allow_none</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n"><span title="tag">tag</span></span><span class="p">(</span><span class="n"><span title="tag(config)">config</span></span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="p">)</span>
 </code></pre></div>
@@ -4312,17 +4319,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
   </span>
 
 <a href="#async_kernel.messaging.base.BaseClient.input_request" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">input_request</span><span class="p">(</span><span class="n"><span title="async_kernel.messaging.base.BaseClient.input_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">input_request</span><span class="p">(</span><span class="n"><span title="async_kernel.messaging.base.BaseClient.input_request(job)">job</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="            Job (async_kernel.typing.Job)" href="../typing/#async_kernel.typing.Job">Job</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            InputRequest (async_kernel.typing._content.InputRequest)" href="../typing/#async_kernel.typing._content.InputRequest">InputRequest</a></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            InputReply (async_kernel.typing._content.InputReply)" href="../typing/#async_kernel.typing._content.InputReply">InputReply</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4333,17 +4330,17 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">259</span>
-<span class="normal">260</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">260</span>
 <span class="normal">261</span>
 <span class="normal">262</span>
 <span class="normal">263</span>
 <span class="normal">264</span>
-<span class="normal">265</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">Content</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">265</span>
+<span class="normal">266</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">input_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job</span><span class="p">:</span> <span class="n">Job</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">InputRequest</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">InputReply</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Handle an `input_request` raised by the connected kernel."""</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">parent</span> <span class="o">:=</span> <span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"parent_header"</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(</span><span class="n">handler</span> <span class="o">:=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_handlers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">parent</span><span class="p">[</span><span class="s2">"msg_id"</span><span class="p">],</span> <span class="kc">None</span><span class="p">)):</span>
         <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">handler</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="s2">"msg"</span><span class="p">][</span><span class="s2">"content"</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">Content</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="s2">"ok"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">t_content</span><span class="o">.</span><span class="n">InputReply</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="s2">"ok"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
     <span class="n">msg_</span> <span class="o">=</span> <span class="s2">"A handler is not available!"</span>
     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg_</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -4415,8 +4412,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">267</span>
-<span class="normal">268</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">268</span>
 <span class="normal">269</span>
 <span class="normal">270</span>
 <span class="normal">271</span>
@@ -4452,7 +4448,8 @@ be an empty list when there is only one connection, such as <a class="autorefs a
 <span class="normal">301</span>
 <span class="normal">302</span>
 <span class="normal">303</span>
-<span class="normal">304</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
+<span class="normal">304</span>
+<span class="normal">305</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">iopub_subscribe</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">:</span> <span class="nb">bytes</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">""</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">10.0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AsyncGenerator</span><span class="p">[</span><span class="n">SingleAsyncQueue</span><span class="p">[</span><span class="n">Message</span><span class="p">]]:</span>
@@ -4522,12 +4519,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
       module-attribute
    (async_kernel.typing.NoValue)" href="../typing/#async_kernel.typing.NoValue">NoValue</a></span><span class="p">,</span>
     <span class="n"><span title="async_kernel.messaging.base.BaseClient.execute(metadata)">metadata</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#dict">dict</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n"><a class="autorefs autorefs-internal" title="input_handler (async_kernel.messaging.base.BaseClient.execute(input_handler))" href="#async_kernel.messaging.base.BaseClient.execute(input_handler)">input_handler</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]]</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="input_handler (async_kernel.messaging.base.BaseClient.execute(input_handler))" href="#async_kernel.messaging.base.BaseClient.execute(input_handler)">input_handler</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a></span><span class="p">[[</span><span class="n"><a class="autorefs autorefs-internal" title="            InputRequest (async_kernel.typing._content.InputRequest)" href="../typing/#async_kernel.typing._content.InputRequest">InputRequest</a></span><span class="p">],</span> <span class="n"><a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]]</span>
     <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            NoValue
 
 
@@ -4560,7 +4552,7 @@ be an empty list when there is only one connection, such as <a class="autorefs a
       instance-attribute
    (async_kernel.typing.Channel.shell)" href="../typing/#async_kernel.typing.Channel.shell">shell</a></span><span class="p">,</span>
     <span class="n"><span title="async_kernel.messaging.base.BaseClient.execute(subshell_id)">subshell_id</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            ExecuteReply (async_kernel.typing._content.ExecuteReply)" href="../typing/#async_kernel.typing._content.ExecuteReply">ExecuteReply</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            ExecuteErrorReply (async_kernel.typing._content.ExecuteErrorReply)" href="../typing/#async_kernel.typing._content.ExecuteErrorReply">ExecuteErrorReply</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4613,12 +4605,7 @@ dict. The expression values are returned as strings formatted using <a class="au
         </li>
         <li class="doc-section-item field-body">
 <h4 id="async_kernel.messaging.base.BaseClient.execute(input_handler)" class="doc doc-heading doc-heading-parameter">              <b><code>input_handler</code></b>
-<a href="#async_kernel.messaging.base.BaseClient.execute(input_handler)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a>], <a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]] | <a class="autorefs autorefs-internal" title="            NoValue
+<a href="#async_kernel.messaging.base.BaseClient.execute(input_handler)" class="headerlink" title="Permanent link">&para;</a></h4>              (<code><a class="autorefs autorefs-external" title="collections.abc.Callable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable">Callable</a>[[<a class="autorefs autorefs-internal" title="            InputRequest (async_kernel.typing._content.InputRequest)" href="../typing/#async_kernel.typing._content.InputRequest">InputRequest</a>], <a class="autorefs autorefs-external" title="types.CoroutineType" href="https://docs.python.org/3/library/types.html#types.CoroutineType">CoroutineType</a>[<a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, <a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a>, <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a>]] | <a class="autorefs autorefs-internal" title="            NoValue
 
 
   
@@ -4663,8 +4650,7 @@ When not provided, stdin is disabled.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">307</span>
-<span class="normal">308</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">308</span>
 <span class="normal">309</span>
 <span class="normal">310</span>
 <span class="normal">311</span>
@@ -4705,7 +4691,8 @@ When not provided, stdin is disabled.</p>
 <span class="normal">346</span>
 <span class="normal">347</span>
 <span class="normal">348</span>
-<span class="normal">349</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span>
+<span class="normal">349</span>
+<span class="normal">350</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">execute</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">silent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -4714,10 +4701,10 @@ When not provided, stdin is disabled.</p>
     <span class="n">user_expressions</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">stop_on_error</span><span class="p">:</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>
     <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">input_handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Content</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>
+    <span class="n">input_handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">t_content</span><span class="o">.</span><span class="n">InputRequest</span><span class="p">],</span> <span class="n">CoroutineType</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="n">NoValue</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">NoValue</span><span class="p">,</span>
     <span class="n">channel</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">]</span> <span class="o">=</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">,</span>
     <span class="n">subshell_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteErrorReply</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Execute code.</span>
 
 <span class="sd">    Params:</span>
@@ -4733,7 +4720,7 @@ When not provided, stdin is disabled.</p>
 <span class="sd">        stop_on_error: Flag whether to abort the execution queue, if an exception is encountered.</span>
 <span class="sd">    """</span>
     <span class="n">input_handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_input_hander</span> <span class="k">if</span> <span class="n">input_handler</span> <span class="ow">is</span> <span class="n">NoValue</span> <span class="k">else</span> <span class="n">input_handler</span>
-    <span class="n">content</span><span class="p">:</span> <span class="n">ExecuteContent</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteRequest</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span>
         <span class="s2">"silent"</span><span class="p">:</span> <span class="n">silent</span><span class="p">,</span>
         <span class="s2">"store_history"</span><span class="p">:</span> <span class="n">store_history</span><span class="p">,</span>
@@ -4745,7 +4732,7 @@ When not provided, stdin is disabled.</p>
     <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">execute_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">input_handler</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_input_handlers</span><span class="p">[</span><span class="n">msg</span><span class="p">[</span><span class="s2">"header"</span><span class="p">][</span><span class="s2">"msg_id"</span><span class="p">]]</span> <span class="o">=</span> <span class="n">input_handler</span>
-    <span class="n">pen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="n">pen</span><span class="p">:</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteErrorReply</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="n">pen</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="k">lambda</span> <span class="n">_</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_handlers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">pen</span><span class="o">.</span><span class="n">msg_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">pen</span>
 </code></pre></div></td></tr></table></div>
@@ -4762,12 +4749,9 @@ When not provided, stdin is disabled.</p>
 
 
 <a href="#async_kernel.messaging.base.BaseClient.complete" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">complete</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="code (async_kernel.messaging.base.BaseClient.complete(code))" href="#async_kernel.messaging.base.BaseClient.complete(code)">code</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="cursor_pos (async_kernel.messaging.base.BaseClient.complete(cursor_pos))" href="#async_kernel.messaging.base.BaseClient.complete(cursor_pos)">cursor_pos</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">complete</span><span class="p">(</span>
+    <span class="n"><a class="autorefs autorefs-internal" title="code (async_kernel.messaging.base.BaseClient.complete(code))" href="#async_kernel.messaging.base.BaseClient.complete(code)">code</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="cursor_pos (async_kernel.messaging.base.BaseClient.complete(cursor_pos))" href="#async_kernel.messaging.base.BaseClient.complete(cursor_pos)">cursor_pos</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            CompleteReply (async_kernel.typing._content.CompleteReply)" href="../typing/#async_kernel.typing._content.CompleteReply">CompleteReply</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            ErrorReply (async_kernel.typing._content.ErrorReply)" href="../typing/#async_kernel.typing._content.ErrorReply">ErrorReply</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4803,8 +4787,7 @@ Default: <code>len(code)</code>.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">351</span>
-<span class="normal">352</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">352</span>
 <span class="normal">353</span>
 <span class="normal">354</span>
 <span class="normal">355</span>
@@ -4816,7 +4799,10 @@ Default: <code>len(code)</code>.</p>
 <span class="normal">361</span>
 <span class="normal">362</span>
 <span class="normal">363</span>
-<span class="normal">364</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+<span class="normal">364</span>
+<span class="normal">365</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">complete</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">CompleteReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Tab complete text.</span>
 
 <span class="sd">    Args:</span>
@@ -4825,9 +4811,7 @@ Default: <code>len(code)</code>.</p>
 <span class="sd">        cursor_pos: The position of the cursor in the block of code where the completion was requested.</span>
 <span class="sd">            Default: `len(code)`.</span>
 <span class="sd">    """</span>
-    <span class="k">if</span> <span class="n">cursor_pos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">cursor_pos</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">"cursor_pos"</span><span class="p">:</span> <span class="n">cursor_pos</span><span class="p">}</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">t_content</span><span class="o">.</span><span class="n">CompleteRequest</span><span class="p">(</span><span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span> <span class="k">if</span> <span class="n">cursor_pos</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">cursor_pos</span><span class="p">)</span>
     <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">complete_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
@@ -4846,12 +4830,7 @@ Default: <code>len(code)</code>.</p>
 <a href="#async_kernel.messaging.base.BaseClient.inspect" class="headerlink" title="Permanent link">&para;</a></h3>
 <div class="doc-signature highlight"><pre><span></span><code><span class="nf">inspect</span><span class="p">(</span>
     <span class="n"><a class="autorefs autorefs-internal" title="code (async_kernel.messaging.base.BaseClient.inspect(code))" href="#async_kernel.messaging.base.BaseClient.inspect(code)">code</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="cursor_pos (async_kernel.messaging.base.BaseClient.inspect(cursor_pos))" href="#async_kernel.messaging.base.BaseClient.inspect(cursor_pos)">cursor_pos</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n"><a class="autorefs autorefs-internal" title="detail_level (async_kernel.messaging.base.BaseClient.inspect(detail_level))" href="#async_kernel.messaging.base.BaseClient.inspect(detail_level)">detail_level</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">=</span> <span class="mi">0</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            InspectReply (async_kernel.typing._content.InspectReply)" href="../typing/#async_kernel.typing._content.InspectReply">InspectReply</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            ErrorReply (async_kernel.typing._content.ErrorReply)" href="../typing/#async_kernel.typing._content.ErrorReply">ErrorReply</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -4896,8 +4875,7 @@ Can be anything between a variable name and an entire cell.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">366</span>
-<span class="normal">367</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">367</span>
 <span class="normal">368</span>
 <span class="normal">369</span>
 <span class="normal">370</span>
@@ -4908,7 +4886,12 @@ Can be anything between a variable name and an entire cell.</p>
 <span class="normal">375</span>
 <span class="normal">376</span>
 <span class="normal">377</span>
-<span class="normal">378</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">inspect</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">InspectReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Get metadata information about an object.</span>
 
 <span class="sd">    Params:</span>
@@ -4919,7 +4902,7 @@ Can be anything between a variable name and an entire cell.</p>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">cursor_pos</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">cursor_pos</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">"cursor_pos"</span><span class="p">:</span> <span class="n">cursor_pos</span><span class="p">,</span> <span class="s2">"detail_level"</span><span class="p">:</span> <span class="n">detail_level</span><span class="p">}</span>
+    <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">InspectRequest</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">"cursor_pos"</span><span class="p">:</span> <span class="n">cursor_pos</span><span class="p">,</span> <span class="s2">"detail_level"</span><span class="p">:</span> <span class="n">detail_level</span><span class="p">}</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">inspect_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4940,12 +4923,7 @@ Can be anything between a variable name and an entire cell.</p>
     <span class="n"><a class="autorefs autorefs-internal" title="output (async_kernel.messaging.base.BaseClient.history(output))" href="#async_kernel.messaging.base.BaseClient.history(output)">output</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n"><a class="autorefs autorefs-internal" title="hist_access_type (async_kernel.messaging.base.BaseClient.history(hist_access_type))" href="#async_kernel.messaging.base.BaseClient.history(hist_access_type)">hist_access_type</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Literal" href="https://docs.python.org/3/library/typing.html#typing.Literal">Literal</a></span><span class="p">[</span><span class="s2">"tail"</span><span class="p">,</span> <span class="s2">"range"</span><span class="p">,</span> <span class="s2">"search"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"range"</span><span class="p">,</span>
     <span class="o">**</span><span class="n"><a class="autorefs autorefs-internal" title="**kwargs (async_kernel.messaging.base.BaseClient.history(**kwargs))" href="#async_kernel.messaging.base.BaseClient.history(**kwargs)">kwargs</a></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="typing.Any" href="https://docs.python.org/3/library/typing.html#typing.Any">Any</a></span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            HistoryReply (async_kernel.typing._content.HistoryReply)" href="../typing/#async_kernel.typing._content.HistoryReply">HistoryReply</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            ErrorReply (async_kernel.typing._content.ErrorReply)" href="../typing/#async_kernel.typing._content.ErrorReply">ErrorReply</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5008,10 +4986,7 @@ pattern: The glob-syntax pattern for a search request.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span>
-<span class="normal">383</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">383</span>
 <span class="normal">384</span>
 <span class="normal">385</span>
 <span class="normal">386</span>
@@ -5036,13 +5011,16 @@ pattern: The glob-syntax pattern for a search request.</p>
 <span class="normal">405</span>
 <span class="normal">406</span>
 <span class="normal">407</span>
-<span class="normal">408</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">history</span><span class="p">(</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">history</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">raw</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">hist_access_type</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"tail"</span><span class="p">,</span> <span class="s2">"range"</span><span class="p">,</span> <span class="s2">"search"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"range"</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">HistoryReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Get entries from the history list.</span>
 
 <span class="sd">    Args:</span>
@@ -5063,7 +5041,7 @@ pattern: The glob-syntax pattern for a search request.</p>
     <span class="k">if</span> <span class="n">hist_access_type</span> <span class="o">==</span> <span class="s2">"range"</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"session"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"start"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">raw</span><span class="o">=</span><span class="n">raw</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">hist_access_type</span><span class="o">=</span><span class="n">hist_access_type</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">t_content</span><span class="o">.</span><span class="n">HistoryRequest</span><span class="p">(</span><span class="n">raw</span><span class="o">=</span><span class="n">raw</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">hist_access_type</span><span class="o">=</span><span class="n">hist_access_type</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">history_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5079,12 +5057,7 @@ pattern: The glob-syntax pattern for a search request.</p>
 
 
 <a href="#async_kernel.messaging.base.BaseClient.kernel_info" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">kernel_info</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">kernel_info</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            KernelInfoReply (async_kernel.typing._content.KernelInfoReply)" href="../typing/#async_kernel.typing._content.KernelInfoReply">KernelInfoReply</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            ErrorReply (async_kernel.typing._content.ErrorReply)" href="../typing/#async_kernel.typing._content.ErrorReply">ErrorReply</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5095,11 +5068,13 @@ pattern: The glob-syntax pattern for a search request.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">410</span>
-<span class="normal">411</span>
-<span class="normal">412</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">kernel_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">kernel_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">KernelInfoReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Request kernel info."""</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">kernel_info_request</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">t_content</span><span class="o">.</span><span class="n">KernelInfoRequest</span><span class="p">()</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">kernel_info_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5114,12 +5089,7 @@ pattern: The glob-syntax pattern for a search request.</p>
 
 
 <a href="#async_kernel.messaging.base.BaseClient.comm_info" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">comm_info</span><span class="p">(</span><span class="n"><span title="async_kernel.messaging.base.BaseClient.comm_info(target_name)">target_name</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">comm_info</span><span class="p">(</span><span class="n"><span title="async_kernel.messaging.base.BaseClient.comm_info(target_name)">target_name</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            CommInfoReply (async_kernel.typing._content.CommInfoReply)" href="../typing/#async_kernel.typing._content.CommInfoReply">CommInfoReply</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            ErrorReply (async_kernel.typing._content.ErrorReply)" href="../typing/#async_kernel.typing._content.ErrorReply">ErrorReply</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5130,13 +5100,17 @@ pattern: The glob-syntax pattern for a search request.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">comm_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">comm_info</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span> <span class="n">target_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">CommInfoReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Request comm info."""</span>
-    <span class="n">content</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">target_name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{</span><span class="s2">"target_name"</span><span class="p">:</span> <span class="n">target_name</span><span class="p">}</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">comm_info_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
+    <span class="n">content</span> <span class="o">=</span> <span class="n">t_content</span><span class="o">.</span><span class="n">CommInfoRequest</span><span class="p">(</span><span class="n">target_name</span><span class="o">=</span><span class="n">target_name</span><span class="p">)</span> <span class="k">if</span> <span class="n">target_name</span> <span class="k">else</span> <span class="n">t_content</span><span class="o">.</span><span class="n">CommInfoRequest</span><span class="p">()</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">comm_info_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5151,12 +5125,7 @@ pattern: The glob-syntax pattern for a search request.</p>
 
 
 <a href="#async_kernel.messaging.base.BaseClient.is_complete" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_complete</span><span class="p">(</span><span class="n"><span title="async_kernel.messaging.base.BaseClient.is_complete(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">is_complete</span><span class="p">(</span><span class="n"><span title="async_kernel.messaging.base.BaseClient.is_complete(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            IsCompleteReply (async_kernel.typing._content.IsCompleteReply)" href="../typing/#async_kernel.typing._content.IsCompleteReply">IsCompleteReply</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            ErrorReply (async_kernel.typing._content.ErrorReply)" href="../typing/#async_kernel.typing._content.ErrorReply">ErrorReply</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5167,11 +5136,13 @@ pattern: The glob-syntax pattern for a search request.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">IsCompleteReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Ask the kernel whether some code is complete and ready to execute."""</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">is_complete_request</span><span class="p">,</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">},</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
+    <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">IsCompleteRequest</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">}</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">is_complete_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">shell</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5186,12 +5157,7 @@ pattern: The glob-syntax pattern for a search request.</p>
 
 
 <a href="#async_kernel.messaging.base.BaseClient.shutdown" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">shutdown</span><span class="p">(</span><span class="n"><span title="async_kernel.messaging.base.BaseClient.shutdown(restart)">restart</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span><span class="p">]</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">shutdown</span><span class="p">(</span><span class="n"><span title="async_kernel.messaging.base.BaseClient.shutdown(restart)">restart</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#bool">bool</a></span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.messaging.base.PendingMessage">PendingMessage</span></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-internal" title="            ShutdownReply (async_kernel.typing._content.ShutdownReply)" href="../typing/#async_kernel.typing._content.ShutdownReply">ShutdownReply</a></span> <span class="o">|</span> <span class="n"><a class="autorefs autorefs-internal" title="            ErrorReply (async_kernel.typing._content.ErrorReply)" href="../typing/#async_kernel.typing._content.ErrorReply">ErrorReply</a></span><span class="p">]</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -5205,21 +5171,23 @@ it's still alive.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/base.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span>
-<span class="normal">427</span>
-<span class="normal">428</span>
-<span class="normal">429</span>
-<span class="normal">430</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">Content</span><span class="p">]:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">restart</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PendingMessage</span><span class="p">[</span><span class="n">t_content</span><span class="o">.</span><span class="n">ShutdownReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Request an immediate kernel shutdown.</span>
 
 <span class="sd">    Upon receipt of the (empty) reply, client code can safely assume that</span>
 <span class="sd">    the kernel has shut down and it's safe to forcefully terminate it if</span>
 <span class="sd">    it's still alive.</span>
 <span class="sd">    """</span>
-    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">shutdown_request</span><span class="p">,</span> <span class="p">{</span><span class="s2">"restart"</span><span class="p">:</span> <span class="n">restart</span><span class="p">},</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">))</span>
+    <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ShutdownRequest</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"restart"</span><span class="p">:</span> <span class="n">restart</span><span class="p">}</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">shutdown_request</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">control</span><span class="p">))</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5894,7 +5862,8 @@ it's still alive.</p>
 <span class="normal">442</span>
 <span class="normal">443</span>
 <span class="normal">444</span>
-<span class="normal">445</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQClient</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">ZMQMessage</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
+<span class="normal">445</span>
+<span class="normal">446</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">ZMQClient</span><span class="p">(</span><span class="n">BaseClient</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">],</span> <span class="n">ZMQMessage</span><span class="p">,</span> <span class="n">Generic</span><span class="p">[</span><span class="n">T_interface_co</span><span class="p">]):</span>
 <span class="w">    </span><span class="sd">"""A client that connects to a [ZMQConnection][] using zmq sockets to communicate with a kernel interface.</span>
 
 <span class="sd">    Usage:</span>
@@ -5971,6 +5940,7 @@ it's still alive.</p>
             <span class="k">pass</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Getting kernel info to configure session"</span><span class="p">)</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_info</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">msg</span><span class="p">[</span><span class="s2">"content"</span><span class="p">][</span><span class="s2">"status"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"ok"</span>
         <span class="n">adapt_version</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">"content"</span><span class="p">][</span><span class="s2">"protocol_version"</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">adapt_version</span> <span class="o">!=</span> <span class="n">jupyter_client</span><span class="o">.</span><span class="n">protocol_version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>  <span class="c1"># pyright: ignore[reportPrivateImportUsage]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">adapt_version</span> <span class="o">=</span> <span class="n">adapt_version</span>  <span class="c1"># pragma: no cover</span>
@@ -5980,7 +5950,7 @@ it's still alive.</p>
         <span class="c1"># was observed when running tests that execute code requesting input.</span>
         <span class="c1"># An async kernel connection will send a reply to the message.</span>
         <span class="k">with</span> <span class="n">anyio</span><span class="o">.</span><span class="n">move_on_after</span><span class="p">(</span><span class="n">timeout</span> <span class="ow">or</span> <span class="mf">1.0</span><span class="p">):</span>
-            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">kernel_info_request</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">stdin</span><span class="p">))</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">kernel_info_request</span><span class="p">,</span> <span class="p">{},</span> <span class="n">Channel</span><span class="o">.</span><span class="n">stdin</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Session config complete"</span><span class="p">)</span>
 
     <span class="nd">@override</span>
@@ -6186,8 +6156,7 @@ passing <code>connect_timeout=0</code> will skip establishing a connection.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">320</span>
-<span class="normal">321</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">321</span>
 <span class="normal">322</span>
 <span class="normal">323</span>
 <span class="normal">324</span>
@@ -6197,7 +6166,8 @@ passing <code>connect_timeout=0</code> will skip establishing a connection.</p>
 <span class="normal">328</span>
 <span class="normal">329</span>
 <span class="normal">330</span>
-<span class="normal">331</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">331</span>
+<span class="normal">332</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">connect_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Connect this client to the interface.</span>
 
@@ -6244,8 +6214,7 @@ passing <code>connect_timeout=0</code> will skip establishing a connection.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/messaging/zmq.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">355</span>
-<span class="normal">356</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">356</span>
 <span class="normal">357</span>
 <span class="normal">358</span>
 <span class="normal">359</span>
@@ -6275,7 +6244,8 @@ passing <code>connect_timeout=0</code> will skip establishing a connection.</p>
 <span class="normal">383</span>
 <span class="normal">384</span>
 <span class="normal">385</span>
-<span class="normal">386</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
+<span class="normal">386</span>
+<span class="normal">387</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@asynccontextmanager</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">subprocess_kernel</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="o">*</span><span class="p">,</span>

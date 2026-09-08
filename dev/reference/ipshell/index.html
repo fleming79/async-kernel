@@ -3091,7 +3091,8 @@ activated by setting the variable sys.displayhook to it.</p>
 <span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
-<span class="normal">217</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">IPDisplayPublisher</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">,</span> <span class="n">DisplayPublisher</span><span class="p">):</span>
+<span class="normal">217</span>
+<span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">IPDisplayPublisher</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">,</span> <span class="n">DisplayPublisher</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""A display publisher used by [IPython.display.publish_display_data][]."""</span>
 
     <span class="n">_hooks</span><span class="p">:</span> <span class="n">Fixed</span><span class="p">[</span><span class="n">Self</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Message</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="n">Fixed</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
@@ -3139,7 +3140,8 @@ activated by setting the variable sys.displayhook to it.</p>
 <span class="sd">        """</span>
         <span class="k">if</span> <span class="n">job</span> <span class="o">:=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_job</span><span class="p">():</span>
             <span class="n">owner</span> <span class="o">=</span> <span class="n">job</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_clear_output</span><span class="p">,</span> <span class="p">{</span><span class="s2">"wait"</span><span class="p">:</span> <span class="n">wait</span><span class="p">},</span> <span class="n">Channel</span><span class="o">.</span><span class="n">iopub</span><span class="p">)</span>
+            <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">AnyContent</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"wait"</span><span class="p">:</span> <span class="n">wait</span><span class="p">}</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_clear_output</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">iopub</span><span class="p">)</span>
             <span class="n">owner</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">"display_data"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">register_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Message</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -3365,7 +3367,8 @@ This reduces bounce during repeated clear &amp; display loops.</p>
 <span class="normal">202</span>
 <span class="normal">203</span>
 <span class="normal">204</span>
-<span class="normal">205</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">205</span>
+<span class="normal">206</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">clear_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wait</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Clear output associated with the current execution (cell).</span>
 
@@ -3376,7 +3379,8 @@ This reduces bounce during repeated clear &amp; display loops.</p>
 <span class="sd">    """</span>
     <span class="k">if</span> <span class="n">job</span> <span class="o">:=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_job</span><span class="p">():</span>
         <span class="n">owner</span> <span class="o">=</span> <span class="n">job</span><span class="p">[</span><span class="s2">"owner"</span><span class="p">]</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_clear_output</span><span class="p">,</span> <span class="p">{</span><span class="s2">"wait"</span><span class="p">:</span> <span class="n">wait</span><span class="p">},</span> <span class="n">Channel</span><span class="o">.</span><span class="n">iopub</span><span class="p">)</span>
+        <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">AnyContent</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"wait"</span><span class="p">:</span> <span class="n">wait</span><span class="p">}</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">owner</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_clear_output</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">Channel</span><span class="o">.</span><span class="n">iopub</span><span class="p">)</span>
         <span class="n">owner</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">"display_data"</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3405,13 +3409,13 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">207</span>
-<span class="normal">208</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">208</span>
 <span class="normal">209</span>
 <span class="normal">210</span>
 <span class="normal">211</span>
 <span class="normal">212</span>
-<span class="normal">213</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Message</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">213</span>
+<span class="normal">214</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">register_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hook</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Message</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Register a hook for when publish is called.</span>
 
 <span class="sd">    The hook should return the message or None.</span>
@@ -3527,8 +3531,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">220</span>
-<span class="normal">221</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">221</span>
 <span class="normal">222</span>
 <span class="normal">223</span>
 <span class="normal">224</span>
@@ -3565,7 +3568,8 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 <span class="normal">255</span>
 <span class="normal">256</span>
 <span class="normal">257</span>
-<span class="normal">258</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">IPHistoryManager</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">Interface</span><span class="p">[</span><span class="s2">"IPShell"</span><span class="p">]],</span> <span class="n">HistoryManager</span><span class="p">):</span>
+<span class="normal">258</span>
+<span class="normal">259</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">IPHistoryManager</span><span class="p">(</span><span class="n">HasInterface</span><span class="p">[</span><span class="n">Interface</span><span class="p">[</span><span class="s2">"IPShell"</span><span class="p">]],</span> <span class="n">HistoryManager</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""A class to organize history-related functionality in one place."""</span>
 
     <span class="nd">@property</span>
@@ -3637,8 +3641,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">228</span>
-<span class="normal">229</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">229</span>
 <span class="normal">230</span>
 <span class="normal">231</span>
 <span class="normal">232</span>
@@ -3659,7 +3662,8 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 <span class="normal">247</span>
 <span class="normal">248</span>
 <span class="normal">249</span>
-<span class="normal">250</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">250</span>
+<span class="normal">251</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">shell</span><span class="p">:</span> <span class="n">IPShell</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Create a new history manager associated with a shell instance."""</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">_shell_ref</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">ref</span><span class="p">(</span><span class="n">shell</span><span class="p">)</span>
@@ -4126,8 +4130,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 
               <details class="mkdocstrings-source">
                 <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">282</span>
-<span class="normal">283</span>
+                <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">283</span>
 <span class="normal">284</span>
 <span class="normal">285</span>
 <span class="normal">286</span>
@@ -4714,7 +4717,11 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
 <span class="normal">867</span>
 <span class="normal">868</span>
 <span class="normal">869</span>
-<span class="normal">870</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">IPShell</span><span class="p">(</span><span class="n">BaseShell</span><span class="p">,</span> <span class="n">InteractiveShell</span><span class="p">):</span>  <span class="c1"># pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride, reportIncompatibleMethodOverride]</span>
+<span class="normal">870</span>
+<span class="normal">871</span>
+<span class="normal">872</span>
+<span class="normal">873</span>
+<span class="normal">874</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">IPShell</span><span class="p">(</span><span class="n">BaseShell</span><span class="p">,</span> <span class="n">InteractiveShell</span><span class="p">):</span>  <span class="c1"># pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]</span>
 <span class="w">    </span><span class="sd">"""An IPython InteractiveShell implementation."""</span>
 
     <span class="n">timeout</span> <span class="o">=</span> <span class="n">traitlets</span><span class="o">.</span><span class="n">CFloat</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">tag</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -5086,12 +5093,12 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
         <span class="n">received_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
         <span class="n">tags</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
         <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteErrorReply</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">"""Execute code in the shell's user_ns and global_ns."""</span>
         <span class="k">if</span> <span class="n">received_time</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="n">received_time</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"time"</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Aborting due to prior exception"</span><span class="p">))</span> <span class="o">|</span> <span class="p">{</span>
-                <span class="s2">"execution_count"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"execution_count"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="p">}</span>
+            <span class="n">c</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Aborting due to prior exception"</span><span class="p">))</span>
+            <span class="n">c</span><span class="p">[</span><span class="s2">"execution_count"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"execution_count"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">c</span>
         <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">timeout</span> <span class="o">:=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_tag_value</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)):</span>
             <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span>
 
@@ -5104,11 +5111,8 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
             <span class="n">execution_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_count</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
-                <span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_execute_input</span><span class="p">,</span>
-                <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">"execution_count"</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">},</span>
-                <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">"kernel.execute_input"</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="n">cc</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">AnyContent</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">"execution_count"</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_execute_input</span><span class="p">,</span> <span class="n">cc</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">"kernel.execute_input"</span><span class="p">)</span>
 
         <span class="n">pen</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">run_cell_async</span><span class="p">,</span>
@@ -5135,8 +5139,8 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
                 <span class="n">msg</span> <span class="o">=</span> <span class="s2">"An expected exception was not raised!"</span>
                 <span class="n">err</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-        <span class="n">content</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_error</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="s2">"ok"</span><span class="p">,</span>
+        <span class="n">content</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"error"</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="s2">"ok"</span><span class="p">,</span>
             <span class="s2">"execution_count"</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">,</span>
             <span class="s2">"user_expressions"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_expressions</span><span class="p">(</span><span class="n">user_expressions</span> <span class="k">if</span> <span class="n">user_expressions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}),</span>
         <span class="p">}</span>
@@ -5152,7 +5156,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
         <span class="k">return</span> <span class="n">content</span>
 
     <span class="nd">@override</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">CompleteReply</span><span class="p">:</span>
         <span class="s2">""</span>
 
         <span class="n">cursor_pos</span> <span class="o">=</span> <span class="n">cursor_pos</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
@@ -5172,24 +5176,26 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
         <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">end</span><span class="p">)</span> <span class="k">if</span> <span class="n">completions</span> <span class="k">else</span> <span class="p">(</span><span class="n">cursor_pos</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">)</span>
         <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">completions</span><span class="p">]</span>
         <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">,</span>
             <span class="s2">"matches"</span><span class="p">:</span> <span class="n">matches</span><span class="p">,</span>
             <span class="s2">"cursor_end"</span><span class="p">:</span> <span class="n">e</span><span class="p">,</span>
             <span class="s2">"cursor_start"</span><span class="p">:</span> <span class="n">s</span><span class="p">,</span>
             <span class="s2">"metadata"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"_jupyter_types_experimental"</span><span class="p">:</span> <span class="n">comps</span><span class="p">},</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">,</span>
         <span class="p">}</span>
 
     <span class="nd">@override</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">IsCompleteReply</span><span class="p">:</span>
         <span class="n">status</span><span class="p">,</span> <span class="n">indent_spaces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_transformer_manager</span><span class="o">.</span><span class="n">check_complete</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
-        <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="n">status</span><span class="p">}</span>
+        <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">IsCompleteReply</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="n">status</span><span class="p">}</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indent_spaces</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="n">content</span><span class="p">[</span><span class="s2">"indent"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">" "</span> <span class="o">*</span> <span class="n">indent_spaces</span>
         <span class="k">return</span> <span class="n">content</span>
 
     <span class="nd">@override</span>
-    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
-        <span class="n">content</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">"metadata"</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">"found"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_inspect</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">detail_level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">InspectReply</span><span class="p">:</span>
+        <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">InspectReply</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">,</span> <span class="s2">"data"</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">"metadata"</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">"found"</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">oname</span> <span class="o">=</span> <span class="n">token_at_cursor</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">)</span>
             <span class="n">bundle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">object_inspect_mime</span><span class="p">(</span><span class="n">oname</span><span class="p">,</span> <span class="n">detail_level</span><span class="o">=</span><span class="n">detail_level</span><span class="p">)</span>
@@ -5213,7 +5219,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
         <span class="n">unique</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">include_latest</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">HistoryReply</span><span class="p">:</span>
         <span class="n">history_manager</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history_manager</span>
         <span class="k">assert</span> <span class="n">history_manager</span>
         <span class="k">match</span> <span class="n">hist_access_type</span><span class="p">:</span>
@@ -5225,7 +5231,7 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
                 <span class="n">hist</span> <span class="o">=</span> <span class="n">history_manager</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="o">=</span><span class="n">pattern</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="n">raw</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="n">unique</span><span class="p">)</span>
             <span class="k">case</span><span class="w"> </span><span class="k">_</span><span class="p">:</span>
                 <span class="n">hist</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"history"</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">hist</span><span class="p">),</span> <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">t_content</span><span class="o">.</span><span class="n">HistoryReply</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="s2">"ok"</span><span class="p">,</span> <span class="n">history</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">hist</span><span class="p">))</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_showtraceback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">etype</span><span class="p">,</span> <span class="n">evalue</span><span class="p">,</span> <span class="n">stb</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -5233,9 +5239,13 @@ Only return <code>None</code> when the message should <em>not</em> be sent.</p>
             <span class="n">etype</span><span class="p">,</span> <span class="n">evalue</span><span class="p">,</span> <span class="n">stb</span> <span class="o">=</span> <span class="ne">TimeoutError</span><span class="p">,</span> <span class="s2">"Cell execute timeout"</span><span class="p">,</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">evalue</span><span class="p">,</span> <span class="n">KernelInterrupt</span><span class="p">):</span>
             <span class="n">stb</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
-            <span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_error</span><span class="p">,</span> <span class="p">{</span><span class="s2">"traceback"</span><span class="p">:</span> <span class="n">stb</span><span class="p">,</span> <span class="s2">"ename"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">etype</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span> <span class="s2">"evalue"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">evalue</span><span class="p">)}</span>
-        <span class="p">)</span>
+        <span class="n">content</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ErrorReply</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"error"</span><span class="p">,</span>
+            <span class="s2">"traceback"</span><span class="p">:</span> <span class="n">stb</span><span class="p">,</span>
+            <span class="s2">"ename"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">etype</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span>
+            <span class="s2">"evalue"</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">evalue</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_error</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
 
     <span class="nd">@override</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">init_magics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -5787,8 +5797,7 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">425</span>
-<span class="normal">426</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">426</span>
 <span class="normal">427</span>
 <span class="normal">428</span>
 <span class="normal">429</span>
@@ -5800,7 +5809,8 @@ the shell whose context the execution result occurred.</p>
 <span class="normal">435</span>
 <span class="normal">436</span>
 <span class="normal">437</span>
-<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">438</span>
+<span class="normal">439</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_patches</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Apply patches returning a callable to reverse the patches."""</span>
     <span class="n">original</span> <span class="o">=</span> <span class="n">InteractiveShell</span><span class="o">.</span><span class="n">initialized</span><span class="p">,</span> <span class="n">InteractiveShell</span><span class="o">.</span><span class="n">instance</span>
@@ -5839,8 +5849,7 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">484</span>
-<span class="normal">485</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">485</span>
 <span class="normal">486</span>
 <span class="normal">487</span>
 <span class="normal">488</span>
@@ -5851,7 +5860,8 @@ the shell whose context the execution result occurred.</p>
 <span class="normal">493</span>
 <span class="normal">494</span>
 <span class="normal">495</span>
-<span class="normal">496</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">496</span>
+<span class="normal">497</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_hooks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Initialize hooks."""</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_hooks</span><span class="p">()</span>
@@ -5893,14 +5903,14 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">519</span>
-<span class="normal">520</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">520</span>
 <span class="normal">521</span>
 <span class="normal">522</span>
 <span class="normal">523</span>
 <span class="normal">524</span>
 <span class="normal">525</span>
-<span class="normal">526</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_line_magic_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magic_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_stack_depth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="normal">526</span>
+<span class="normal">527</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_line_magic_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magic_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_stack_depth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Call and awaits [run_line_magic][IPython.core.interactiveshell.InteractiveShell.run_line_magic]."""</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">create_pending_group</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_line_magic</span><span class="p">(</span><span class="n">magic_name</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">_stack_depth</span><span class="p">)</span>
@@ -5937,14 +5947,14 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">528</span>
-<span class="normal">529</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">529</span>
 <span class="normal">530</span>
 <span class="normal">531</span>
 <span class="normal">532</span>
 <span class="normal">533</span>
 <span class="normal">534</span>
-<span class="normal">535</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_cell_magic_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magic_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="normal">535</span>
+<span class="normal">536</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_cell_magic_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">magic_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Call and awaits [run_cell_magic][IPython.core.interactiveshell.InteractiveShell.run_cell_magic]."""</span>
     <span class="k">async</span> <span class="k">with</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">create_pending_group</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_cell_magic</span><span class="p">(</span><span class="n">magic_name</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span>
@@ -6020,8 +6030,7 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">537</span>
-<span class="normal">538</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">538</span>
 <span class="normal">539</span>
 <span class="normal">540</span>
 <span class="normal">541</span>
@@ -6044,7 +6053,8 @@ the shell whose context the execution result occurred.</p>
 <span class="normal">558</span>
 <span class="normal">559</span>
 <span class="normal">560</span>
-<span class="normal">561</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">561</span>
+<span class="normal">562</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">stderr_to_stdout</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Pending</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">"""Make a system call in a separate thread.</span>
 
@@ -6153,8 +6163,7 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">563</span>
-<span class="normal">564</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">564</span>
 <span class="normal">565</span>
 <span class="normal">566</span>
 <span class="normal">567</span>
@@ -6186,7 +6195,8 @@ the shell whose context the execution result occurred.</p>
 <span class="normal">593</span>
 <span class="normal">594</span>
 <span class="normal">595</span>
-<span class="normal">596</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">596</span>
+<span class="normal">597</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">run_code</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">code_obj</span><span class="p">:</span> <span class="n">CodeType</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">ExecutionResult</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">async_</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -6245,14 +6255,14 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">598</span>
-<span class="normal">599</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">599</span>
 <span class="normal">600</span>
 <span class="normal">601</span>
 <span class="normal">602</span>
 <span class="normal">603</span>
 <span class="normal">604</span>
-<span class="normal">605</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">transform_cell_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="normal">605</span>
+<span class="normal">606</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">transform_cell_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_cell</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Transform the cell and substitute magic calls with an awaitable wrapper."""</span>
     <span class="k">return</span> <span class="p">(</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">transform_cell</span><span class="p">(</span><span class="n">raw_cell</span><span class="p">)</span>
@@ -6290,12 +6300,7 @@ the shell whose context the execution result occurred.</p>
     <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_execute(received_time)">received_time</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#float">float</a></span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_execute(tags)">tags</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" title="collections.abc.Iterable" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable">Iterable</a></span><span class="p">[</span><span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
     <span class="o">**</span><span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_execute(**_ignored)">_ignored</span></span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.t_content.ExecuteReply">ExecuteReply</span></span> <span class="o">|</span> <span class="n"><span title="async_kernel.typing.t_content.ExecuteErrorReply">ExecuteErrorReply</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6306,8 +6311,7 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">640</span>
-<span class="normal">641</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">641</span>
 <span class="normal">642</span>
 <span class="normal">643</span>
 <span class="normal">644</span>
@@ -6381,9 +6385,7 @@ the shell whose context the execution result occurred.</p>
 <span class="normal">712</span>
 <span class="normal">713</span>
 <span class="normal">714</span>
-<span class="normal">715</span>
-<span class="normal">716</span>
-<span class="normal">717</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">715</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_execute</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
@@ -6397,12 +6399,12 @@ the shell whose context the execution result occurred.</p>
     <span class="n">received_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
     <span class="n">tags</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
     <span class="o">**</span><span class="n">_ignored</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteReply</span> <span class="o">|</span> <span class="n">t_content</span><span class="o">.</span><span class="n">ExecuteErrorReply</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Execute code in the shell's user_ns and global_ns."""</span>
     <span class="k">if</span> <span class="n">received_time</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="n">received_time</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"time"</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">silent</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Aborting due to prior exception"</span><span class="p">))</span> <span class="o">|</span> <span class="p">{</span>
-            <span class="s2">"execution_count"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"execution_count"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="p">}</span>
+        <span class="n">c</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">error_to_content</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Aborting due to prior exception"</span><span class="p">))</span>
+        <span class="n">c</span><span class="p">[</span><span class="s2">"execution_count"</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_on_error_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"execution_count"</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">c</span>
     <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">timeout</span> <span class="o">:=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_tag_value</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)):</span>
         <span class="n">timeout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span>
 
@@ -6415,11 +6417,8 @@ the shell whose context the execution result occurred.</p>
         <span class="n">execution_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_count</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execution_count</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span>
-            <span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_execute_input</span><span class="p">,</span>
-            <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">"execution_count"</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">},</span>
-            <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">"kernel.execute_input"</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="n">cc</span><span class="p">:</span> <span class="n">t_content</span><span class="o">.</span><span class="n">AnyContent</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"code"</span><span class="p">:</span> <span class="n">code</span><span class="p">,</span> <span class="s2">"execution_count"</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">iopub_send</span><span class="p">(</span><span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_execute_input</span><span class="p">,</span> <span class="n">cc</span><span class="p">,</span> <span class="n">ident</span><span class="o">=</span><span class="sa">b</span><span class="s2">"kernel.execute_input"</span><span class="p">)</span>
 
     <span class="n">pen</span> <span class="o">=</span> <span class="n">Caller</span><span class="p">()</span><span class="o">.</span><span class="n">call_soon</span><span class="p">(</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_cell_async</span><span class="p">,</span>
@@ -6446,8 +6445,8 @@ the shell whose context the execution result occurred.</p>
             <span class="n">msg</span> <span class="o">=</span> <span class="s2">"An expected exception was not raised!"</span>
             <span class="n">err</span> <span class="o">=</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 
-    <span class="n">content</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">"status"</span><span class="p">:</span> <span class="n">MsgType</span><span class="o">.</span><span class="n">iopub_error</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="s2">"ok"</span><span class="p">,</span>
+    <span class="n">content</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"error"</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="s2">"ok"</span><span class="p">,</span>
         <span class="s2">"execution_count"</span><span class="p">:</span> <span class="n">execution_count</span><span class="p">,</span>
         <span class="s2">"user_expressions"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_expressions</span><span class="p">(</span><span class="n">user_expressions</span> <span class="k">if</span> <span class="n">user_expressions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{}),</span>
     <span class="p">}</span>
@@ -6479,12 +6478,7 @@ the shell whose context the execution result occurred.</p>
   </span>
 
 <a href="#async_kernel.shell.ipshell.IPShell.do_complete" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">do_complete</span><span class="p">(</span><span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_complete(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_complete(cursor_pos)">cursor_pos</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="            Content
-
-
-  
-      module-attribute
-   (async_kernel.typing.Content)" href="../typing/#async_kernel.typing.Content">Content</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">do_complete</span><span class="p">(</span><span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_complete(code)">code</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/stdtypes.html#str">str</a></span><span class="p">,</span> <span class="n"><span title="async_kernel.shell.ipshell.IPShell.do_complete(cursor_pos)">cursor_pos</span></span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-external" href="https://docs.python.org/3/library/functions.html#int">int</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="async_kernel.typing.t_content.CompleteReply">CompleteReply</span></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -6493,7 +6487,9 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">719</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">717</span>
+<span class="normal">718</span>
+<span class="normal">719</span>
 <span class="normal">720</span>
 <span class="normal">721</span>
 <span class="normal">722</span>
@@ -6517,10 +6513,8 @@ the shell whose context the execution result occurred.</p>
 <span class="normal">740</span>
 <span class="normal">741</span>
 <span class="normal">742</span>
-<span class="normal">743</span>
-<span class="normal">744</span>
-<span class="normal">745</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
-<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Content</span><span class="p">:</span>
+<span class="normal">743</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">do_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">t_content</span><span class="o">.</span><span class="n">CompleteReply</span><span class="p">:</span>
     <span class="s2">""</span>
 
     <span class="n">cursor_pos</span> <span class="o">=</span> <span class="n">cursor_pos</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
@@ -6540,11 +6534,11 @@ the shell whose context the execution result occurred.</p>
     <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">completions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">end</span><span class="p">)</span> <span class="k">if</span> <span class="n">completions</span> <span class="k">else</span> <span class="p">(</span><span class="n">cursor_pos</span><span class="p">,</span> <span class="n">cursor_pos</span><span class="p">)</span>
     <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">completions</span><span class="p">]</span>
     <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">,</span>
         <span class="s2">"matches"</span><span class="p">:</span> <span class="n">matches</span><span class="p">,</span>
         <span class="s2">"cursor_end"</span><span class="p">:</span> <span class="n">e</span><span class="p">,</span>
         <span class="s2">"cursor_start"</span><span class="p">:</span> <span class="n">s</span><span class="p">,</span>
         <span class="s2">"metadata"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"_jupyter_types_experimental"</span><span class="p">:</span> <span class="n">comps</span><span class="p">},</span>
-        <span class="s2">"status"</span><span class="p">:</span> <span class="s2">"ok"</span><span class="p">,</span>
     <span class="p">}</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -6571,13 +6565,13 @@ the shell whose context the execution result occurred.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">805</span>
-<span class="normal">806</span>
-<span class="normal">807</span>
-<span class="normal">808</span>
-<span class="normal">809</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">809</span>
 <span class="normal">810</span>
-<span class="normal">811</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">811</span>
+<span class="normal">812</span>
+<span class="normal">813</span>
+<span class="normal">814</span>
+<span class="normal">815</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">init_magics</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Initialize magics."""</span>
     <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_magics</span><span class="p">()</span>
@@ -6636,11 +6630,7 @@ display figures inline.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>src/async_kernel/shell/ipshell.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">819</span>
-<span class="normal">820</span>
-<span class="normal">821</span>
-<span class="normal">822</span>
-<span class="normal">823</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">823</span>
 <span class="normal">824</span>
 <span class="normal">825</span>
 <span class="normal">826</span>
@@ -6674,7 +6664,11 @@ display figures inline.</p>
 <span class="normal">854</span>
 <span class="normal">855</span>
 <span class="normal">856</span>
-<span class="normal">857</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span>
+<span class="normal">860</span>
+<span class="normal">861</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@override</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">enable_matplotlib</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gui</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="n">Any</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Any</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]:</span>  <span class="c1"># pragma: no cover</span>
 <span class="w">    </span><span class="sd">"""Enable interactive matplotlib and inline figure support.</span>
 
