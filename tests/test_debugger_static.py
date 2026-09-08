@@ -33,7 +33,14 @@ async def test_debug_static(client: ZMQClient, command: str, mocker, kernel: Ker
 
 async def test_debug_raises_no_socket(kernel: Kernel):
     with pytest.raises(RuntimeError):
-        await kernel.debugger.debugpy_client.send_request({})
+        await kernel.debugger.debugpy_client.send_request(
+            {
+                "type": "request",
+                "seq": 1,
+                "command": "configurationDone",
+                "arguments": {},
+            }
+        )
 
 
 async def test_debug_not_connected(client: ZMQClient, kernel: Kernel, mocker):
@@ -42,7 +49,7 @@ async def test_debug_not_connected(client: ZMQClient, kernel: Kernel, mocker):
     reply = await client.send_message(
         client.msg(MsgType.debug_request, content, Channel.control),
     )
-    assert reply["content"]["status"] == MsgType.iopub_error
+    assert reply["content"]["status"] == "error"
     assert reply["content"]["evalue"] == "Debugpy client not connected."
 
 

@@ -25,9 +25,11 @@ from async_kernel.typing import MsgType
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from types import CoroutineType
 
     from async_kernel.kernel import Kernel
-    from async_kernel.typing import DebugMessage
+    from async_kernel.typing._content import DebugReply, DebugRequest
+
 
 if "PYDEVD_IPYTHON_COMPATIBLE_DEBUGGING" not in os.environ:
     os.environ["PYDEVD_IPYTHON_COMPATIBLE_DEBUGGING"] = "1"
@@ -126,7 +128,7 @@ class DebugpyClient(HasInterface, LoggingConfigurable):
     def connected(self) -> bool:
         return bool(self._socketstream)
 
-    async def send_request(self, request: dict) -> Pending[dict[str, Any]]:
+    async def send_request(self, request: DebugRequest) -> Pending[DebugReply]:
         if not (socketstream := self._socketstream):
             raise RuntimeError
         async with self._send_lock:
@@ -147,7 +149,7 @@ class DebugpyClient(HasInterface, LoggingConfigurable):
             for buf in data[1:]:
                 size, raw_msg = buf.split(self.SEPARATOR, maxsplit=1)
                 size = int(size)
-                msg: DebugMessage = unpack_json(raw_msg[:size])
+                msg: DebugReply = unpack_json(raw_msg[:size])
                 self.log.debug("_put_message :%s %s", msg["type"], msg)
                 if msg["type"] == "event":
                     self.kernel.debugger.handle_event(msg)
@@ -205,7 +207,7 @@ class Debugger(HasInterface, LoggingConfigurable):
     def __init__(self, **kwargs) -> None:
         """Initialize the debugger."""
         super().__init__(**kwargs)
-        self.started_debug_handlers = {
+        self.started_debug_handlers: dict[str, Callable[[DebugRequest], CoroutineType[Any, Any, DebugReply]]] = {
             "setBreakpoints": self.do_set_breakpoints,
             "stackTrace": self.do_stack_trace,
             "variables": self.do_variables,
@@ -214,7 +216,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             "copyToGlobals": self.do_copy_to_globals,
             "disconnect": self.do_disconnect,
         }
-        self.static_debug_handlers = {
+        self.static_debug_handlers: dict[str, Callable[[DebugRequest], CoroutineType[Any, Any, DebugReply]]] = {
             "initialize": self.do_initialize,
             "dumpCell": self.do_dump_cell,
             "source": self.do_source,
@@ -225,7 +227,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         }
         self._forbidden_names = tuple(self.parent.kernel.main_shell.user_ns_hidden.copy())
 
-    async def send_dap_request(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def send_dap_request(self, msg: DebugRequest, /) -> DebugReply:
         """Sends a DAP request to the debug server, waits for and returns the corresponding response."""
         return await (await self.debugpy_client.send_request(msg))
 
@@ -239,7 +241,12 @@ class Debugger(HasInterface, LoggingConfigurable):
 
             async def _handle_stopped_event() -> None:
                 names = {t.name for t in threading.enumerate() if not getattr(t, "pydev_do_not_trace", False)}
-                msg = {"seq": self.next_seq(), "type": "request", "command": "threads"}
+                msg: DebugRequest = {
+                    "seq": self.next_seq(),
+                    "type": "request",
+                    "command": "threads",
+                    "arguments": {},
+                }
                 rep = await self.send_dap_request(msg)
                 for thread in rep["body"]["threads"]:
                     if thread["name"] in names:
@@ -263,7 +270,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             parent=None,
         )
 
-    def _build_variables_response(self, request, variables) -> dict[str, Any]:
+    def _build_variables_response(self, request: DebugRequest, variables: list[dict[str, Any]]) -> DebugReply:
         var_list = [var for var in variables if self._accept_variable(var["name"])]
         return {
             "seq": request["seq"],
@@ -282,7 +289,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             and not variable_name.startswith("_i")
         )
 
-    async def process_request(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def process_request(self, msg: DebugRequest, /) -> DebugReply:
         """Process a request."""
         command = msg["command"]
         if handler := self.static_debug_handlers.get(command):
@@ -297,7 +304,7 @@ class Debugger(HasInterface, LoggingConfigurable):
 
     ## Static handlers
 
-    async def do_initialize(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_initialize(self, msg: DebugRequest, /) -> DebugReply:
         """Initialize debugpy server starting as required."""
         utils.mark_thread_pydev_do_not_trace()
         for thread in threading.enumerate():
@@ -308,12 +315,15 @@ class Debugger(HasInterface, LoggingConfigurable):
             pen = (caller := Caller()).call_soon(self.debugpy_client._connect_tcp_socket, ready.wake)  # pyright: ignore[reportPrivateUsage]
 
             def stop(_):
-                msg = {
-                    "type": "request",
-                    "seq": self.kernel.debugger.next_seq(),
-                    "command": "configurationDone",
-                }
-                caller.call_direct(self.do_disconnect, msg)
+                caller.call_direct(
+                    self.do_disconnect,
+                    {
+                        "type": "request",
+                        "seq": self.kernel.debugger.next_seq(),
+                        "command": "configurationDone",
+                        "arguments": {},
+                    },
+                )
 
             self.parent.stopping.add_done_callback(stop)
             pen.add_done_callback(lambda _: self.parent.stopping.remove_done_callback(stop))
@@ -324,7 +334,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             self.capabilities = capabilities
         return reply
 
-    async def do_debug_info(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_debug_info(self, msg: DebugRequest, /) -> DebugReply:
         """Handle an debug info message."""
         breakpoint_list = []
         for key, value in self.breakpoint_list.items():
@@ -350,7 +360,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             },
         }
 
-    async def do_inspect_variables(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_inspect_variables(self, msg: DebugRequest, /) -> DebugReply:
         """Handle an inspect variables message."""
         self.variable_explorer.untrack_all()
         # looks like the implementation of untrack_all in ptvsd
@@ -361,15 +371,16 @@ class Debugger(HasInterface, LoggingConfigurable):
         variables = self.variable_explorer.get_children_variables()
         return self._build_variables_response(msg, variables)
 
-    async def do_rich_inspect_variables(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_rich_inspect_variables(self, msg: DebugRequest, /) -> DebugReply:
         """Handle an rich inspect variables message."""
-        reply = {
+        reply: DebugReply = {
             "type": "response",
             "sequence_seq": msg["seq"],
             "success": False,
             "command": msg["command"],
         }
-        variable_name = msg["arguments"].get("variableName", "")
+        arguments = msg.get("arguments") or {}
+        variable_name = arguments.get("variableName", "")
         if not str.isidentifier(variable_name):
             reply["body"] = {"data": {}, "metadata": {}}
             if variable_name in {"special variables", "function variables"}:
@@ -382,7 +393,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             # to get the rich representation of the variable
             if isinstance((shell := self.parent.kernel.main_shell), async_kernel.shell.IPShell):
                 result = shell.user_expressions({"var": variable_name})["var"]
-                if result.get("status", MsgType.iopub_error) == "ok":
+                if result.get("status", "error") == "ok":
                     repr_data = result.get("data", {})
                     repr_metadata = result.get("metadata", {})
         else:
@@ -394,7 +405,7 @@ class Debugger(HasInterface, LoggingConfigurable):
                     "type": "request",
                     "command": "evaluate",
                     "seq": self.next_seq(),
-                    "arguments": {"expression": code, "context": "clipboard"} | msg["arguments"],
+                    "arguments": {"expression": code, "context": "clipboard"} | arguments,
                 }
             )
             if reply["success"]:
@@ -407,7 +418,7 @@ class Debugger(HasInterface, LoggingConfigurable):
         reply["success"] = True
         return reply
 
-    async def do_modules(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_modules(self, msg: DebugRequest, /) -> DebugReply:
         """Handle an modules message."""
         modules = list(sys.modules.values())
         startModule = msg.get("startModule", 0)
@@ -420,7 +431,7 @@ class Debugger(HasInterface, LoggingConfigurable):
                 mods.append({"id": i, "name": module.__name__, "path": filename})
         return {"body": {"modules": mods, "totalModules": len(modules)}}
 
-    async def do_dump_cell(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_dump_cell(self, msg: DebugRequest, /) -> DebugReply:
         """Handle an dump cell message."""
         code = msg["arguments"]["code"]
         assert isinstance((self.parent.kernel.main_shell), async_kernel.shell.IPShell)
@@ -436,7 +447,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             "body": {"sourcePath": str(path)},
         }
 
-    async def do_copy_to_globals(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_copy_to_globals(self, msg: DebugRequest, /) -> DebugReply:
         dst_var_name = msg["arguments"]["dstVariableName"]
         src_var_name = msg["arguments"]["srcVariableName"]
         src_frame_id = msg["arguments"]["srcFrameId"]
@@ -466,7 +477,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             }
         )
 
-    async def do_set_breakpoints(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_set_breakpoints(self, msg: DebugRequest, /) -> DebugReply:
         """Handle an set breakpoints message."""
         source = msg["arguments"]["source"]["path"]
         self.breakpoint_list[source] = msg["arguments"]["breakpoints"]
@@ -479,9 +490,9 @@ class Debugger(HasInterface, LoggingConfigurable):
             ]
         return message_response
 
-    async def do_source(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_source(self, msg: DebugRequest, /) -> DebugReply:
         """Handle an source message."""
-        reply = {"type": "response", "request_seq": msg["seq"], "command": msg["command"]}
+        reply: DebugReply = {"type": "response", "request_seq": msg["seq"], "command": msg["command"]}
         if (path := Path(msg["arguments"].get("source", {}).get("path", "missing"))).is_file():
             reply["success"] = True
             reply["body"] = {"content": path.read_text()}
@@ -492,7 +503,7 @@ class Debugger(HasInterface, LoggingConfigurable):
 
         return reply
 
-    async def do_stack_trace(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_stack_trace(self, msg: DebugRequest, /) -> DebugReply:
         """Handle an stack trace message."""
         reply = await self.send_dap_request(msg)
         # The stackFrames array can have the following content:
@@ -513,7 +524,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             reply["body"]["stackFrames"] = reply["body"]["stackFrames"][: module_idx + 1]
         return reply
 
-    async def do_variables(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_variables(self, msg: DebugRequest, /) -> DebugReply:
         """Handle an variables message."""
         reply = {}
         if not self.stopped_threads:
@@ -525,7 +536,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             reply["body"]["variables"] = variables
         return reply
 
-    async def do_attach(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_attach(self, msg: DebugRequest, /) -> DebugReply:
         """Handle an attach message."""
         assert _host_port
         msg["arguments"]["connect"] = {"host": _host_port[0], "port": _host_port[1]}
@@ -538,11 +549,12 @@ class Debugger(HasInterface, LoggingConfigurable):
                 "type": "request",
                 "seq": self.next_seq(),
                 "command": "configurationDone",
+                "arguments": {},
             }
         )
         return await reply
 
-    async def do_configuration_done(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_configuration_done(self, msg: DebugRequest, /) -> DebugReply:
         """Handle an configuration done message."""
         # This is only supposed to be called during initialize but can come at anytime. Ref: https://microsoft.github.io/debug-adapter-protocol/specification#Events_Initialized
         # see : https://github.com/jupyterlab/jupyterlab/issues/17673
@@ -554,7 +566,7 @@ class Debugger(HasInterface, LoggingConfigurable):
             "command": msg["command"],
         }
 
-    async def do_disconnect(self, msg: DebugMessage, /) -> dict[str, Any]:
+    async def do_disconnect(self, msg: DebugRequest, /) -> DebugReply:
         response = await self.send_dap_request(msg)
         # Restore the leading whitespace remove transform.
         assert isinstance((self.parent.kernel.main_shell), async_kernel.shell.IPShell)

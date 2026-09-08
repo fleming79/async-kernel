@@ -102,7 +102,7 @@ class MimeBundle(Reference):
 
 # shell replies
 class Reply(Reference):
-    status = Enum(("ok", MsgType.iopub_error), default_value="ok")
+    status = Enum(("ok", "error"), default_value="ok")
 
 
 class ExecuteReply(Reply):
@@ -113,7 +113,7 @@ class ExecuteReply(Reply):
         super().check(d)
         if d["status"] == "ok":
             ExecuteReplyOkay().check(d)
-        elif d["status"] == MsgType.iopub_error:
+        elif d["status"] == "error":
             ExecuteReplyError().check(d)
 
 
@@ -123,7 +123,7 @@ class ExecuteReplyOkay(Reply):
 
 
 class ExecuteReplyError(Reply):
-    status = Enum(MsgType.iopub_error)
+    status = Enum("error")
     ename = Unicode()
     evalue = Unicode()
     traceback = List(Unicode())

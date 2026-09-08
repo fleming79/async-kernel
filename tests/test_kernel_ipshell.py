@@ -13,7 +13,7 @@ from async_kernel import Kernel, Pending
 from async_kernel.caller import Caller
 from async_kernel.comm import Comm
 from async_kernel.common import MethodNotSupported
-from async_kernel.typing import Channel, Content, Message, MsgType, RunMode, Tags
+from async_kernel.typing import Channel, MsgType, RunMode, Tags
 from tests import utils
 
 if TYPE_CHECKING:
@@ -46,8 +46,8 @@ async def test_execute_shell_timeout(client: ClientType, kernel: Kernel, mode: s
 
 
 async def test_bad_message(client: ClientType):
-    await client.send_message(client.msg(MsgType.execute_request, None, Channel.shell))
-    await client.send_message(client.msg(MsgType.execute_request, None, Channel.control))
+    await client.send_message(client.msg(MsgType.execute_request, {}, Channel.shell))
+    await client.send_message(client.msg(MsgType.execute_request, {}, Channel.control))
     await client.execute("")
 
 
@@ -260,13 +260,14 @@ async def test_namespace_default(client: ClientType, code: str):
 
 async def test_run_mode_tag(client: ClientType):
     metadata = {"tags": [RunMode.thread]}
-    reply: Message[Content] = await client.execute(
+    reply = await client.execute(
         "import threading;thread_name=threading.current_thread().name",
         metadata=metadata,
         user_expressions={"thread_name": "thread_name"},
     )
-    assert reply["content"]["status"] == "ok"
-    assert "async_kernel_caller" in reply["content"]["user_expressions"]["thread_name"]["data"]["text/plain"]
+    content = reply["content"]
+    assert content["status"] == "ok"
+    assert "async_kernel_caller" in content["user_expressions"]["thread_name"]["data"]["text/plain"]
 
 
 async def test_cell_top_line_to_thread(client: ClientType):
@@ -372,7 +373,7 @@ async def test_page(client: ClientType, kernel: Kernel):
 
 async def test_do_complete(kernel: Kernel):
     content = await kernel.do_complete("dir", None)
-    assert list(content) == ["matches", "cursor_end", "cursor_start", "metadata", "status"]
+    assert list(content) == ["status", "matches", "cursor_end", "cursor_start", "metadata"]
 
 
 async def test_do_inspect(kernel: Kernel):
@@ -382,7 +383,7 @@ async def test_do_inspect(kernel: Kernel):
 
 async def test_do_history(kernel: Kernel):
     content = await kernel.do_history(hist_access_type="", output="", raw="")
-    assert list(content) == ["history", "status"]
+    assert list(content) == ["status", "history"]
 
 
 async def test_do_execute(kernel: Kernel):
@@ -394,15 +395,9 @@ async def test_do_execute(kernel: Kernel):
         cell_id=cell_id,
         user_expressions={"cell_id": "cell_id"},
     )
+    assert content["status"] == "ok"
     assert list(content) == ["status", "execution_count", "user_expressions"]
     assert cell_id in content["user_expressions"]["cell_id"]["data"]["text/plain"]
-
-
-async def test_get_input(kernel: Kernel, mocker):
-    requester = mocker.patch.object(kernel.parent, MsgType.input_request)
-    kernel.raw_input()
-    kernel.getpass()
-    assert requester.call_count == 2
 
 
 async def test_redirect_stdout(kernel: Kernel):

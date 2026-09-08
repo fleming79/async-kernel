@@ -11,7 +11,7 @@ from async_kernel import Caller, Kernel
 from async_kernel.interface import Interface
 from async_kernel.messaging import LocalClient
 from async_kernel.messaging.zmq import ZMQClient, ZMQConnection
-from async_kernel.typing import Backend, Channel, ExecuteContent, Job, Message, MessageProtocol, MsgHeader, MsgType
+from async_kernel.typing import Backend, Channel, Job, Message, MessageProtocol, MsgHeader, MsgType, t_content
 from tests import utils
 
 if TYPE_CHECKING:
@@ -88,7 +88,7 @@ async def subprocess_kernel_client(anyio_backend: Backend):
 @pytest.fixture
 def job() -> Job:
     """An execute dummy job."""
-    content = ExecuteContent(
+    content = t_content.ExecuteRequest(
         code="", silent=True, store_history=True, user_expressions={}, allow_stdin=False, stop_on_error=True
     )
     header = MsgHeader(msg_id="", session="", username="", date="", msg_type=MsgType.execute_request, version="1")

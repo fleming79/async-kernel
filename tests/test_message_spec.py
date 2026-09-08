@@ -121,7 +121,7 @@ async def test_user_expressions_fail(client: ClientType):
     user_expressions = reply["content"].get("user_expressions")
     assert user_expressions
     foo = user_expressions["foo"]
-    assert foo["status"] == MsgType.iopub_error
+    assert foo["status"] == "error"
     assert foo["ename"] == "NameError"
 
 
@@ -179,6 +179,7 @@ async def test_kernel_info_request(client: ClientType):
     utils.validate_message(reply, MsgType.kernel_info_reply)
     keys = list(reply["content"])
     assert keys == [
+        "status",
         "kernel_name",
         "protocol_version",
         "implementation",
@@ -188,7 +189,6 @@ async def test_kernel_info_request(client: ClientType):
         "help_links",
         "debugger",
         "supported_features",
-        "status",
     ]
 
 

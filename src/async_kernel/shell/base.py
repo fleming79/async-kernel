@@ -14,7 +14,7 @@ from async_kernel import utils
 from async_kernel.common import Fixed
 from async_kernel.interface import HasInterface
 from async_kernel.pending import PendingManager
-from async_kernel.typing import Content, MsgType, T_interface_co
+from async_kernel.typing import MsgType, T_interface_co, t_content
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Generator, Iterable
@@ -193,9 +193,9 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
             finally:
                 self._resetting = False
 
-    def get_ipython(self) -> BaseShell:
+    def get_ipython(self) -> Self:
         """Return the shell for the current context."""
-        return async_kernel.utils.get_ipython()
+        return async_kernel.utils.get_ipython()  # pyright: ignore[reportReturnType]
 
     @contextlib.contextmanager
     def context(self) -> Generator[None, Any, None]:
@@ -210,10 +210,7 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         activated by setting the variable sys.displayhook to it.
         """
         if result is not None and utils.show_result_enabled():
-            content = {}
-            content["execution_count"] = self.execution_count
-            content["data"] = repr(result)
-            content["metadata"] = {}
+            content = t_content.AnyContent(execution_count=self.execution_count, data=repr(result), metadata={})
             self.parent.iopub_send(MsgType.iopub_execute_result, content=content)
 
     async def do_execute(
@@ -229,19 +226,21 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         received_time: float = 0,
         tags: Iterable[str] = (),
         **_ignored,
-    ) -> Content:
+    ) -> t_content.ExecuteReply | t_content.ExecuteErrorReply:
         """Called by [async_kernel.kernel.Kernel.execute_request][]."""
         raise NotImplementedError
 
-    async def do_complete(self, code: str, cursor_pos: int | None = None) -> Content:
+    async def do_complete(self, code: str, cursor_pos: int | None = None) -> t_content.CompleteReply:
         """Called by [async_kernel.kernel.Kernel.do_complete][]."""
         raise NotImplementedError
 
-    async def is_complete(self, code: str) -> Content:
+    async def is_complete(self, code: str) -> t_content.IsCompleteReply:
         """Called by [async_kernel.kernel.Kernel.complete_request][]."""
         raise NotImplementedError
 
-    async def do_inspect(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
+    async def do_inspect(
+        self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0
+    ) -> t_content.InspectReply:
         """Called by [async_kernel.kernel.Kernel.do_inspect][]."""
         raise NotImplementedError
 
@@ -258,6 +257,6 @@ class BaseShell(HasInterface[T_interface_co], LoggingConfigurable, Generic[T_int
         pattern: str = "*",
         unique: bool = False,
         **_ignored,
-    ) -> Content:
+    ) -> t_content.HistoryReply:
         """Called by [async_kernel.kernel.Kernel.do_history][]."""
         raise NotImplementedError

@@ -9,7 +9,7 @@ from async_kernel.common import SingleAsyncQueue
 from async_kernel.compat.json import pack_json_str, unpack_json
 from async_kernel.interface import Interface, start_kernel_callable_interface
 from async_kernel.messaging import LocalClient
-from async_kernel.typing import Backend, BuffersType, Channel, ExecuteContent, MsgType
+from async_kernel.typing import Backend, BuffersType, Channel, MsgType, t_content
 
 if TYPE_CHECKING:
     from async_kernel.typing import Message
@@ -39,9 +39,7 @@ async def test_start_kernel_callable_interface(anyio_backend: Backend):
     interface = Interface.instance()
     async with LocalClient().start() as client:
         await client.kernel_info()
-        callable_interface["handle_msg"](
-            pack_json_str(client.msg(MsgType.kernel_info_request, None, Channel.shell)), []
-        )
+        callable_interface["handle_msg"](pack_json_str(client.msg(MsgType.kernel_info_request, {}, Channel.shell)), [])
 
         while True:
             msg = await anext(reader)
@@ -50,7 +48,7 @@ async def test_start_kernel_callable_interface(anyio_backend: Backend):
                 assert msg["content"]["status"] == "ok"
                 break
         # Test input_request
-        content: ExecuteContent = {
+        content: t_content.ExecuteRequest = {
             "code": 'reply = input("input:")',
             "silent": False,
             "store_history": False,

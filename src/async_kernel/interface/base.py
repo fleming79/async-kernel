@@ -26,11 +26,8 @@ from async_kernel.caller import Caller, StartStopTask
 from async_kernel.common import Fixed
 from async_kernel.typing import (
     Backend,
-    BuffersType,
     Channel,
-    Content,
     Hosts,
-    IOPubMsgTypeAlias,
     MsgHeader,
     MsgType,
     NoValue,
@@ -38,6 +35,7 @@ from async_kernel.typing import (
     T_interface_co,
     T_shell_co,
 )
+from async_kernel.typing import _content as t_content
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -46,6 +44,7 @@ if TYPE_CHECKING:
     from async_kernel.kernel import Kernel
     from async_kernel.messaging.base import Connection, PendingMessage
     from async_kernel.pending import ProtectedPending
+    from async_kernel.typing import BuffersType, IOPubMsgTypeAlias
 
 __all__ = ["HasInterface", "Interface"]
 
@@ -460,7 +459,9 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
                 continue  # Coverage can cause issues with some files.
         super().print_help(classes)
 
-    def input_request(self, prompt: str, *, password: bool = False) -> PendingMessage[Content]:
+    def input_request(
+        self, prompt: str, *, password: bool = False
+    ) -> PendingMessage[t_content.InputReply | t_content.ErrorReply]:
         """Request input from the client given the current context.
 
         Args:
@@ -475,10 +476,9 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
             msg = "Stdin is not allowed in this context!"
             raise RuntimeError(msg)
         connection = job["owner"]
-        msg = connection.msg(
-            MsgType.input_request, Content(prompt=prompt, password=password), Channel.stdin, parent=job["msg"]
-        )
-        pen_reply = connection.send_message(msg, ident=job["ident"])
+        content = t_content.InputRequest(prompt=prompt, password=password)
+        msg = connection.msg(MsgType.input_request, content, Channel.stdin, parent=job["msg"])
+        pen_reply: Any = connection.send_message(msg, ident=job["ident"])
         if current_pen := self.callers[Channel.shell].current_pending():
             current_pen.add_done_callback(lambda _: pen_reply.cancel(""))
         return pen_reply
@@ -486,7 +486,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
     def iopub_send(
         self,
         msg_type: IOPubMsgTypeAlias | str,
-        content: Content | None = None,
+        content: t_content.T_content_co | dict[str, Any],
         *,
         metadata: dict[str, Any] | None = None,
         parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,

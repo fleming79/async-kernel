@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import anyio
 
 import async_kernel.utils
-from async_kernel.typing import Channel, MsgType
+from async_kernel.typing import Channel, MsgType, t_content
 
 if TYPE_CHECKING:
     from async_kernel.messaging.zmq import ZMQClient
@@ -33,7 +33,7 @@ initialize_args = {
 }
 
 
-async def send_debug_request(client: ZMQClient, command: str, arguments: dict | None = None):
+async def send_debug_request(client: ZMQClient, command: str, arguments: dict | None = None) -> t_content.DebugReply:
     """Carry out a debug request and return the reply content.
 
     It does not check if the request was successful.
@@ -46,7 +46,7 @@ async def send_debug_request(client: ZMQClient, command: str, arguments: dict | 
         "command": command,
         "arguments": arguments or {},
     }
-    reply = await client.send_message(client.msg(MsgType.debug_request, content, Channel.control))
+    reply: Any = await client.send_message(client.msg(MsgType.debug_request, content, Channel.control))
     return reply["content"]
 
 

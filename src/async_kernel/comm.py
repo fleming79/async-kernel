@@ -33,11 +33,10 @@ class Comm(HasInterface, BaseComm):
         **keys,
     ) -> None:
         """Send an iopub message."""
-        content = {"data": {} if data is None else data, "comm_id": self.comm_id} | keys
         if parent := self.parent:
             parent.iopub_send(
                 msg_type=msg_type,
-                content=content,
+                content={"data": {} if data is None else data, "comm_id": self.comm_id} | keys,
                 metadata=metadata,
                 parent=None,
                 ident=self.topic,

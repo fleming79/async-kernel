@@ -9,7 +9,7 @@ import pytest
 from aiologic.lowlevel import create_async_event, create_async_waiter
 
 from async_kernel.messaging.zmq import ZMQClient
-from async_kernel.typing import Channel, Content, MsgType
+from async_kernel.typing import Channel, MsgType, t_content
 from tests import utils
 
 if TYPE_CHECKING:
@@ -25,7 +25,7 @@ async def test_input(
     test_mode: Literal["interrupt", "reply", "allow_stdin=False"],
 ):
 
-    async def input_handler(content: Content) -> str:
+    async def input_handler(content: t_content.InputRequest) -> str:
         ready.set()
         if test_mode == "interrupt":
             await create_async_waiter()
@@ -49,7 +49,7 @@ async def test_input(
     await ready
 
     if test_mode == "interrupt":
-        await client.send_message(client.msg(MsgType.interrupt_request, None, Channel.control))
+        await client.send_message(client.msg(MsgType.interrupt_request, {}, Channel.control))
         reply = await pen
         assert reply["content"]["status"] == "error"
         assert reply["content"]["traceback"][0] == "async_kernel.common.KernelInterrupt\n"
@@ -83,7 +83,7 @@ async def test_interrupt_request(
         reader = aiter(queue)
         pen = client.execute(code)
         await utils.read_until_msg_type(reader, msg_type=MsgType.iopub_stream, text="started\n")
-        client.send_message(client.msg(MsgType.interrupt_request, None, Channel.control))
+        client.send_message(client.msg(MsgType.interrupt_request, {}, Channel.control))
         reply = await pen
 
         assert reply["content"]["status"] == "error"
@@ -92,6 +92,7 @@ async def test_interrupt_request(
             code = "assert pen_timeout.done()"
             user_expressions = {"result": "pen_timeout.exception()"}
             reply = await client.execute(code, user_expressions=user_expressions)
+            assert reply["content"]["status"] == "ok"
             assert "KernelInterrupt" in reply["content"]["user_expressions"]["result"]["data"]["text/plain"]
 
 
@@ -115,8 +116,9 @@ async def test_subprocess_kernel_keyboard_interrupt(tmp_path: pathlib.Path, anyi
     with pytest.raises(RuntimeError, match="Heartbeat not detected"):  # noqa: PT012
         async with client.subprocess_kernel(heartbeat_interval=0.1) as process:
             # Simulate a keyboard interrupt from the console.
-            result = await client.execute("import os\npid=os.getpid()", user_expressions={"pid": "pid"})
-            pid = int(result["content"]["user_expressions"]["pid"]["data"]["text/plain"])
+            reply = await client.execute("import os\npid=os.getpid()", user_expressions={"pid": "pid"})
+            assert reply["content"]["status"] == "ok"
+            pid = int(reply["content"]["user_expressions"]["pid"]["data"]["text/plain"])
             assert pid == process.pid
             assert os.getpid() != process.pid
             os.kill(process.pid, signal.SIGINT)

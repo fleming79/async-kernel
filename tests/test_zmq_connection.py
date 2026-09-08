@@ -53,7 +53,7 @@ async def test_print_non_caller_thread(kernel: Kernel, client: ZMQClient):
 async def test_interrupt_request_not_blocked(client: ZMQClient, kernel: Kernel):
     pen: Any = Pending()
     kernel.active_execute_requests.add(pen)
-    reply = await client.send_message(client.msg(MsgType.interrupt_request, None, Channel.control))
+    reply = await client.send_message(client.msg(MsgType.interrupt_request, {}, Channel.control))
     assert reply["header"]["msg_type"] == MsgType.interrupt_reply
     assert reply["content"] == {"status": "ok"}
     assert pen.cancelled()

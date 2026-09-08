@@ -43,7 +43,7 @@ from async_kernel.event_loop.run import get_runtime_matplotlib_guis
 from async_kernel.interface.base import HasInterface, Interface
 from async_kernel.outstream import print_concat
 from async_kernel.shell.base import BaseShell
-from async_kernel.typing import Channel, Content, MsgType, RunMode, Tags
+from async_kernel.typing import Channel, MsgType, RunMode, Tags, t_content
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
@@ -201,7 +201,8 @@ class IPDisplayPublisher(HasInterface, DisplayPublisher):
         """
         if job := utils.get_job():
             owner = job["owner"]
-            msg = owner.msg(MsgType.iopub_clear_output, {"wait": wait}, Channel.iopub)
+            content: t_content.AnyContent = {"wait": wait}
+            msg = owner.msg(MsgType.iopub_clear_output, content, Channel.iopub)
             owner.send_message(msg, ident=b"display_data")
 
     def register_hook(self, hook: Callable[[Message[Any]], Any]) -> None:
@@ -279,7 +280,7 @@ class IPExtensionManager(HasInterface, ExtensionManager):
         super(ExtensionManager, self).__init__()
 
 
-class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride, reportIncompatibleMethodOverride]
+class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMultipleInheritance, reportIncompatibleVariableOverride]
     """An IPython InteractiveShell implementation."""
 
     timeout = traitlets.CFloat(0.0).tag(config=True)
@@ -651,12 +652,12 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         received_time: float = 0,
         tags: Iterable[str] = (),
         **_ignored,
-    ) -> Content:
+    ) -> t_content.ExecuteReply | t_content.ExecuteErrorReply:
         """Execute code in the shell's user_ns and global_ns."""
         if received_time > 0 and (received_time < self._stop_on_error_info.get("time", 0)) and not silent:
-            return utils.error_to_content(RuntimeError("Aborting due to prior exception")) | {
-                "execution_count": self._stop_on_error_info.get("execution_count", 0)
-            }
+            c: Any = utils.error_to_content(RuntimeError("Aborting due to prior exception"))
+            c["execution_count"] = self._stop_on_error_info.get("execution_count", 0)
+            return c
         if math.isnan(timeout := utils.get_tag_value(Tags.timeout, math.nan, tags=tags)):
             timeout = self.timeout
 
@@ -669,11 +670,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             execution_count: int = self.execution_count
         else:
             execution_count = self._execution_count = self._execution_count + 1
-            self.parent.iopub_send(
-                MsgType.iopub_execute_input,
-                {"code": code, "execution_count": execution_count},
-                ident=b"kernel.execute_input",
-            )
+            cc: t_content.AnyContent = {"code": code, "execution_count": execution_count}
+            self.parent.iopub_send(MsgType.iopub_execute_input, cc, ident=b"kernel.execute_input")
 
         pen = Caller().call_soon(
             self.run_cell_async,
@@ -700,8 +698,8 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                 msg = "An expected exception was not raised!"
                 err = RuntimeError(msg)
 
-        content = {
-            "status": MsgType.iopub_error if err else "ok",
+        content: Any = {
+            "status": "error" if err else "ok",
             "execution_count": execution_count,
             "user_expressions": self.user_expressions(user_expressions if user_expressions is not None else {}),
         }
@@ -717,7 +715,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         return content
 
     @override
-    async def do_complete(self, code: str, cursor_pos: int | None = None) -> Content:
+    async def do_complete(self, code: str, cursor_pos: int | None = None) -> t_content.CompleteReply:
         ""
 
         cursor_pos = cursor_pos or len(code)
@@ -737,24 +735,26 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         s, e = (completions[0].start, completions[0].end) if completions else (cursor_pos, cursor_pos)
         matches = [c.text for c in completions]
         return {
+            "status": "ok",
             "matches": matches,
             "cursor_end": e,
             "cursor_start": s,
             "metadata": {"_jupyter_types_experimental": comps},
-            "status": "ok",
         }
 
     @override
-    async def is_complete(self, code: str) -> Content:
+    async def is_complete(self, code: str) -> t_content.IsCompleteReply:
         status, indent_spaces = self.input_transformer_manager.check_complete(code)
-        content = {"status": status}
+        content: t_content.IsCompleteReply = {"status": status}
         if isinstance(indent_spaces, int):
             content["indent"] = " " * indent_spaces
         return content
 
     @override
-    async def do_inspect(self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0) -> Content:
-        content = {"data": {}, "metadata": {}, "found": True}
+    async def do_inspect(
+        self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0
+    ) -> t_content.InspectReply:
+        content: t_content.InspectReply = {"status": "ok", "data": {}, "metadata": {}, "found": True}
         try:
             oname = token_at_cursor(code, cursor_pos)
             bundle = self.object_inspect_mime(oname, detail_level=detail_level)
@@ -778,7 +778,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
         unique: bool = False,
         include_latest=False,
         **_ignored,
-    ) -> Content:
+    ) -> t_content.HistoryReply:
         history_manager = self.history_manager
         assert history_manager
         match hist_access_type:
@@ -790,7 +790,7 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
                 hist = history_manager.search(pattern=pattern, raw=raw, output=output, n=n, unique=unique)
             case _:
                 hist = []
-        return {"history": list(hist), "status": "ok"}
+        return t_content.HistoryReply(status="ok", history=list(hist))
 
     @override
     def _showtraceback(self, etype, evalue, stb) -> None:
@@ -798,9 +798,13 @@ class IPShell(BaseShell, InteractiveShell):  # pyright: ignore[reportUnsafeMulti
             etype, evalue, stb = TimeoutError, "Cell execute timeout", []
         if isinstance(evalue, KernelInterrupt):
             stb = []
-        self.parent.iopub_send(
-            MsgType.iopub_error, {"traceback": stb, "ename": str(etype.__name__), "evalue": str(evalue)}
-        )
+        content: t_content.ErrorReply = {
+            "status": "error",
+            "traceback": stb,
+            "ename": str(etype.__name__),
+            "evalue": str(evalue),
+        }
+        self.parent.iopub_send(MsgType.iopub_error, content)
 
     @override
     def init_magics(self) -> None:
