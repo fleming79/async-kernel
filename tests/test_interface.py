@@ -17,7 +17,7 @@ from async_kernel.comm import Comm
 from async_kernel.interface import HasInterface, Interface
 from async_kernel.messaging import LocalClient
 from async_kernel.shell.base import BaseShell
-from async_kernel.typing import Channel, Job, MsgType
+from async_kernel.typing import Channel, Job, MsgType, t_content
 from tests import utils
 
 if TYPE_CHECKING:
@@ -88,8 +88,8 @@ class TestInterface:
     async def test_input_request_no_handler(self, anyio_backend: Backend):
 
         async with Interface(shell_class=BaseShell).start(), LocalClient().start() as client:
-            msg = client.msg(MsgType.input_request, None, Channel.stdin)
-            job = Job(msg=msg, owner=client, ident=[], received_time=time.monotonic())
+            msg = client.msg(MsgType.input_request, t_content.InputRequest(prompt="", password=False), Channel.stdin)
+            job = Job[t_content.InputRequest](msg=msg, owner=client, ident=[], received_time=time.monotonic())
             with pytest.raises(RuntimeError, match="A handler is not available"):
                 await client.input_request(job)
 
@@ -101,6 +101,7 @@ class TestInterface:
 
         async with Interface().start(), LocalClient().start() as client:
             reply = await client.execute("input('test')", input_handler=bad_input_handler)
+            assert reply["content"]["status"] == "error"
             assert "bad input" in reply["content"]["evalue"]
 
     async def test_stop(self, anyio_backend: Backend) -> None:

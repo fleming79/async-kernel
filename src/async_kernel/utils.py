@@ -14,15 +14,13 @@ from typing import TYPE_CHECKING, Any
 from traitlets import traitlets
 from typing_extensions import TypeVar
 
-from async_kernel.typing import MsgType
-
 if TYPE_CHECKING:
     from collections.abc import Generator, Iterable, Mapping
     from contextlib import _SupportsRedirect, _SupportsRedirectT  # pyright: ignore[reportPrivateUsage]
 
     from async_kernel.kernel import Kernel
     from async_kernel.shell import BaseShell
-    from async_kernel.typing import Content, Job, Message, Tags
+    from async_kernel.typing import Job, Message, T_content_co, Tags, t_content
 
 __all__ = [
     "apply_settings",
@@ -87,7 +85,7 @@ def get_job() -> Job[Any]:
     return _job_var.get()
 
 
-def get_parent_message(job: Job | None = None, /) -> Message[dict[str, Any]] | None:
+def get_parent_message(job: Job[T_content_co] | None = None, /) -> Message[T_content_co] | None:
     """Get the parent message for the current context."""
     try:
         return (job or get_job()).get("msg")
@@ -204,13 +202,13 @@ def apply_settings(obj: object, settings: Mapping[str, Any]) -> dict[str, Any]:
     return values
 
 
-def error_to_content(error: BaseException, /) -> Content:
+def error_to_content(error: BaseException, /) -> t_content.ErrorReply:
     """Convert the error to a dict.
 
     ref: https://jupyter-client.readthedocs.io/en/stable/messaging.html#request-reply
     """
     return {
-        "status": MsgType.iopub_error,
+        "status": "error",
         "ename": type(error).__name__,
         "evalue": str(error),
         "traceback": traceback.format_exception(error),

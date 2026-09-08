@@ -31,7 +31,7 @@ class TestConnection:
 
     async def test_base_client(self, kernel: Kernel, mocker):
         async with BaseClient().start() as client:
-            msg = client.msg(MsgType.comm_open, None, Channel.shell)
+            msg = client.msg(MsgType.comm_open, {}, Channel.shell)
             with pytest.raises(TypeError, match="does not send a reply"):
                 client.send_message(msg)
 

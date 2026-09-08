@@ -29,7 +29,6 @@ from async_kernel.shell.base import ShellPendingManager
 from async_kernel.typing import (
     CallerCreateOptions,
     Channel,
-    ExecuteContent,
     HandlerType,
     Job,
     MsgType,
@@ -37,6 +36,7 @@ from async_kernel.typing import (
     RunMode,
     T_interface_co,
     T_shell_co,
+    t_content,
 )
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from types import FrameType
 
     from async_kernel.comm import CommManager
-    from async_kernel.typing import Content, Message
+    from async_kernel.typing import Message
 
 __all__ = ["Kernel", "KernelInterrupt"]
 
@@ -291,14 +291,10 @@ class Kernel(
                 self._handler_cache.pop(key, None)
 
     def get_handler(self, job: Job) -> HandlerType:
-        """Create or retrieve a job handler from the cache.
+        """Get the correct handler to run the `job` (incoming message).
 
         Args:
             job: The message request bundled with the origin and other details.
-
-        The cache key is:
-            - (subshell id, Msgtype, Channel): When job's message type is an [async_kernel.typing.MsgType.execute_request][].
-            - Msgtype: For all other requests.
 
         Each handler consists of a method from the kernel whose name matches the [`MsgType`][async_kernel.typing.MsgType].
         The handler is wrapped in a coroutine function which performs the steps:
@@ -307,10 +303,17 @@ class Kernel(
         2. Publish 'busy' status.
         3. Run the handler.
         4. Process handler result.
-            a. If an exception occurred; send a reply that the request failed.
-            b. Send a reply if the handler returned [content][async_kernel.typing.Content].
+            1. Send a reply if the handler returned a dict (content).
+            2. If an exception occurred; send a reply that the request failed.
         5. Publish 'idle' status.
         6. Reset the context of the job and subshell.
+
+        **Cache keys:**
+
+        A cache of handers are maintained with the key selected as follows.
+
+        - [`MsgType.execute_request`][async_kernel.typing.MsgType.execute_request]: the key is `(subshell_id, message_type, channel)`.
+        - For all other message types the key is simply the `message_type`, meaning there is one handler function per `message_type`.
         """
         try:
             subshell_id = job["msg"]["content"]["subshell_id"]
@@ -340,16 +343,14 @@ class Kernel(
                 iopub_send(MsgType.iopub_status, busy, parent=job["msg"], ident=b"kernel.status")
                 try:
                     # 3. Run the handler.
-                    content = await handler(job)
-                except Exception as e:
-                    # 4a. Send a reply that the request failed.
-                    job["owner"].send_reply(job, utils.error_to_content(e))
-                    self.log.exception("Exception in message handler:", exc_info=e)
-                else:
-                    # 4b. Send a reply if the content is not None.
-                    if content is not None:
+                    if (content := await handler(job)) is not None:
+                        # 4a. Send a reply if the content is not None.
                         job["owner"].send_reply(job, content)
                         del content
+                except Exception as e:
+                    # 4b. Send a reply that the request failed.
+                    job["owner"].send_reply(job, utils.error_to_content(e))
+                    self.log.exception("Exception in message handler:", exc_info=e)
                 finally:
                     # 5. Publish idle status.
                     iopub_send(MsgType.iopub_status, idle, parent=job["msg"], ident=b"kernel.status")
@@ -445,41 +446,43 @@ class Kernel(
         """
         return self._shell_class(protected=protected)
 
-    async def kernel_info_request(self, job: Job[Content], /) -> Content:
+    async def kernel_info_request(self, job: Job, /) -> t_content.KernelInfoReply:
         """Handle an [kernel info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-info)."""
-        return self.kernel_info
+        return t_content.KernelInfoReply(status="ok", **self.kernel_info)
 
-    async def comm_info_request(self, job: Job[Content], /) -> Content:
+    async def comm_info_request(self, job: Job, /) -> t_content.CommInfoReply:
         """Handle an [comm info request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-info)."""
         c = job["msg"]["content"]
         target_name = c.get("target_name", None)
-        comms = {
+        comms: dict[str, t_content.CommInfoItem] = {
             k: {"target_name": v.target_name}
             for (k, v) in self.comm_manager.comms.copy().items()
             if v.target_name == target_name or target_name is None
         }
-        return {"comms": comms}
+        return {"status": "ok", "comms": comms}
 
-    async def execute_request(self, job: Job[ExecuteContent], /) -> Content:
+    async def execute_request(
+        self, job: Job[t_content.ExecuteRequest], /
+    ) -> t_content.ExecuteReply | t_content.ExecuteErrorReply:
         """Handle an [execute request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
         return await self.shell.do_execute(
             cell_id=job["msg"]["metadata"].get("cellId"),
             received_time=job["received_time"],
             tags=job["msg"]["metadata"].get("tags", ()),
-            **job["msg"]["content"],  # pyright: ignore[reportArgumentType]
+            **job["msg"]["content"],
         )
 
-    async def complete_request(self, job: Job[Content], /) -> Content:
+    async def complete_request(self, job: Job, /) -> t_content.CompleteReply:
         """Handle an [completion request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#completion)."""
         return await self.shell.do_complete(
             code=job["msg"]["content"].get("code", ""), cursor_pos=job["msg"]["content"].get("cursor_pos", 0)
         )
 
-    async def is_complete_request(self, job: Job[Content], /) -> Content:
+    async def is_complete_request(self, job: Job, /) -> t_content.IsCompleteReply:
         """Handle an [is_complete request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#code-completeness)."""
         return await self.shell.is_complete(job["msg"]["content"].get("code", ""))
 
-    async def inspect_request(self, job: Job[Content], /) -> Content:
+    async def inspect_request(self, job: Job, /) -> t_content.InspectReply:
         """Handle an [inspect request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#introspection)."""
         c = job["msg"]["content"]
         return await self.shell.do_inspect(
@@ -488,28 +491,28 @@ class Kernel(
             detail_level=c.get("detail_level", 0),
         )
 
-    async def history_request(self, job: Job[Content], /) -> Content:
+    async def history_request(self, job: Job[t_content.HistoryRequest], /) -> t_content.HistoryReply:
         """Handle an [history request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#history)."""
         return await self.shell.do_history(**job["msg"]["content"])
 
-    async def comm_open(self, job: Job[Content], /) -> None:
+    async def comm_open(self, job: Job, /) -> None:
         """Handle an [comm open request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#opening-a-comm)."""
         self.comm_manager.comm_open(stream=None, ident=None, msg=job["msg"])  # pyright: ignore[reportArgumentType]
 
-    async def comm_msg(self, job: Job[Content], /) -> None:
+    async def comm_msg(self, job: Job, /) -> None:
         """Handle an [comm msg request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#comm-messages)."""
         self.comm_manager.comm_msg(stream=None, ident=None, msg=job["msg"])  # pyright: ignore[reportArgumentType]
 
-    async def comm_close(self, job: Job[Content], /) -> None:
+    async def comm_close(self, job: Job, /) -> None:
         """Handle an [comm close request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#tearing-down-comms)."""
         self.comm_manager.comm_close(stream=None, ident=None, msg=job["msg"])  # pyright: ignore[reportArgumentType]
 
-    async def interrupt_request(self, job: Job[Content], /) -> Content:
+    async def interrupt_request(self, job: Job, /) -> t_content.InterruptReply:
         """Handle an [interrupt request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-interrupt)."""
         await self.do_interrupt()
-        return {}
+        return {"status": "ok"}
 
-    async def shutdown_request(self, job: Job[Content], /) -> Content:
+    async def shutdown_request(self, job: Job, /) -> t_content.ShutdownReply:
         """Handle an [shutdown request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#kernel-shutdown)."""
         # Thread: Control
         resume = create_async_waiter()
@@ -518,29 +521,31 @@ class Kernel(
         self.stopped.add_done_callback(lambda _: (resume.wake(), pen.wait_sync(timeout=1)))  # Thread: shell
         self.parent.stop()
         await resume
-        return {"restart": job["msg"]["content"].get("restart", False)}
+        return {"status": "ok", "restart": job["msg"]["content"].get("restart", False)}
 
-    async def debug_request(self, job: Job[Content], /) -> Content:
+    async def debug_request(self, job: Job[t_content.DebugRequest], /) -> t_content.ReplyContent:
         """Handle an [debug request](https://jupyter-client.readthedocs.io/en/stable/messaging.html#debug-request)."""
-        return await self.debugger.process_request(job["msg"]["content"])
+        data = await self.debugger.process_request(job["msg"]["content"])
+        return t_content.ReplyContent(status="ok", **data)
 
-    async def create_subshell_request(self: Kernel, job: Job[Content], /) -> Content:
+    async def create_subshell_request(self: Kernel, job: Job, /) -> t_content.CreateSubshellReply:
         """Handle an [create subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#create-subshell)."""
         async with self.caller.create_pending_group():
             shell = self.create_subshell(protected=False)
-            return {"subshell_id": shell.subshell_id}
+            assert shell.subshell_id
+            return {"status": "ok", "subshell_id": shell.subshell_id}
 
-    async def delete_subshell_request(self, job: Job[Content], /) -> Content:
+    async def delete_subshell_request(self, job: Job, /) -> t_content.DeleteSubshellReply:
         """Handle an [delete subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#delete-subshell)."""
         if (subshell_id := job["msg"]["content"]["subshell_id"]) and (subshell := self._subshells.get(subshell_id)):
             subshell.stop()
-        return {}
+        return {"status": "ok"}
 
-    async def list_subshell_request(self, job: Job[Content], /) -> Content:
+    async def list_subshell_request(self, job: Job, /) -> t_content.ListSubshellReply:
         """Handle an [list subshell request](https://jupyter.org/enhancement-proposals/91-kernel-subshells/kernel-subshells.html#list-subshells)."""
-        return {"subshell_id": list(self._subshells)}
+        return {"status": "ok", "subshell_id": list(self._subshells)}
 
-    def get_parent(self) -> Message[dict[str, Any]] | None:
+    def get_parent(self) -> Message | None:
         """A convenience method to access the 'message' in the current context if there is one.
 
         'parent' is the parameter name used by [Session.send][jupyter_client.session.Session.send] to provide context when sending a reply.
@@ -553,13 +558,13 @@ class Kernel(
         """
         return utils.get_parent_message()
 
-    async def do_complete(self, code: str, cursor_pos: int | None) -> Content:
+    async def do_complete(self, code: str, cursor_pos: int | None) -> t_content.CompleteReply:
         """Matches signature of [ipykernel.kernelbase.Kernel.do_complete][]."""
         return await self.shell.do_complete(code=code, cursor_pos=cursor_pos)
 
     async def do_inspect(
         self, code: str, cursor_pos: int = 0, detail_level: Literal[0, 1] = 0, omit_sections=()
-    ) -> Content:
+    ) -> t_content.InspectReply:
         """Matches signature of [ipykernel.kernelbase.Kernel.do_inspect][]."""
         return await self.shell.do_inspect(code=code, cursor_pos=cursor_pos, detail_level=detail_level)
 
@@ -574,7 +579,7 @@ class Kernel(
         n=None,
         pattern=None,
         unique=False,
-    ) -> Content:
+    ) -> t_content.HistoryReply:
         """Matches signature of [ipykernel.kernelbase.Kernel.do_history][]."""
         return await self.shell.do_history(
             output=output,
@@ -596,7 +601,7 @@ class Kernel(
         cell_meta: dict[str, Any] | None = None,
         cell_id: str | None = None,
         **_ignored,
-    ) -> Content:
+    ) -> t_content.ExecuteReply | t_content.ExecuteErrorReply:
         """Matches signature of [ipykernel.kernelbase.Kernel.do_execute][]."""
         return await self.shell.do_execute(
             code=code,
@@ -617,7 +622,7 @@ class Kernel(
                 time.sleep(0.01)
         else:
             pen.wait_sync()
-        return self._parse_input_request_content(pen.result())
+        return self._parse_input_request_content(pen.result()["content"])
 
     def raw_input(self, prompt="") -> str:
         """Matches signature of [ipykernel.kernelbase.Kernel.raw_input][], also used for builtin 'input'."""
@@ -628,12 +633,11 @@ class Kernel(
                 time.sleep(0.01)
         else:
             pen.wait_sync()
-        return self._parse_input_request_content(pen.result())
+        return self._parse_input_request_content(pen.result()["content"])
 
-    def _parse_input_request_content(self, msg: Message[Content]) -> str:
-        try:
-            return msg["content"]["value"]
-        except KeyError:
-            traceback = "".join(msg["content"].get("traceback") or ())
-            f"""Input reply failed with error {msg["content"]["ename"]}("{msg["content"]["evalue"]}") \n{traceback}"""
-            raise RuntimeError(msg) from None
+    def _parse_input_request_content(self, content: t_content.InputReply | t_content.ErrorReply) -> str:
+        if content["status"] == "ok":
+            return content["value"]
+        traceback = "".join(content["traceback"])
+        msg = f"""Input reply failed with error {content["ename"]}("{content["evalue"]}") \n{traceback}"""
+        raise RuntimeError(msg) from None

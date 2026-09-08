@@ -10,6 +10,9 @@ from typing import TYPE_CHECKING, Any, Final, Generic, Literal, NotRequired, Par
 import traitlets
 from typing_extensions import Sentinel, TypedDict, TypeVar, get_annotations, override
 
+from async_kernel.typing import t_content
+from async_kernel.typing._content import T_content_co
+
 if TYPE_CHECKING:
     import datetime
 
@@ -21,12 +24,10 @@ if TYPE_CHECKING:
 
 __all__ = [
     "Backend",
+    "BuffersType",
     "CallerCreateOptions",
     "CallerState",
     "Channel",
-    "Content",
-    "DebugMessage",
-    "ExecuteContent",
     "FixedCreate",
     "FixedCreated",
     "HandlerType",
@@ -38,6 +39,8 @@ __all__ = [
     "NoValue",
     "RunMode",
     "RunSettings",
+    "T_co",
+    "T_content_co",
     "T_interface_co",
     "T_ipshell_co",
     "T_shell_co",
@@ -50,6 +53,7 @@ NoValue: Final = Sentinel("NoValue")
 
 S = TypeVar("S")
 T = TypeVar("T")
+T_co = TypeVar("T_co", covariant=True)
 D = TypeVar("D", bound=dict)
 P = ParamSpec("P")
 
@@ -257,14 +261,14 @@ class MsgType(enum.StrEnum):
     iopub_status = "status"
     """An iopub message about a handlers status which can be 'busy' or 'idle'."""
 
+    iopub_error = "error"
+    """An iopub message with error content."""
+
     iopub_execute_input = "execute_input"
     """An iopub message with detail of an execute request."""
 
     iopub_execute_result = "execute_result"
     """An iopub message with for the global display hook. Generally the last executed line of an execute request."""
-
-    iopub_error = "error"
-    """An iopub message for an error."""
 
     iopub_stream = "stream"
     """Stream data such as stdout and stderr."""
@@ -435,14 +439,14 @@ class MessageProtocol(typing.Protocol, metaclass=MessageMeta):
     def msg(
         self,
         msg_type: str | MsgType,
-        content: T | None,
+        content: T_content_co | dict[str, Any],
         channel: Channel,
         *,
-        parent: Message | dict[str, Any] | None = None,
+        parent: Message | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
         buffers: BuffersType | None = None,
-    ) -> Message[T]:
+    ) -> Message[T_content_co]:
         """Create a new message."""
         ...
 
@@ -456,11 +460,13 @@ class MessageProtocol(typing.Protocol, metaclass=MessageMeta):
         self,
         msg: Message,
         ident: bytes | list[bytes] | None = None,
-    ) -> PendingMessage[Content]:
+    ) -> PendingMessage[t_content.T_reply_content_co]:
         """Sends the message to the opposite side and return a PendingMessage."""
         ...
 
-    def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType | None = None) -> None:
+    def send_reply(
+        self, job: Job, content: t_content.T_reply_content_co, /, *, buffers: BuffersType | None = None
+    ) -> None:
         """Send a reply to a job (a message of msg_type ending in '_request')."""
 
     def transmit_msg(self, msg: Message, ident: list[bytes]) -> None:
@@ -495,7 +501,7 @@ class MsgHeader(TypedDict):
     """"""
 
 
-class Message(TypedDict, Generic[T]):
+class Message(TypedDict, Generic[T_content_co]):
     """A [message](https://jupyter-client.readthedocs.io/en/stable/messaging.html#general-message-format)."""
 
     channel: Channel
@@ -510,21 +516,21 @@ class Message(TypedDict, Generic[T]):
     metadata: dict[str, Any]
     """[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)"""
 
-    content: T | Content
+    content: T_content_co
     """[ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#metadata)
     
     **See Also**
 
-        - [ExecuteContent][]
+        - [ExecuteRequest][]
     """
     buffers: BuffersType
     ""
 
 
-class Job(TypedDict, Generic[T]):
+class Job(TypedDict, Generic[T_content_co]):
     """A `Message` request bundle."""
 
-    msg: Message[T]
+    msg: Message[T_content_co]
     """The message received over the socket."""
 
     ident: list[bytes]
@@ -535,25 +541,6 @@ class Job(TypedDict, Generic[T]):
 
     received_time: float
     """The time the message was received."""
-
-
-class ExecuteContent(TypedDict):
-    """[Ref](https://jupyter-client.readthedocs.io/en/stable/messaging.html#execute)."""
-
-    code: str
-    """The code to execute."""
-    silent: bool
-    """"""
-    store_history: bool
-    """"""
-    user_expressions: dict[str, str]
-    """"""
-    allow_stdin: bool
-    """"""
-    stop_on_error: bool
-    """"""
-    subshell_id: NotRequired[str | None]
-    """"""
 
 
 class FixedCreate(TypedDict, Generic[S]):
@@ -607,11 +594,5 @@ class CallerCreateOptions(RunSettings):
     """Disable debugpy in the thread if a new thread is created."""
 
 
-DebugMessage = dict[str, Any]
-"""A TypeAlias for a debug message."""
-
-Content = dict[str, Any]
-"""A TypeAlias for the content in `Message`."""
-
-HandlerType = Callable[[Job], Awaitable[Content | None]]
+HandlerType = Callable[[Job], Awaitable[t_content.T_reply_content_co | None]]
 """A TypeAlias for the handler of message requests."""

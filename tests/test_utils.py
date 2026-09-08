@@ -6,7 +6,7 @@ import pytest
 from traitlets import traitlets
 
 from async_kernel import utils as ak_utils
-from async_kernel.typing import ExecuteContent, Job, Tags
+from async_kernel.typing import Job, Tags
 
 
 @pytest.mark.anyio
@@ -15,25 +15,25 @@ class TestUtils:
         with pytest.raises(RuntimeError, match="A kernel interface is not started"):
             ak_utils.get_kernel()
 
-    async def test_get_job(self, job: Job[ExecuteContent]) -> None:
+    async def test_get_job(self, job: Job) -> None:
         with pytest.raises(LookupError):
             ak_utils.get_job()
         ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         assert ak_utils.get_job() is job
 
-    async def test_get_metadata(self, job: Job[ExecuteContent]):
+    async def test_get_metadata(self, job: Job):
         assert ak_utils.get_metadata() is None
         assert ak_utils.get_metadata(job) is job["msg"]["metadata"]
         ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         assert ak_utils.get_metadata() is job["msg"]["metadata"]
 
-    async def test_get_parent(self, job: Job[ExecuteContent]):
+    async def test_get_parent(self, job: Job):
         assert ak_utils.get_parent_message() is None
         assert ak_utils.get_parent_message(job) is job["msg"]
         ak_utils._job_var.set(job)  # pyright: ignore[reportPrivateUsage]
         assert ak_utils.get_parent_message(job) is job["msg"]
 
-    async def test_get_tags(self, job: Job[ExecuteContent]):
+    async def test_get_tags(self, job: Job):
         job["msg"]["metadata"]["tags"] = tags = []
         assert ak_utils.get_tags() == []
         assert ak_utils.get_tags(job) is tags

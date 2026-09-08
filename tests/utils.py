@@ -48,7 +48,7 @@ def validate_message(msg: Message, msg_type: MsgType | None = None, parent=""):
         raise
 
 
-def check_pub_message(msg: Message, *, msg_type=MsgType.iopub_status, **content_checks):
+def check_pub_message(msg: Message, *, msg_type: IOPubMsgTypeAlias = MsgType.iopub_status, **content_checks):
     "Check an iopub message for particular content."
     if msg["header"]["msg_type"] != msg_type:
         msg_ = f"""msg_type mismatch {msg_type} but got {msg["header"]["msg_type"]} {msg=}"""

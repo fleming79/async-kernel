@@ -116,8 +116,8 @@ class Caller:
     """A flexible interface for scheduling work across threads and asynchronous backends.
 
     Each caller is associated with an asyncio or trio event loop and can dispatch functions
-    or from any thread. When a [async_kernel.pending.Pending][] is returned, the result can
-    be awaited or cancelled from anywhere.
+    from any thread. When a [async_kernel.pending.Pending][] is returned from a caller method
+    (`call_soon`, `to_thread`, etc), the result can be awaited or cancelled from anywhere.
 
     - CPython: There is one caller per thread.
     - Pyodide: Pyodide does not currently implement threads and trio is not supported.
@@ -131,16 +131,14 @@ class Caller:
         when there is no host.
 
     A `Caller` instance can be created in any thread where a backend (asyncio or trio)
-    is already running. However the `Caller` instance must be created from a function call
-    made inside the thread (using `Caller()`).
+    is already running provided the `Caller` is instantiated inside the thread (using `Caller()`).
 
-    A new caller can be created using one of:
+    A new caller with its own managed thread can be created using one of:
 
-    1. `caller.get`: As a child of an existing caller. The child will stop when the parent
+    1. `Caller("NewThread")`: A new caller instance that will run until it is stopped.
+    2. `caller.get`: As a child of an existing caller. The child will stop when the parent
         is stopped furthermore, the same child can be accessed by passing the string argument
         `name`.
-    2. `Caller("NewThread")`: A new caller instance. Note that it should be stopped when
-        it is no longer required.
 
     An async context is provided for lifecycle management. The async-context of a caller
     can be entered multiple times from any thread.  Once entered, the caller is marked as

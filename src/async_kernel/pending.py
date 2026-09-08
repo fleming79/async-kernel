@@ -17,7 +17,7 @@ from typing_extensions import override
 
 import async_kernel
 from async_kernel.common import Fixed
-from async_kernel.typing import T
+from async_kernel.typing import T_co
 
 if TYPE_CHECKING:
     from _contextvars import Token
@@ -310,7 +310,7 @@ class PendingGroup(PendingTracker, anyio.AsyncContextManagerMixin):
         return self._cancelled is not None
 
 
-class Pending(Awaitable[T]):
+class Pending(Awaitable[T_co]):
     """Pending is an internally synchronised, cancellable, waitable/awaitable representation of a pending result.
 
     It can be thought of as a hybrid between of [asyncio.Future][] and [concurrent.futures.Future][].
@@ -364,7 +364,7 @@ class Pending(Awaitable[T]):
     _canceller: Callable[[str | None], Any] | None
     _exception: Exception
     _done: bool
-    _result: T
+    _result: T_co
     context: contextvars.Context | None
     """The context associated with Pending."""
 
@@ -434,7 +434,7 @@ class Pending(Awaitable[T]):
         return rep + " >"
 
     @override
-    def __await__(self) -> Generator[Any, None, T]:
+    def __await__(self) -> Generator[Any, None, T_co]:
         return self.wait().__await__()
 
     if TYPE_CHECKING:
@@ -447,7 +447,7 @@ class Pending(Awaitable[T]):
             protect: bool = False | ...,
             result: Literal[True] = True,
             shield: bool = ...,
-        ) -> T: ...
+        ) -> T_co: ...
 
         @overload
         async def wait(
@@ -466,7 +466,7 @@ class Pending(Awaitable[T]):
         protect: bool = False,
         result: bool = True,
         shield: bool = False,
-    ) -> T | None:
+    ) -> T_co | None:
         """Wait for the pending to be done (internally synchronised).
 
         Args:
@@ -476,7 +476,7 @@ class Pending(Awaitable[T]):
             shield: Shield from external cancellation.
 
         Returns:
-            T: If `result` is `True`.
+            T_co: If `result` is `True`.
             None: If `result` is 'False`.
 
         Raises:
@@ -525,7 +525,7 @@ class Pending(Awaitable[T]):
             protect: bool = False | ...,
             result: Literal[True] = True,
             shield: bool = ...,
-        ) -> T: ...
+        ) -> T_co: ...
 
         @overload
         def wait_sync(
@@ -544,7 +544,7 @@ class Pending(Awaitable[T]):
         protect: bool = False,
         result: bool = True,
         shield: bool = False,
-    ) -> T | None:
+    ) -> T_co | None:
         """Wait synchronously for the pending to be done (internally synchronised) returning the result if specified.
 
         Args:
@@ -600,7 +600,7 @@ class Pending(Awaitable[T]):
         if e:
             raise e from None
 
-    def set_result(self, value: T) -> None:
+    def set_result(self, value: T_co) -> None:  # pyright: ignore[reportGeneralTypeIssues]
         """Set the result (low-level internally synchronised).
 
         This is noop if already done.
@@ -718,7 +718,7 @@ class Pending(Awaitable[T]):
                     break
         return n
 
-    def result(self) -> T:
+    def result(self) -> T_co:
         """Return the result.
 
         Raises:
@@ -747,5 +747,5 @@ class Pending(Awaitable[T]):
         return getattr(self, "_exception", None)
 
 
-class ProtectedPending(Pending[T], Generic[T]):
+class ProtectedPending(Pending[T_co], Generic[T_co]):
     """A Pending that is protected from cancellation of a waiting waiter."""

@@ -27,7 +27,7 @@ from async_kernel.event_loop.zmq_poll import ZMQPoll, ZMQPollSocket
 from async_kernel.interface import Interface
 from async_kernel.kernelspec import PROTOCOL_VERSION, make_argv
 from async_kernel.messaging.base import BaseClient, BaseMessage, Connection
-from async_kernel.typing import BuffersType, Channel, Message, MsgHeader, MsgType, T, T_interface_co
+from async_kernel.typing import BuffersType, Channel, Message, MsgHeader, MsgType, T_interface_co, t_content
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
@@ -120,15 +120,15 @@ class ZMQMessage(BaseMessage, ConnectionFileMixin):  # pyright: ignore[reportUns
     def msg(
         self,
         msg_type: str | MsgType,
-        content: T | None,
+        content: t_content.T_content_co | dict[str, Any],
         channel: Channel,
         *,
-        parent: Message | dict[str, Any] | None = None,
+        parent: Message | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
         buffers: BuffersType | None = None,
-    ) -> Message[T]:
-        msg: Message = self.session.msg(msg_type, content, parent, header, metadata)  # pyright: ignore[reportAssignmentType, reportArgumentType]
+    ) -> Message[t_content.T_content_co]:
+        msg: Message[t_content.T_content_co] = self.session.msg(msg_type, content, parent, header, metadata)  # pyright: ignore[reportAssignmentType, reportArgumentType]
         msg["channel"] = channel
         msg["buffers"] = [] if buffers is None else buffers
         return msg
@@ -305,6 +305,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
             pass
         self.log.debug("Getting kernel info to configure session")
         msg = await self.kernel_info()
+        assert msg["content"]["status"] == "ok"
         adapt_version = int(msg["content"]["protocol_version"].split(".")[0])
         if adapt_version != jupyter_client.protocol_version_info[0]:  # pyright: ignore[reportPrivateImportUsage]
             self.session.adapt_version = adapt_version  # pragma: no cover
@@ -314,7 +315,7 @@ class ZMQClient(BaseClient[T_interface_co], ZMQMessage, Generic[T_interface_co])
         # was observed when running tests that execute code requesting input.
         # An async kernel connection will send a reply to the message.
         with anyio.move_on_after(timeout or 1.0):
-            await self.send_message(self.msg(MsgType.kernel_info_request, None, Channel.stdin))
+            await self.send_message(self.msg(MsgType.kernel_info_request, {}, Channel.stdin))
         self.log.debug("Session config complete")
 
     @override

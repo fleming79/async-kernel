@@ -21,10 +21,7 @@ from async_kernel.common import Fixed, SingleAsyncQueue
 from async_kernel.interface import HasInterface
 from async_kernel.pending import Pending, ProtectedPending
 from async_kernel.typing import (
-    BuffersType,
     Channel,
-    Content,
-    ExecuteContent,
     IOPubMsgTypeAlias,
     Job,
     Message,
@@ -33,19 +30,22 @@ from async_kernel.typing import (
     MsgType,
     MsgTypeNoReply,
     NoValue,
-    T,
+    T_content_co,
     T_interface_co,
 )
+from async_kernel.typing import _content as t_content
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator, Callable
     from types import CoroutineType
 
+    from async_kernel.typing import BuffersType
+
 
 __all__ = ["BaseClient", "BaseMessage", "Connection", "PendingMessage"]
 
 
-class PendingMessage(Pending[Message[T]], Generic[T]):
+class PendingMessage(Pending[Message[t_content.T_reply_content_co]], Generic[t_content.T_reply_content_co]):
     @property
     def msg_id(self) -> str:
         return self.metadata["parent"]["header"]["msg_id"]
@@ -91,14 +91,14 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
     def msg(
         self,
         msg_type: str | MsgType,
-        content: T | None,
+        content: t_content.T_content_co | dict[str, Any],
         channel: Channel,
         *,
-        parent: Message | dict[str, Any] | None = None,
+        parent: Message | None = None,
         header: MsgHeader | dict[str, Any] | None = None,
         metadata: dict[str, Any] | None = None,
         buffers: BuffersType | None = None,
-    ) -> Message[T]:
+    ) -> Message[T_content_co]:
         parent = parent or utils.get_parent_message()
         if header is None:
             header = MsgHeader(
@@ -109,11 +109,11 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
                 username="",
                 version=async_kernel.kernel_protocol_version,
             )
-        return Message(
+        return Message[T_content_co](
             channel=channel,
             header=header,  # pyright: ignore[reportArgumentType]
             parent_header=parent["header"] if parent else None,
-            content={} if content is None else content,
+            content=content,  # pyright: ignore[reportArgumentType]
             metadata=metadata if metadata is not None else {},
             buffers=[] if buffers is None else buffers,
         )
@@ -126,16 +126,14 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
     @override
     @final
     def send_message(
-        self,
-        msg: Message,
-        ident: bytes | list[bytes] | None = None,
-    ) -> PendingMessage[Content]:
+        self, msg: Message, ident: bytes | list[bytes] | None = None
+    ) -> PendingMessage[t_content.T_reply_content_co]:
         """Sends the message to the other side (client for kernel and vice versa) and returns a PendingMessage."""
         if MsgType(msg["header"]["msg_type"]) in MsgTypeNoReply:
             msg_ = f"{msg['header']['msg_type']} does not send a reply! Use `send_message_no_reply` instead."
             raise TypeError(msg_)
         self.log.debug("Send mssage %s %s", msg["header"]["msg_type"], msg)
-        self._pending_messages[msg["header"]["msg_id"]] = pen = PendingMessage()
+        self._pending_messages[msg["header"]["msg_id"]] = pen = PendingMessage[t_content.T_reply_content_co]()
         pen.metadata.update(parent=self._base_send_msg(msg, ident))
         return pen
 
@@ -145,16 +143,16 @@ class BaseMessage(StartStopTask, LoggingConfigurable, MessageProtocol):
         self._base_send_msg(msg, ident)
 
     @override
-    def send_reply(self, job: Job, content: dict, /, *, buffers: BuffersType | None = None) -> None:
-        if "status" not in content:
-            content["status"] = "ok"
+    def send_reply(
+        self, job: Job, content: t_content.T_reply_content_co, /, *, buffers: BuffersType | None = None
+    ) -> None:
         msg = self.msg(
             job["msg"]["header"]["msg_type"].replace("request", "reply"),
             content,
             job["msg"]["channel"],
             parent=job["msg"],
         )
-        self.send_message_no_reply(msg, job["ident"])
+        self._base_send_msg(msg, job["ident"])
         if msg:
             self.log.debug("send_reply %s", msg)
 
@@ -194,7 +192,7 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
     def iopub_send(
         self,
         msg_type: IOPubMsgTypeAlias | str,
-        content: Content | None = None,
+        content: T_content_co | dict[str, Any],
         *,
         metadata: dict[str, Any] | None = None,
         parent: dict[str, Any] | MsgHeader | NoValue | None = NoValue,
@@ -219,9 +217,11 @@ class Connection(HasInterface[T_interface_co], BaseMessage, Generic[T_interface_
 class BaseClient(BaseMessage, Generic[T_interface_co]):
     """Communicates with a single connection."""
 
-    _input_handlers: Fixed[Self, dict[str, Callable[[Content], CoroutineType[Any, Any, str]]]] = Fixed(dict)
+    _input_handlers: Fixed[Self, dict[str, Callable[[t_content.InputRequest], CoroutineType[Any, Any, str]]]] = Fixed(
+        dict
+    )
 
-    default_input_hander: Callable[[Content], CoroutineType[Any, Any, str]] | None = traitlets.Callable(  # pyright: ignore[reportAssignmentType]
+    default_input_hander: Callable[[t_content.InputRequest], CoroutineType[Any, Any, str]] | None = traitlets.Callable(  # pyright: ignore[reportAssignmentType]
         None, allow_none=True
     ).tag(config=True)
     """The default handler for input requests."""
@@ -245,22 +245,23 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         handler = getattr(self, job["msg"]["header"]["msg_type"])
         self.caller.to_thread(self._wrap_request_handler, handler, job)
 
-    async def _wrap_request_handler(self, func: Callable[[Job], CoroutineType[Any, Any, Content]], job: Job) -> None:
+    async def _wrap_request_handler(
+        self, func: Callable[[Job], CoroutineType[Any, Any, t_content.T_content_co]], job: Job
+    ) -> None:
         """Handle messages from the kernel interface, currently only `input_request` is implemented."""
         reply_msg_type: MsgType = MsgType(job["msg"]["header"]["msg_type"].replace("request", "reply"))
         try:
             content = await func(job)
-            assert content["status"] in ["error", "ok"]
         except Exception as e:
             content = utils.error_to_content(e)
         msg = self.msg(reply_msg_type, content, job["msg"]["channel"], parent=job["msg"])
         self.send_message_no_reply(msg, job["ident"])
 
-    async def input_request(self, job: Job[Content]) -> Content:
+    async def input_request(self, job: Job[t_content.InputRequest]) -> t_content.InputReply:
         """Handle an `input_request` raised by the connected kernel."""
         if (parent := job["msg"]["parent_header"]) and (handler := self._input_handlers.pop(parent["msg_id"], None)):
             result = await handler(job["msg"]["content"])
-            return Content(status="ok", value=result)
+            return t_content.InputReply(status="ok", value=result)
         msg_ = "A handler is not available!"
         raise RuntimeError(msg_)
 
@@ -313,10 +314,10 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         user_expressions: dict[str, str] | None = None,
         stop_on_error: NoValue | bool = NoValue,
         metadata: dict[str, Any] | None = None,
-        input_handler: Callable[[Content], CoroutineType[Any, Any, str]] | NoValue | None = NoValue,
+        input_handler: Callable[[t_content.InputRequest], CoroutineType[Any, Any, str]] | NoValue | None = NoValue,
         channel: Literal[Channel.shell, Channel.control] = Channel.shell,
         subshell_id: str | None = None,
-    ) -> PendingMessage:
+    ) -> PendingMessage[t_content.ExecuteReply | t_content.ExecuteErrorReply]:
         """Execute code.
 
         Params:
@@ -332,7 +333,7 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
             stop_on_error: Flag whether to abort the execution queue, if an exception is encountered.
         """
         input_handler = self.default_input_hander if input_handler is NoValue else input_handler
-        content: ExecuteContent = {
+        content: t_content.ExecuteRequest = {
             "code": code,
             "silent": silent,
             "store_history": store_history,
@@ -344,11 +345,13 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         msg = self.msg(MsgType.execute_request, content, channel, metadata=metadata)
         if input_handler:
             self._input_handlers[msg["header"]["msg_id"]] = input_handler
-        pen = self.send_message(msg)
+        pen: PendingMessage[t_content.ExecuteReply | t_content.ExecuteErrorReply] = self.send_message(msg)
         pen.add_done_callback(lambda _: self._input_handlers.pop(pen.msg_id, None))
         return pen
 
-    def complete(self, code: str, cursor_pos: int | None = None) -> PendingMessage[Content]:
+    def complete(
+        self, code: str, cursor_pos: int | None = None
+    ) -> PendingMessage[t_content.CompleteReply | t_content.ErrorReply]:
         """Tab complete text.
 
         Args:
@@ -357,13 +360,13 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
             cursor_pos: The position of the cursor in the block of code where the completion was requested.
                 Default: `len(code)`.
         """
-        if cursor_pos is None:
-            cursor_pos = len(code)
-        content = {"code": code, "cursor_pos": cursor_pos}
+        content = t_content.CompleteRequest(code=code, cursor_pos=len(code) if cursor_pos is None else cursor_pos)
         msg = self.msg(MsgType.complete_request, content, Channel.shell)
         return self.send_message(msg)
 
-    def inspect(self, code: str, cursor_pos: int | None = None, detail_level: int = 0) -> PendingMessage[Content]:
+    def inspect(
+        self, code: str, cursor_pos: int | None = None, detail_level: int = 0
+    ) -> PendingMessage[t_content.InspectReply | t_content.ErrorReply]:
         """Get metadata information about an object.
 
         Params:
@@ -374,7 +377,7 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         """
         if cursor_pos is None:
             cursor_pos = len(code)
-        content = {"code": code, "cursor_pos": cursor_pos, "detail_level": detail_level}
+        content: t_content.InspectRequest = {"code": code, "cursor_pos": cursor_pos, "detail_level": detail_level}
         return self.send_message(self.msg(MsgType.inspect_request, content, Channel.shell))
 
     def history(
@@ -383,7 +386,7 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         output: bool = False,
         hist_access_type: Literal["tail", "range", "search"] = "range",
         **kwargs: Any,
-    ) -> PendingMessage[Content]:
+    ) -> PendingMessage[t_content.HistoryReply | t_content.ErrorReply]:
         """Get entries from the history list.
 
         Args:
@@ -404,30 +407,35 @@ class BaseClient(BaseMessage, Generic[T_interface_co]):
         if hist_access_type == "range":
             kwargs.setdefault("session", 0)
             kwargs.setdefault("start", 0)
-        content = dict(raw=raw, output=output, hist_access_type=hist_access_type, **kwargs)
+        content = t_content.HistoryRequest(raw=raw, output=output, hist_access_type=hist_access_type, **kwargs)
         return self.send_message(self.msg(MsgType.history_request, content, Channel.shell))
 
-    def kernel_info(self) -> PendingMessage[Content]:
+    def kernel_info(self) -> PendingMessage[t_content.KernelInfoReply | t_content.ErrorReply]:
         """Request kernel info."""
-        return self.send_message(self.msg(MsgType.kernel_info_request, None, Channel.shell))
+        content = t_content.KernelInfoRequest()
+        return self.send_message(self.msg(MsgType.kernel_info_request, content, Channel.shell))
 
-    def comm_info(self, target_name: str | None = None) -> PendingMessage[Content]:
+    def comm_info(
+        self, target_name: str | None = None
+    ) -> PendingMessage[t_content.CommInfoReply | t_content.ErrorReply]:
         """Request comm info."""
-        content = {} if target_name is None else {"target_name": target_name}
-        return self.send_message(self.msg(MsgType.comm_info_request, content, Channel.shell))
+        content = t_content.CommInfoRequest(target_name=target_name) if target_name else t_content.CommInfoRequest()
+        return self.send_message(self.msg(MsgType.comm_info_request, content, channel=Channel.shell))
 
-    def is_complete(self, code: str) -> PendingMessage[Content]:
+    def is_complete(self, code: str) -> PendingMessage[t_content.IsCompleteReply | t_content.ErrorReply]:
         """Ask the kernel whether some code is complete and ready to execute."""
-        return self.send_message(self.msg(MsgType.is_complete_request, {"code": code}, Channel.shell))
+        content: t_content.IsCompleteRequest = {"code": code}
+        return self.send_message(self.msg(MsgType.is_complete_request, content, Channel.shell))
 
-    def shutdown(self, restart: bool = False) -> PendingMessage[Content]:
+    def shutdown(self, restart: bool = False) -> PendingMessage[t_content.ShutdownReply | t_content.ErrorReply]:
         """Request an immediate kernel shutdown.
 
         Upon receipt of the (empty) reply, client code can safely assume that
         the kernel has shut down and it's safe to forcefully terminate it if
         it's still alive.
         """
-        return self.send_message(self.msg(MsgType.shutdown_request, {"restart": restart}, Channel.control))
+        content: t_content.ShutdownRequest = {"restart": restart}
+        return self.send_message(self.msg(MsgType.shutdown_request, content, Channel.control))
 
 
 class LocalClient(HasInterface[T_interface_co], BaseClient[T_interface_co], Generic[T_interface_co]):
