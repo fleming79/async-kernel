@@ -17,7 +17,7 @@ compatible with CPython (Jupyter & VS code) and Pyodide (Jupyterlite).
 The kernel interface supports multiple connections including:
 
 1. Messaging via ZMQ sockets (Jupyter, VS Code, etc).
-2. Same-process local client enabling (Jupyterlite) and user access.
+2. Same-process local client (Jupyterlite).
 
 ## Highlights
 
