@@ -35,15 +35,15 @@ Subshell1(Subshell 1)
 Subshell2(Subshell 2)
 
 Interface === Kernel
-Interface === ZMQConnection
 Interface === LocalConnection1
 Interface === LocalConnection2
+Interface === ZMQConnection
 
 Kernel <==> MainShell
 Kernel <==> Subshell1
 Kernel <==> Subshell2
-Kernel <==> LocalConnection1
-Kernel <==> LocalConnection2
+Kernel <===> LocalConnection1
+Kernel <===> LocalConnection2
 
 subgraph Local client 1
 LocalConnection1 <==> LocalClient1

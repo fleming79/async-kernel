@@ -5,27 +5,29 @@ icon: material/note-text
 # subtitle: A sub title
 ---
 
-async-kernel feels like a standard kernel that offers advanced features that improved user experience.
+The kernel experience will feel the same as IPykernel, but offers some extended features
+which have been proposed as a [JEP](https://github.com/jupyter/enhancement-proposals/issues/144).
+These extended features are illustrated in the [notebooks](#notebooks) section.
 
-## Features
+In the process of implementing the capabilities imagined in the kernel, the [Caller][async_kernel.caller.Caller]
+and [Pending][async_kernel.pending.Pending] objects were created. These are thread-safe objects
+which provide a consistent and powerful cross-thread code execution and waiting.
 
-- Separate handlers for msg_type and channel allow messages to be processed concurrently.
-- Code execution is top-level awaitable.
-- Choice of async backend (asyncio or trio).
-- Choice of asyncio event loop when started by anyio (not as a guest).
-- Optional gui host event loop.
-- Using [Caller.call_using_backend][async_kernel.caller.Caller.call_using_backend], code from any backend can be called in any thread.
+## Command line
 
-## [Command line](../usage/commands.md): Detail about command line usage including:
+[Command line usage](../usage/commands.md) including:
 
-    - Adding a kernel spec
-    - Deleting a kernel spec
-    - Starting a kernel
+- Adding a kernel spec.
+- Deleting a kernel spec.
+- Starting a kernel.
+- Listing configuration options.
 
 ## Notebooks
 
 - [Caller: A backend agnostic executor](../notebooks/caller.ipynb)
 - [Concurrent message handling](../notebooks/async_kernel.ipynb)
+- [Client](../notebooks/client.ipynb)
+- [Custom kernel](../notebooks/client.ipynb)
 
 Notebooks[^1] in this documentation show the result of each cell after executing for a short duration (~1s).
 Notebooks are designed run with a Jupyter frontend.
