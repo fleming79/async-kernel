@@ -1410,6 +1410,17 @@ viewing the latest version.
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interface
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#highlights" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1490,11 +1501,54 @@ viewing the latest version.
 
 <h1 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">&para;</a></h1>
 <p>The reference section provides documentation for each module in async-kernel.</p>
+<h2 id="interface">Interface<a class="headerlink" href="#interface" title="Permanent link">&para;</a></h2>
+<p>The interface is a singleton that acts as a single point of truth. It provides <code>Traitlets</code>
+style configuration, starts the kernel and hosts connections.</p>
+<p>The diagram below illustrates the relationship between various objects.</p>
+<ul>
+<li>Arrows represent messaging.</li>
+<li>Thick lines represent the current process.</li>
+<li>Serialized messages and illustrated by a dotted line.</li>
+</ul>
+<pre class="mermaid"><code>flowchart TD
+Interface(Interface)
+LocalConnection1(Local connection 1)
+LocalConnection2(Local connection 2)
+ZMQConnection(ZMQ connection)
+ZMQClient1(ZMQ client 1)
+ZMQClient2(ZMQ client 2)
+LocalClient1(Local client 1)
+LocalClient2(Local client 2)
+MainShell(Main Shell)
+Subshell1(Subshell 1)
+Subshell2(Subshell 2)
+
+Interface === Kernel
+Interface === ZMQConnection
+Interface === LocalConnection1
+Interface === LocalConnection2
+
+Kernel &lt;==&gt; MainShell
+Kernel &lt;==&gt; Subshell1
+Kernel &lt;==&gt; Subshell2
+Kernel &lt;==&gt; LocalConnection1
+Kernel &lt;==&gt; LocalConnection2
+
+subgraph Local client 1
+LocalConnection1 &lt;==&gt; LocalClient1
+end
+subgraph Local client 2
+LocalConnection2 &lt;==&gt; LocalClient2
+end
+
+ZMQConnection &lt;==&gt; Kernel
+ZMQConnection &lt;-. zmq socket .-&gt; ZMQClient1
+ZMQConnection &lt;-. zmq socket .-&gt; ZMQClient2</code></pre>
 <h2 id="highlights">Highlights<a class="headerlink" href="#highlights" title="Permanent link">&para;</a></h2>
 <ul>
+<li><a class="autorefs autorefs-internal" title="            Interface" href="interface/#async_kernel.interface.Interface">Interface</a> - The kernel interface.</li>
 <li><a class="autorefs autorefs-internal" title="            Kernel" href="kernel/#async_kernel.kernel.Kernel">Kernel</a> - The kernel.</li>
 <li><a class="autorefs autorefs-internal" title="            Caller" href="caller/#async_kernel.caller.Caller">Caller</a> - A flexible interface for scheduling work across threads and asynchronous backends.</li>
-<li><a class="autorefs autorefs-internal" title="            Pending" href="pending/#async_kernel.pending.Pending">Pending</a> - Represents a pending result (like an <a class="autorefs autorefs-external" href="https://docs.python.org/3/library/asyncio-future.html#asyncio.Future">asyncio.Future</a> that can be awaited anywhere).</li>
 <li><a class="autorefs autorefs-internal" title="            command_line" href="command/#async_kernel.command.command_line">command_line</a> - The command line interface.</li>
 </ul>
 
@@ -1519,7 +1573,7 @@ viewing the latest version.
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 4, 2026 11:42:53 UTC"><span class="timeago" datetime="2026-09-04T11:42:53+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 4, 2026 11:42:53 UTC">2026-09-04</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 9, 2026 00:52:52 UTC"><span class="timeago" datetime="2026-09-09T00:52:52+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 9, 2026 00:52:52 UTC">2026-09-09</span>
   </span>
 
     
