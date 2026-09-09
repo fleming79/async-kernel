@@ -5,9 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.0] - 2026-09-09
+
+### <!-- 0 --> 🏗️ Breaking changes
+
+- Require 'name' in caller.get, update docstrings and pin aiologic version range [#611](https://github.com/fleming79/async-kernel/pull/611)
+
+- Do not await coroutine functions in Caller.call_direct. [#610](https://github.com/fleming79/async-kernel/pull/610)
+
+- Changed Job's owner from a callable to the actual object. [#594](https://github.com/fleming79/async-kernel/pull/594)
+
+### <!-- 1 --> 🚀 Features
+
+- Add typing for message content. [#613](https://github.com/fleming79/async-kernel/pull/613)
+
+- Minimize gap in Pending.wait. [#597](https://github.com/fleming79/async-kernel/pull/597)
+
+- Refactor ZMQPoll with safe closed socket detection and better cancellation support. [#595](https://github.com/fleming79/async-kernel/pull/595)
+
+- Update kernel magic callers to include parents id and the number of children. [#592](https://github.com/fleming79/async-kernel/pull/592)
+
+### <!-- 5 --> 📝 Documentation
+
+- Update index.md. [#616](https://github.com/fleming79/async-kernel/pull/616)
+
+- Update index.md. [#615](https://github.com/fleming79/async-kernel/pull/615)
+
+- Update docstrings [#598](https://github.com/fleming79/async-kernel/pull/598)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Update uv.lock and bump basedpyright to 1.40.0. [#614](https://github.com/fleming79/async-kernel/pull/614)
+
+- Move sniffio patch to init. [#609](https://github.com/fleming79/async-kernel/pull/609)
+
+- ZMQPoll maintenance [#607](https://github.com/fleming79/async-kernel/pull/607)
+
+- Caller - omit from lock for NewThread. [#606](https://github.com/fleming79/async-kernel/pull/606)
+
+- Increase coverage of Pending.wait [#605](https://github.com/fleming79/async-kernel/pull/605)
+
+- Remove except wildcard from coverage exclude_lines and improve coverage, removing some uncovered lines. [#604](https://github.com/fleming79/async-kernel/pull/604)
+
+- Don't close queue when cancelling iopub_subscribe. [#603](https://github.com/fleming79/async-kernel/pull/603)
+
+- Remove exception catching in Caller run_scheduler. [#602](https://github.com/fleming79/async-kernel/pull/602)
+
+- Improve iopub_subscribe cancellation. [#601](https://github.com/fleming79/async-kernel/pull/601)
+
+- ZMQPoll eventloop tweaks. [#600](https://github.com/fleming79/async-kernel/pull/600)
+
+- General tidy. [#599](https://github.com/fleming79/async-kernel/pull/599)
+
+- Improve Pending.wait thread safety. [#596](https://github.com/fleming79/async-kernel/pull/596)
+
+- Don't catch CancelledError in queue call. [#593](https://github.com/fleming79/async-kernel/pull/593)
+
 ## [0.22.4] - 2026-09-03
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.22.4 [#591](https://github.com/fleming79/async-kernel/pull/591)
 
 - Pending refactoring (simplification) and docstrings. [#590](https://github.com/fleming79/async-kernel/pull/590)
 
@@ -1589,6 +1647,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.23.0]: https://github.com/fleming79/async-kernel/compare/v0.22.4..v0.23.0
 [0.22.4]: https://github.com/fleming79/async-kernel/compare/v0.22.3..v0.22.4
 [0.22.3]: https://github.com/fleming79/async-kernel/compare/v0.22.2..v0.22.3
 [0.22.2]: https://github.com/fleming79/async-kernel/compare/v0.22.1..v0.22.2
