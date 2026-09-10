@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 __all__ = [
     "apply_settings",
     "error_to_content",
+    "get_context_hash",
     "get_job",
     "get_kernel",
     "get_metadata",
@@ -259,3 +260,22 @@ def show_result(show: bool = True, /) -> Generator[None, Any, None]:
 def show_result_enabled() -> bool:
     """Is the output suppressed in the current context?"""
     return _show_result_context.get()
+
+
+def get_context_hash(level: int = 0) -> int:
+    """Get the hash of the call stack at a certain level.
+
+    This is useful to discriminate a call context in the dunder methods `__enter__`,
+     `__exit__`, `__aenter__` and `__aexit__`.
+
+    Args:
+        level: The level up the frame stack to use starting outside the current frame.
+
+    Tips:
+        - When supporting re-entrant contexts, a list or count should be kept.
+        - Check the hash has not already been used to prevent re-entrance.
+        - Use atomic operations or an instance lock for thread safety, (adjust
+        the )
+    """
+    assert level >= 0
+    return hash(sys._getframe(level + 2))  # pyright: ignore[reportPrivateUsage]
