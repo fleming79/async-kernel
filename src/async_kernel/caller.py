@@ -417,14 +417,15 @@ class Caller:
     async def __aenter__(self) -> Self:
         self._protected = True
         await self.started.wait(result=False)
+        ctx = utils.get_context_hash()
         with self._inst_lock:
             if not (stopping := self.stopping.done()):
                 if self._enter_count == 0:
                     # Identify the first context.
-                    self._first_ctx_and_count = id(sys._getframe(1)), 0  # pyright: ignore[reportPrivateUsage]
+                    self._first_ctx_and_count = ctx, 0
                     # Special handling if the context is run inside a caller managed task.
                     self._first_ctx_stop = bool(self.current_pending())
-                elif (c := self._first_ctx_and_count)[0] == id(sys._getframe(1)):  # pyright: ignore[reportPrivateUsage]
+                elif (c := self._first_ctx_and_count)[0] == ctx:
                     # The same context, re-entry
                     self._first_ctx_and_count = c[0], c[1] + 1
                 elif (pen := self.current_pending()) is not None:
@@ -438,14 +439,14 @@ class Caller:
         return self
 
     async def __aexit__(self, type, value, traceback) -> Literal[False]:
-        ctx_id = id(sys._getframe(1))  # pyright: ignore[reportPrivateUsage]
+        ctx = utils.get_context_hash()
         with self._inst_lock:
             self._enter_count = self._enter_count - 1
-            if (c := self._first_ctx_and_count)[0] == ctx_id:
+            if (c := self._first_ctx_and_count)[0] == ctx:
                 self._first_ctx_and_count = c[0], c[1] - 1
             elif (pen := self.current_pending()) and pen in self._pen_stop:
                 self._pen_stop.remove(pen)
-            wait_exit = c == (ctx_id, 0)
+            wait_exit = c == (ctx, 0)
         if self._enter_count == 0:
             self.stop(force=True)
         if wait_exit:
