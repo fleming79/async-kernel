@@ -351,7 +351,7 @@ class Interface(StartStopTask, Application, Generic[T_shell_co]):
             if not os.environ.get("UV_PROJECT_ENVIRONMENT"):
                 os.environ["UV_PROJECT_ENVIRONMENT"] = venv_path
             if not os.environ.get("VIRTUAL_ENV"):
-                os.environ["VIRTUAL_ENV"] = venv_path
+                os.environ["VIRTUAL_ENV"] = venv_path  # pragma: no cover
         self.parse_command_line([] if argv is NoValue else argv)
         self.interface_class = self.__class__
         self._restore_comm = self.comm_manager.patch_comm()
