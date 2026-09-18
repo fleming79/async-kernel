@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.1] - 2026-09-18
+
+### <!-- 1 --> 🚀 Features
+
+- Add VIRTUAL_ENV environment variable for uv. [#619](https://github.com/fleming79/async-kernel/pull/619)
+
+- Add utils.get_context_hash. [#618](https://github.com/fleming79/async-kernel/pull/618)
+
+### <!-- 6 --> 🌀 Miscellaneous
+
+- Upgrade test dependencies and uv. [#624](https://github.com/fleming79/async-kernel/pull/624)
+
 ## [0.23.0] - 2026-09-09
 
 ### <!-- 0 --> 🏗️ Breaking changes
@@ -34,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update docstrings [#598](https://github.com/fleming79/async-kernel/pull/598)
 
 ### <!-- 6 --> 🌀 Miscellaneous
+
+- Prepare for release v0.23.0 [#617](https://github.com/fleming79/async-kernel/pull/617)
 
 - Update uv.lock and bump basedpyright to 1.40.0. [#614](https://github.com/fleming79/async-kernel/pull/614)
 
@@ -1647,6 +1661,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump the actions group across 1 directory with 2 updates [#3](https://github.com/fleming79/async-kernel/pull/3)
 
+[0.23.1]: https://github.com/fleming79/async-kernel/compare/v0.23.0..v0.23.1
 [0.23.0]: https://github.com/fleming79/async-kernel/compare/v0.22.4..v0.23.0
 [0.22.4]: https://github.com/fleming79/async-kernel/compare/v0.22.3..v0.22.4
 [0.22.3]: https://github.com/fleming79/async-kernel/compare/v0.22.2..v0.22.3
