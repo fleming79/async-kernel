@@ -33,7 +33,7 @@ repos:
       - id: check-github-workflows
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.9.6
+    rev: v3.9.7
     hooks:
       - id: prettier
         types_or: [yaml, html, json, toml]
@@ -59,7 +59,7 @@ repos:
       - id: python-use-type-annotations
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.3
+    rev: v0.16.8
     hooks:
       - id: ruff-check
         types_or: [python, jupyter]
